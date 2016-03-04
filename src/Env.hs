@@ -1,30 +1,28 @@
 {-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
 
-module Source.Env (lookupTy, runTcMonad, TcMonad, extendCtx) where
+module Env (lookupTy, runTcMonad, TcMonad, extendCtx) where
 
 import           Control.Monad.Except
 import           Control.Monad.Reader
 import qualified Data.Text as T
 import           Unbound.Generics.LocallyNameless
 
-import           Source.Syntax
+
+data (Eq i, Show i) => Context i t = Ctx {env :: [(i, t)]}
 
 
-data Context = Ctx {env :: [(TmName, Type)]}
-
-
-emptyCtx :: Context
+emptyCtx :: (Eq i, Show i) => Context i t
 emptyCtx = Ctx []
 
 
-type TcMonad = FreshMT (ReaderT Context (Except T.Text))
+type TcMonad i t = FreshMT (ReaderT (Context i t) (Except T.Text))
 
 
-runTcMonad :: TcMonad a -> Either T.Text a
+runTcMonad :: (Eq i, Show i) => TcMonad i t a -> Either T.Text a
 runTcMonad m = runExcept $ runReaderT (runFreshMT m) emptyCtx
 
 
-lookupTy :: (MonadReader Context m, MonadError T.Text m) => TmName -> m Expr
+lookupTy :: (Eq i, Show i, MonadReader (Context i t) m, MonadError T.Text m) => i -> m t
 lookupTy v = do
   x <- lookupTyMaybe v
   case x of
@@ -32,11 +30,11 @@ lookupTy v = do
     Just res -> return res
 
 
-lookupTyMaybe :: (MonadReader Context m, MonadError T.Text m) => TmName -> m (Maybe Expr)
+lookupTyMaybe :: (Eq i, Show i, MonadReader (Context i t) m, MonadError T.Text m) => i -> m (Maybe t)
 lookupTyMaybe v = do
   ctx <- asks env
   return (lookup v ctx)
 
 
-extendCtx :: (MonadReader Context m) => (TmName, Type) -> m a -> m a
+extendCtx :: (Eq i, Show i, MonadReader (Context i t) m) => (i, t) -> m a -> m a
 extendCtx d = local (\ctx -> ctx { env = d : env ctx })

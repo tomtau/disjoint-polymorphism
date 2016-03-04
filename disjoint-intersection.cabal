@@ -18,9 +18,10 @@ library
                      , src/Source
                      , src/Target
   exposed-modules:     Tokens
-                       Source.Env
+                       Env
                        Source.Parser
                        Source.Syntax
+                       Target.Syntax
   build-depends:       base >= 4.7 && < 5
                      , unbound-generics
                      , array

@@ -6,7 +6,7 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 
-module Source.Syntax where
+module Target.Syntax where
 
 import qualified Data.Text                        as T
 import           Data.Typeable                    (Typeable)
@@ -29,17 +29,20 @@ data Expr = Anno Expr Type
           | Var TmName
           | App Expr Expr
           | Lam (Bind TmName Expr)
-          | Merge Expr Expr
+          | Pair Expr Expr
+          | Project Expr Int
           | IntV Int
           | BoolV Bool
+          | Unit
           | PrimOp Operation Expr Expr
   deriving (Show, Generic, Typeable)
 
 
 data Type = IntT
           | BoolT
+          | UnitT
           | Arr Type Type
-          | Inter Type Type
+          | Product Type Type
   deriving (Show, Generic, Typeable)
 
 
@@ -95,10 +98,12 @@ instance Pretty Type where
 
   ppr BoolT = return $ text "bool"
 
-  ppr (Inter t1 t2) =
+  ppr (Product t1 t2) =
     do t1' <- ppr t1
        t2' <- ppr t2
        return $ parens (t1' <+> text "&" <+> t2')
+
+  ppr UnitT = return $ text "()"
 
 
 instance Pretty Expr where
@@ -130,10 +135,16 @@ instance Pretty Expr where
        op' <- ppr op
        return $ parens (e1' <+> op' <+> e2')
 
-  ppr (Merge e1 e2) =
+  ppr (Pair e1 e2) =
     do e1' <- ppr e1
        e2' <- ppr e2
        return $ parens (e1' <+> ",," <+> e2')
+
+  ppr (Project e i) =
+    do e' <- ppr e
+       return $ e' <> dot <> text (show i)
+
+  ppr Unit = return $ text "()"
 
 
 instance Pretty Operation where
