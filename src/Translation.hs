@@ -4,7 +4,6 @@
 module Translation where
 
 import           Control.Applicative              ((<|>))
-import           Control.Monad.Except
 import           Control.Monad.Trans.Maybe
 import qualified Data.Text
 import           Env
@@ -30,10 +29,6 @@ transType S.BoolT = T.BoolT
 transType (S.Arr a b) = T.Arr (transType a) (transType b)
 transType (Inter a b) = T.Product (transType a) (transType b)
 -- transType top
-
-
-throwStrErr :: String -> TMonad a
-throwStrErr = throwError . Data.Text.pack
 
 
 (<:) :: S.Type -> S.Type -> MaybeT TMonad T.Expr

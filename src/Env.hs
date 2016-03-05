@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
 
-module Env (lookupTy, runTcMonad, TcMonad, extendCtx) where
+module Env (lookupTy, runTcMonad, TcMonad, extendCtx, throwStrErr) where
 
 import           Control.Monad.Except
 import           Control.Monad.Reader
@@ -38,3 +38,7 @@ lookupTyMaybe v = do
 
 extendCtx :: (Eq i, Show i, MonadReader (Context i t) m) => (i, t) -> m a -> m a
 extendCtx d = local (\ctx -> ctx { env = d : env ctx })
+
+
+throwStrErr :: MonadError T.Text m => String -> m a
+throwStrErr = throwError . T.pack

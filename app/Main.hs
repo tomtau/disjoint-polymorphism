@@ -4,6 +4,7 @@ import qualified Data.Text
 import           PrettyPrint              (pprint)
 import           Source.Parser            (parseExpr)
 import           System.Console.Haskeline
+import           Target.TypeCheck
 import           Translation              (translate)
 
 
@@ -41,6 +42,12 @@ main = runInputT defaultSettings loop
                           outputStrLn $ pprint targetExpr
                           emptyLine
                           outputStrLn "Target typing result"
+                          case typecheck targetExpr of
+                            Left err -> printText err
+                            Right t -> outputStrLn $ pprint t
+                          emptyLine
+                          outputStrLn "Target evaluation result"
+                          outputStrLn $ pprint $ eval targetExpr
           --      _ ->
           --        processCMD e $
           --        \xs ->

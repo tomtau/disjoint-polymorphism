@@ -25,6 +25,7 @@ library
                        Source.Parser
                        Source.Syntax
                        Target.Syntax
+                       Target.TypeCheck
   build-depends:       base >= 4.7 && < 5
                      , unbound-generics
                      , array

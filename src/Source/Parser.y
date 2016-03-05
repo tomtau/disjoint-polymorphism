@@ -61,7 +61,7 @@ import Tokens
 expr : '\\' id '.' expr   %prec LAM          { elam $2 $4 }
      | expr ':' type                         { Anno $1 $3 }
      | aexp                                  { $1 }
-| let id '=' expr in expr  %prec LET    { Let $ ebindt ($2, $4) $6 }
+     | let id '=' expr in expr  %prec LET    { Let $ ebindt ($2, $4) $6 }
      | expr '+' expr                         { PrimOp Add $1 $3 }
      | expr '-' expr                         { PrimOp Sub $1 $3 }
      | expr '*' expr                         { PrimOp Mul $1 $3 }
