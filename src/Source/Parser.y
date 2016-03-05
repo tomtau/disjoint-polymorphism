@@ -4,6 +4,7 @@ module Source.Parser (parseExpr) where
 import Data.Char (isDigit, isSpace, isAlpha)
 import Data.List (stripPrefix)
 import Source.Syntax
+import Common
 import Tokens
 }
 
@@ -21,6 +22,9 @@ import Tokens
     boolVal  { TBool $$ }
     id       { TStr $$ }
     intVal   { TInt $$ }
+    if       { TIf }
+    then     { TThen }
+    else     { TElse }
     ':'      { TColon }
     '='      { TEq }
     '#'      { TSharp }
@@ -44,6 +48,7 @@ import Tokens
 %nonassoc ',,' '&'
 %right LAM LET
 %right '->'
+%nonassoc IF
 %left '+' '-'
 %left '*'
 %nonassoc ':'
@@ -53,14 +58,15 @@ import Tokens
 
 %%
 
-expr : '\\' id '.' expr   %prec LAM       { elam $2 $4 }
-     | expr ':' type                      { Anno $1 $3 }
-     | aexp                               { $1 }
-     | let id '=' expr in expr  %prec LET { App (elam $2 $6) $4 }
-     | expr '+' expr                      { PrimOp Add $1 $3 }
-     | expr '-' expr                      { PrimOp Sub $1 $3 }
-     | expr '*' expr                      { PrimOp Mul $1 $3 }
-     | expr ',,' expr                     { Merge $1 $3 }
+expr : '\\' id '.' expr   %prec LAM          { elam $2 $4 }
+     | expr ':' type                         { Anno $1 $3 }
+     | aexp                                  { $1 }
+| let id '=' expr in expr  %prec LET    { Let $ ebindt ($2, $4) $6 }
+     | expr '+' expr                         { PrimOp Add $1 $3 }
+     | expr '-' expr                         { PrimOp Sub $1 $3 }
+     | expr '*' expr                         { PrimOp Mul $1 $3 }
+     | expr ',,' expr                        { Merge $1 $3 }
+     | if expr then expr else expr  %prec IF { If $2 $4 $6 }
 
 aexp : aexp term                      { App $1 $2 }
      | term                           { $1 }
@@ -74,6 +80,7 @@ type : int                            { IntT }
      | bool                           { BoolT }
      | type '&' type                  { Inter $1 $3 }
      | type '->' type                 { Arr $1 $3 }
+     | '(' type ')'                   { $2 }
 
 {
 

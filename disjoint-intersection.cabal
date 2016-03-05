@@ -19,6 +19,9 @@ library
                      , src/Target
   exposed-modules:     Tokens
                        Env
+                       Common
+                       PrettyPrint
+                       Translation
                        Source.Parser
                        Source.Syntax
                        Target.Syntax

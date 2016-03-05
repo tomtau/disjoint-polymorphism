@@ -8,21 +8,13 @@
 
 module Source.Syntax where
 
-import qualified Data.Text                        as T
+import           Common
 import           Data.Typeable                    (Typeable)
 import           GHC.Generics                     (Generic)
-import           Text.PrettyPrint.ANSI.Leijen     (Doc, colon, dot, parens,
-                                                   text, (<+>), (<>))
 import           Unbound.Generics.LocallyNameless
 
 
 type TmName = Name Expr
-
-
-data Operation = Mul
-               | Sub
-               | Add
-               deriving (Show, Generic, Typeable)
 
 
 data Expr = Anno Expr Type
@@ -33,6 +25,8 @@ data Expr = Anno Expr Type
           | IntV Int
           | BoolV Bool
           | PrimOp Operation Expr Expr
+          | If Expr Expr Expr
+          | Let (Bind (TmName, Embed Expr) Expr)
   deriving (Show, Generic, Typeable)
 
 
@@ -54,7 +48,6 @@ multExpr = PrimOp Mul
 
 
 instance Alpha Type
-instance Alpha Operation
 instance Alpha Expr
 
 
@@ -68,7 +61,7 @@ instance Subst Expr Expr where
 evar :: String -> Expr
 evar = Var . s2n
 
-ebindt :: (String, Type) -> Expr -> Bind (TmName, Embed Type) Expr
+ebindt :: Alpha a => (String, a) -> Expr -> Bind (TmName, Embed a) Expr
 ebindt (n, e1) = bind (s2n n, embed e1)
 
 ebind :: String -> Expr -> Bind TmName Expr
@@ -79,68 +72,3 @@ elam x e = Lam (ebind x e)
 
 eapp :: Expr -> Expr -> Expr
 eapp = App
-
-
-class Pretty p where
-  ppr :: (Applicative m, LFresh m) => p -> m Doc
-
-
-instance Pretty Type where
-  ppr (Arr t1 t2) =
-    do t1' <- ppr t1
-       t2' <- ppr t2
-       return $ parens (t1' <+> text "->" <+> t2')
-
-  ppr IntT = return $ text "int"
-
-  ppr BoolT = return $ text "bool"
-
-  ppr (Inter t1 t2) =
-    do t1' <- ppr t1
-       t2' <- ppr t2
-       return $ parens (t1' <+> text "&" <+> t2')
-
-
-instance Pretty Expr where
-  ppr (Anno e t) =
-    do e' <- ppr e
-       t' <- ppr t
-       return $ e' <+> colon <+> t'
-
-  ppr (Var x) = return . text . show $ x
-
-  ppr (App f a) =
-    do f' <- ppr f
-       a' <- ppr a
-       return $ parens (f' <+> a')
-
-  ppr (Lam bnd) =
-    lunbind bnd $
-    \(x, b) ->
-      do b' <- ppr b
-         return (parens $ text "\\" <> (text . show $ x) <+> dot <+> b')
-
-  ppr (IntV n) = return . text . show $ n
-
-  ppr (BoolV b) = return . text . show $ b
-
-  ppr (PrimOp op e1 e2) =
-    do e1' <- ppr e1
-       e2' <- ppr e2
-       op' <- ppr op
-       return $ parens (e1' <+> op' <+> e2')
-
-  ppr (Merge e1 e2) =
-    do e1' <- ppr e1
-       e2' <- ppr e2
-       return $ parens (e1' <+> ",," <+> e2')
-
-
-instance Pretty Operation where
-  ppr Add = return . text $ "+"
-  ppr Mul = return . text $ "*"
-  ppr Sub = return . text $ "-"
-
-
-showExpr :: Expr -> String
-showExpr = show . runLFreshM . ppr

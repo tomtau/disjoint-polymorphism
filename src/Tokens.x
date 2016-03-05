@@ -17,6 +17,9 @@ tokens :-
   bool                          { \s -> TBoolTy }
   true                          { \s -> TBool True }
   false                         { \s -> TBool False }
+  if                            { \s -> TIf }
+  then                          { \s -> TThen }
+  else                          { \s -> TElse }
   $digit+                       { \s -> TInt (read s) }
   \=                            { \s -> TEq }
   \:                            { \s -> TColon }
@@ -40,32 +43,19 @@ tokens :-
   $alpha [$alpha $digit \_ \']* { \s -> TStr s }
 
 {
-data Token = TLet
-           | TIn
-           | TIntTy
-           | TInt Int
-           | TBoolTy
-           | TBool Bool
+data Token = TLet | TIn
+           | TIntTy | TInt Int
+           | TBoolTy | TBool Bool
            | TStr String
            | TEq
            | TLam
            | TArr
-           | TColon
-           | TComma
-           | TDot
-           | TPlus
-           | TMinus
-           | TMult
-           | TDiv
-           | TLParen
-           | TRParen
-           | TLSquare
-           | TRSquare
-           | TLCurly
-           | TRCurly
+           | TColon | TComma | TDot
+           | TPlus | TMinus | TMult | TDiv
+           | TLParen | TRParen | TLSquare | TRSquare | TLCurly | TRCurly
            | TSharp
-           | TAnd
-           | TMerge
+           | TAnd | TMerge
+           | TIf | TThen | TElse
            deriving (Eq, Show)
 
 scanTokens = alexScanTokens

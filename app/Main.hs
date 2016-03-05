@@ -1,10 +1,10 @@
 module Main where
 
-import qualified Data.Text                as T
-import           System.Console.Haskeline
-
+import qualified Data.Text
+import           PrettyPrint              (pprint)
 import           Source.Parser            (parseExpr)
-import           Source.Syntax            (showExpr)
+import           System.Console.Haskeline
+import           Translation              (translate)
 
 
 main :: IO ()
@@ -29,7 +29,18 @@ main = runInputT defaultSettings loop
                       outputStrLn $ show xs
                       emptyLine
                       outputStrLn "Pretty printing"
-                      outputStrLn $ showExpr xs
+                      outputStrLn $ pprint xs
+                      emptyLine
+                      outputStrLn "Source typing result"
+                      case translate xs of
+                        Left err -> printText err
+                        Right (typ, targetExpr) -> do
+                          outputStrLn $ pprint typ
+                          emptyLine
+                          outputStrLn "After translation"
+                          outputStrLn $ pprint targetExpr
+                          emptyLine
+                          outputStrLn "Target typing result"
           --      _ ->
           --        processCMD e $
           --        \xs ->
@@ -57,4 +68,4 @@ main = runInputT defaultSettings loop
                      emptyLine
                      loop
                 emptyLine = outputStrLn ""
-                -- showText = outputStrLn . T.unpack
+                printText = outputStrLn . Data.Text.unpack
