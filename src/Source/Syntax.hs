@@ -39,7 +39,7 @@ data Type = IntT
           | Inter Type Type
           | Product Type Type
           | TopT
-  deriving (Show, Generic, Typeable)
+  deriving (Eq, Show, Generic, Typeable)
 
 
 addExpr :: Expr -> Expr -> Expr

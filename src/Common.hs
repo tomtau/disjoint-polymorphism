@@ -10,7 +10,7 @@ import           Unbound.Generics.LocallyNameless
 data Operation = Mul
                | Sub
                | Add
-               deriving (Show, Generic, Typeable)
+               deriving (Eq, Show, Generic, Typeable)
 
 
 instance Alpha Operation

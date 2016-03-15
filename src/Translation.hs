@@ -17,6 +17,13 @@ import           Unbound.Generics.LocallyNameless
 type TMonad = TcMonad S.TmName S.Type
 
 
+topLike :: S.Type -> Bool
+topLike S.TopT = True
+topLike (S.Inter a b) = topLike a && topLike b
+topLike (S.Arr _ b) = topLike b
+topLike _ = False
+
+
 ordinary :: S.Type -> Bool
 ordinary (S.Arr _ _) = True
 ordinary S.IntT = True
@@ -49,7 +56,7 @@ transType S.TopT = T.UnitT
   return $ T.elam ("x", transType t1) (T.Pair (T.App c1 vx) (T.App c2 vx))
 (<:) a@(S.Inter t1 t2) t3 =
   let
-    f c i = return $ T.elam ("x", transType a) (T.App c (T.Project (T.evar "x") i))
+    f c i = return $ T.elam ("x", transType a) (coercion t3 (T.App c (T.Project (T.evar "x") i)))
     f1 = do c1 <- t1 <: t3
             f c1 1
     f2 = do c2 <- t2 <: t3
@@ -69,6 +76,18 @@ transType S.TopT = T.UnitT
 (<:) _ _ = MaybeT $ return Nothing
 
 
+coercion :: S.Type -> T.Expr -> T.Expr
+coercion a c =
+  let
+    go S.TopT = T.Unit
+    go (S.Arr a1 a2) = T.elam ("x", transType a1) (go a2)
+    go _ = error "Impossible!"
+  in
+  if topLike a
+    then go a
+    else c
+
+
 disjoint :: S.Type -> S.Type -> Bool
 disjoint = go
   where
@@ -84,10 +103,11 @@ disjoint = go
     go (S.Arr _ a) (S.Arr _ b) = disjoint a b
     go (S.Product a1 a2) (S.Product b1 b2) = disjoint a1 b1 || disjoint a2 b2
 -- ax
-    go (S.Arr _ _) t = isPrimitive t || isProduct t
-    go t (S.Arr _ _) = isPrimitive t || isProduct t
+    go (S.Arr _ b) t = not (topLike b) && (isPrimitive t || isProduct t)
+    go t (S.Arr _ b) = not (topLike b) && (isPrimitive t || isProduct t)
     go (S.Product _ _) t = isPrimitive t
     go t (S.Product _ _) = isPrimitive t
+    go a b | isPrimitive a && isPrimitive b = a /= b
     go _ _ = False
 
 
