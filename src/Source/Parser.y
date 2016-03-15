@@ -47,11 +47,12 @@ import Tokens
     top      { TTop }
 
 
-%nonassoc ',,' '&' '*'
+%nonassoc ',,' '&'
 %right LAM LET
 %right '->'
 %nonassoc IF
 %left '+' '-'
+%left '*'
 %left '._'
 %nonassoc ':'
 
@@ -66,8 +67,8 @@ expr : '\\' id '.' expr   %prec LAM          { elam $2 $4 }
      | let id '=' expr in expr  %prec LET    { Let $ ebindt ($2, $4) $6 }
      | expr '+' expr                         { PrimOp Add $1 $3 }
      | expr '-' expr                         { PrimOp Sub $1 $3 }
+     | expr '*' expr                         { PrimOp Mul $1 $3 }
      | expr ',,' expr                        { Merge $1 $3 }
-     | '(' expr ',' expr ')'                 { Pair $2 $4 }
      | expr '._' intVal                      { Project $1 $3 }
      | if expr then expr else expr  %prec IF { If $2 $4 $6 }
 
@@ -79,11 +80,12 @@ term : id                             { evar $1 }
      | boolVal                        { BoolV $1 }
      | top                            { Top }
      | '(' expr ')'                   { $2 }
+     | '(' expr ',' expr ')'          { Pair $2 $4 }
 
 type : int                            { IntT }
      | bool                           { BoolT }
      | type '&' type                  { Inter $1 $3 }
-     | type '*' type                  { Product $1 $3 }
+     | '(' type ',' type ')'          { Product $2 $4 }
      | type '->' type                 { Arr $1 $3 }
      | '(' type ')'                   { $2 }
      | top                            { TopT }

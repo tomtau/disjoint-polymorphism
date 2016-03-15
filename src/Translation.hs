@@ -162,7 +162,7 @@ trans expr = case expr of
     (t, e') <- trans e
     unless (i == 1 || i == 2) (throwStrErr "Projection index must be 1 or 2")
     case t of
-      (S.Product t1 t2) -> return ([t1, t2] !! (i + 1), T.Project e' i)
+      (S.Product t1 t2) -> return ([t1, t2] !! (i - 1), T.Project e' i)
       _ -> throwStrErr $ pprint t ++ " is not a pair type"
   S.Top -> return (S.TopT, T.Unit)
   _ -> throwStrErr $ "Cannot infer " ++ pprint expr
