@@ -40,6 +40,8 @@ instance Pretty S.Type where
        t2' <- ppr t2
        return $ parens (t1' <> text "," <+> t2')
 
+  ppr S.TopT = return $ text "T"
+
 
 instance Pretty S.Expr where
   ppr (S.Anno e t) =
@@ -96,6 +98,8 @@ instance Pretty S.Expr where
   ppr (S.Project e i) =
     do e' <- ppr e
        return $ e' <> dot <> text (show i)
+
+  ppr S.Top = return $ text "T"
 
 
 instance Pretty T.Type where

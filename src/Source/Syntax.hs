@@ -29,6 +29,7 @@ data Expr = Anno Expr Type
           | Let (Bind (TmName, Embed Expr) Expr)
           | Pair Expr Expr
           | Project Expr Int
+          | Top
   deriving (Show, Generic, Typeable)
 
 
@@ -37,6 +38,7 @@ data Type = IntT
           | Arr Type Type
           | Inter Type Type
           | Product Type Type
+          | TopT
   deriving (Show, Generic, Typeable)
 
 

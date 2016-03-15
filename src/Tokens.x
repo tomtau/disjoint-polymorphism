@@ -41,6 +41,7 @@ tokens :-
   \&                            { \s -> TAnd }
   \,\,                          { \s -> TMerge }
   \.\_                          { \s -> TProj }
+  T                             { \s -> TTop }
   $alpha [$alpha $digit \_ \']* { \s -> TStr s }
 
 {
@@ -58,6 +59,7 @@ data Token = TLet | TIn
            | TAnd | TMerge
            | TIf | TThen | TElse
            | TProj
+           | TTop
            deriving (Eq, Show)
 
 scanTokens = alexScanTokens

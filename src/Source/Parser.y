@@ -44,6 +44,7 @@ import Tokens
     '&'      { TAnd }
     ',,'     { TMerge }
     '._'     { TProj }
+    top      { TTop }
 
 
 %nonassoc ',,' '&' '*'
@@ -76,6 +77,7 @@ aexp : aexp term                      { App $1 $2 }
 term : id                             { evar $1 }
      | intVal                         { IntV $1 }
      | boolVal                        { BoolV $1 }
+     | top                            { Top }
      | '(' expr ')'                   { $2 }
 
 type : int                            { IntT }
@@ -84,6 +86,7 @@ type : int                            { IntT }
      | type '*' type                  { Product $1 $3 }
      | type '->' type                 { Arr $1 $3 }
      | '(' type ')'                   { $2 }
+     | top                            { TopT }
 
 {
 

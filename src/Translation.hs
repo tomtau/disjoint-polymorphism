@@ -31,7 +31,7 @@ transType S.BoolT = T.BoolT
 transType (S.Arr a b) = T.Arr (transType a) (transType b)
 transType (S.Inter a b) = T.Product (transType a) (transType b)
 transType (S.Product a b) = T.Product (transType a) (transType b)
--- transType top
+transType S.TopT = T.UnitT
 
 
 (<:) :: S.Type -> S.Type -> MaybeT TMonad T.Expr
@@ -65,6 +65,7 @@ transType (S.Product a b) = T.Product (transType a) (transType b)
       p1 = T.App c1 (T.Project vp 1)
       p2 = T.App c2 (T.Project vp 2)
   return $ T.elam ("p", transType a) (T.Pair p1 p2)
+(<:) a S.TopT = return $ T.elam ("x", transType a) T.Unit
 (<:) _ _ = MaybeT $ return Nothing
 
 
@@ -143,6 +144,7 @@ trans expr = case expr of
     case t of
       (S.Product t1 t2) -> return ([t1, t2] !! (i + 1), T.Project e' i)
       _ -> throwStrErr $ pprint t ++ " is not a pair type"
+  S.Top -> return (S.TopT, T.Unit)
   _ -> throwStrErr $ "Cannot infer " ++ pprint expr
   where
     check :: S.Expr -> S.Type -> TMonad T.Expr
