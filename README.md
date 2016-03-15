@@ -7,6 +7,18 @@ stack build
 stack exec disjoint-intersection-exe
 ```
 
+## Syntax
+
+* Primitive type: `int`, `bool`, `T` (Top type)
+* Type annotation: `2 : int`
+* Lambda: `(\x . x+1) : int->int`
+* Pair: `(1, true)`
+* Projection: `(1, true)._1`, `(1, true)._2`
+* Merge: `true ,, (\x.x) : int->int`
+* Intersection type: `bool & (int->int)`
+* Let: `let x = 3 in (x, x + 1)`
+* If: `if x == 0 then true else false`
+
 ## Examples
 
 ```
