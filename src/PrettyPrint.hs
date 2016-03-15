@@ -35,6 +35,11 @@ instance Pretty S.Type where
        t2' <- ppr t2
        return $ parens (t1' <+> text "&" <+> t2')
 
+  ppr (S.Product t1 t2) =
+    do t1' <- ppr t1
+       t2' <- ppr t2
+       return $ parens (t1' <> text "," <+> t2')
+
 
 instance Pretty S.Expr where
   ppr (S.Anno e t) =
@@ -82,6 +87,15 @@ instance Pretty S.Expr where
       do b' <- ppr b
          e' <- ppr e
          return $ text "let" <+> text (show x) <+> text "=" <+> e' <+> text "in" <+> b'
+
+  ppr (S.Pair e1 e2) =
+    do e1' <- ppr e1
+       e2' <- ppr e2
+       return $ parens (e1' <> "," <+> e2')
+
+  ppr (S.Project e i) =
+    do e' <- ppr e
+       return $ e' <> dot <> text (show i)
 
 
 instance Pretty T.Type where

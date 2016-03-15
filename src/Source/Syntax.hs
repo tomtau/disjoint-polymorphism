@@ -27,6 +27,8 @@ data Expr = Anno Expr Type
           | PrimOp Operation Expr Expr
           | If Expr Expr Expr
           | Let (Bind (TmName, Embed Expr) Expr)
+          | Pair Expr Expr
+          | Project Expr Int
   deriving (Show, Generic, Typeable)
 
 
@@ -34,6 +36,7 @@ data Type = IntT
           | BoolT
           | Arr Type Type
           | Inter Type Type
+          | Product Type Type
   deriving (Show, Generic, Typeable)
 
 

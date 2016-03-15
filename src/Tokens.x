@@ -40,6 +40,7 @@ tokens :-
   \}                            { \s -> TRCurly }
   \&                            { \s -> TAnd }
   \,\,                          { \s -> TMerge }
+  \.\_                          { \s -> TProj }
   $alpha [$alpha $digit \_ \']* { \s -> TStr s }
 
 {
@@ -56,6 +57,7 @@ data Token = TLet | TIn
            | TSharp
            | TAnd | TMerge
            | TIf | TThen | TElse
+           | TProj
            deriving (Eq, Show)
 
 scanTokens = alexScanTokens

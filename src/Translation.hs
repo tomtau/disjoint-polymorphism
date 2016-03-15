@@ -4,6 +4,7 @@
 module Translation where
 
 import           Control.Applicative              ((<|>))
+import           Control.Monad                    (unless)
 import           Control.Monad.Trans.Maybe
 import qualified Data.Text
 import           Env
@@ -20,6 +21,7 @@ ordinary :: S.Type -> Bool
 ordinary (S.Arr _ _) = True
 ordinary S.IntT = True
 ordinary S.BoolT = True
+ordinary (S.Product _ _) = True
 ordinary _ = False
 
 
@@ -27,7 +29,8 @@ transType :: S.Type -> T.Type
 transType S.IntT = T.IntT
 transType S.BoolT = T.BoolT
 transType (S.Arr a b) = T.Arr (transType a) (transType b)
-transType (Inter a b) = T.Product (transType a) (transType b)
+transType (S.Inter a b) = T.Product (transType a) (transType b)
+transType (S.Product a b) = T.Product (transType a) (transType b)
 -- transType top
 
 
@@ -55,20 +58,36 @@ transType (Inter a b) = T.Product (transType a) (transType b)
   if ordinary t3
     then f1 <|> f2
     else MaybeT $ return Nothing
+(<:) a@(S.Product a1 a2) (S.Product b1 b2) = do
+  c1 <- a1 <: b1
+  c2 <- a2 <: b2
+  let vp = T.evar "p"
+      p1 = T.App c1 (T.Project vp 1)
+      p2 = T.App c2 (T.Project vp 2)
+  return $ T.elam ("p", transType a) (T.Pair p1 p2)
 (<:) _ _ = MaybeT $ return Nothing
 
 
 disjoint :: S.Type -> S.Type -> Bool
-disjoint (S.Inter a1 a2) b = disjoint a1 b && disjoint a2 b
-disjoint a (S.Inter b1 b2) = disjoint a b1 && disjoint a b2
-disjoint (S.Arr _ a) (S.Arr _ b) = disjoint a b
-disjoint S.IntT (S.Arr _ _) = True
-disjoint (S.Arr _ _) S.IntT = True
-disjoint S.BoolT (S.Arr _ _) = True
-disjoint (S.Arr _ _) S.BoolT = True
-disjoint S.IntT S.BoolT = True
-disjoint S.BoolT S.IntT = True
-disjoint _ _ = False
+disjoint = go
+  where
+    isPrimitive S.IntT = True
+    isPrimitive S.BoolT = True
+    isPrimitive _ = False
+
+    isProduct (S.Product _ _) = True
+    isProduct _ = False
+-- i
+    go (S.Inter a1 a2) b = disjoint a1 b && disjoint a2 b
+    go a (S.Inter b1 b2) = disjoint a b1 && disjoint a b2
+    go (S.Arr _ a) (S.Arr _ b) = disjoint a b
+    go (S.Product a1 a2) (S.Product b1 b2) = disjoint a1 b1 || disjoint a2 b2
+-- ax
+    go (S.Arr _ _) t = isPrimitive t || isProduct t
+    go t (S.Arr _ _) = isPrimitive t || isProduct t
+    go (S.Product _ _) t = isPrimitive t
+    go t (S.Product _ _) = isPrimitive t
+    go _ _ = False
 
 
 translate :: S.Expr -> Either Data.Text.Text (S.Type, T.Expr)
@@ -100,7 +119,7 @@ trans expr = case expr of
     (t1, e1') <- trans e1
     (t2, e2') <- trans e2
     if disjoint t1 t2
-      then return (Inter t1 t2, T.Pair e1' e2')
+      then return (S.Inter t1 t2, T.Pair e1' e2')
       else throwStrErr $ pprint t1 ++ " and " ++ pprint t2 ++ " are not disjoint"
   (S.If p e1 e2) -> do
     p' <- check p S.BoolT
@@ -114,6 +133,16 @@ trans expr = case expr of
     (et, e') <- trans e
     (t, b') <- extendCtx (x, et) (trans b)
     return (t, T.App (T.elam (show x, transType et) b') e')
+  (S.Pair e1 e2) -> do
+    (t1, e1') <- trans e1
+    (t2, e2') <- trans e2
+    return (S.Product t1 t2, T.Pair e1' e2')
+  (S.Project e i) -> do
+    (t, e') <- trans e
+    unless (i == 1 || i == 2) (throwStrErr "Projection index must be 1 or 2")
+    case t of
+      (S.Product t1 t2) -> return ([t1, t2] !! (i + 1), T.Project e' i)
+      _ -> throwStrErr $ pprint t ++ " is not a pair type"
   _ -> throwStrErr $ "Cannot infer " ++ pprint expr
   where
     check :: S.Expr -> S.Type -> TMonad T.Expr
