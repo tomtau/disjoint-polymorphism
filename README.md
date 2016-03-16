@@ -9,7 +9,8 @@ stack exec disjoint-intersection-exe
 
 ## Syntax
 
-* Primitive type: `int`, `bool`, `T` (Top type)
+* Primitive type: `int`, `bool`
+* Top type/value: `T : T`
 * Type annotation: `2 : int`
 * Lambda: `(\x . x+1) : int->int`
 * Pair: `(1, true)`
