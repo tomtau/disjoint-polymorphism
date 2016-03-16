@@ -34,7 +34,7 @@ Pretty printing
 Source typing result
 int
 
-After translation
+Target expression after translation
 2
 
 Target typing result
@@ -61,14 +61,37 @@ Target evaluation result
 
 ```
 let x = (3,,true) in let succ = (\x.x+1):int->int in let not = (\x.if x then false else true):bool->bool in (succ x, not x)
-# (4, False)
 
+Target typing result
+(int, bool)
+
+Target evaluation result
+(4, False)
+```
+
+```
 let succ = (\x.x+1):int->int in ((1,,true) ,, (2,,false))
-# (int & bool) and (int & bool) are not disjoint
 
+Source typing result
+(int & bool) and (int & bool) are not disjoint
+```
+
+```
 let succ = (\x.x+1):int->int in let not = (\x.if x then false else true):bool->bool in ((succ,,not):int->int) (3,,true)
-# 4
 
+Target typing result
+int
+
+Target evaluation result
+4
+```
+
+```
 ((\f . f (3,,true)) : ((int & bool) -> T) -> T) ((\x.x) : int->int ,, (\x.x) : bool -> bool)
-# ()
+
+Target typing result
+()
+
+Target evaluation result
+()
 ```
