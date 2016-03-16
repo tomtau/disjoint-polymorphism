@@ -38,7 +38,7 @@ main = runInputT defaultSettings loop
                         Right (typ, targetExpr) -> do
                           outputStrLn $ pprint typ
                           emptyLine
-                          outputStrLn "After translation"
+                          outputStrLn "Target expression after translation"
                           outputStrLn $ pprint targetExpr
                           emptyLine
                           outputStrLn "Target typing result"
@@ -48,26 +48,6 @@ main = runInputT defaultSettings loop
                           emptyLine
                           outputStrLn "Target evaluation result"
                           outputStrLn $ pprint $ eval targetExpr
-          --      _ ->
-          --        processCMD e $
-          --        \xs ->
-          --          do emptyLine
-          --             case translate xs of
-          --               Left err -> showText err
-          --               Right (typ, targetExpr) -> do
-          --                 outputStrLn "Source typing result"
-          --                 showText $ showExpr typ
-          --                 emptyLine
-          --                 outputStrLn "After translation"
-          --                 showText $ Target.Syntax.showExpr targetExpr
-          --                 emptyLine
-          --                 outputStrLn "Target typing result"
-          --                 case Target.TypeCheck.typecheck targetExpr of
-          --                   Left err -> showText err
-          --                   Right t -> showText $ Target.Syntax.showExpr t
-          --                 emptyLine
-          --                 outputStrLn "Target evaluation result"
-          --                 showText $ Target.Syntax.showExpr $ Target.TypeCheck.eval targetExpr
           where processCMD expr func =
                   do case parseExpr . unwords $ expr of
                        Left err -> outputStrLn . show $ err
