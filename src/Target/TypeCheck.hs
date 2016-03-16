@@ -33,11 +33,13 @@ check (App f a) = do
   case ft of
     (Arr t1 t2) | t1 `aeq` at -> return t2
     _ -> throwStrErr $ "Cannot apply " ++ pprint ft ++ " to " ++ pprint at
-check (PrimOp _ a b) = do
+check (PrimOp op a b) = do
   at <- check a
   bt <- check b
+  let rt = case op of (Arith _) -> IntT
+                      (Logical _) -> BoolT
   if at `aeq` IntT && bt `aeq` IntT
-    then return IntT
+    then return rt
     else throwStrErr $ pprint at ++ " and " ++ pprint bt ++ " must both be int"
 check (Pair a b) = do
   at <- check a
@@ -84,9 +86,7 @@ step (App f a) =
   c1 <|> c2 <|> c3
 step (PrimOp op e1 e2) =
   case (e1, e2) of
-    (IntV n, IntV m) -> do
-      let x = evalOp op
-      return (IntV (n `x` m))
+    (IntV n, IntV m) -> return $ evalOp op n m
     _ ->
       let
         c1 = do e1' <- step e1
@@ -117,10 +117,17 @@ step (If p e1 e2) =
       return $ If p' e1 e2
 
 
-evalOp :: Operation -> Int -> Int -> Int
-evalOp Add = (+)
-evalOp Sub = (-)
-evalOp Mul = (*)
+evalOp :: Operation -> Int -> Int -> Expr
+evalOp op x y =
+  case op of
+    (Arith Add) -> IntV $ x + y
+    (Arith Sub) -> IntV $ x - y
+    (Arith Mul) -> IntV $ x * y
+    (Arith Div) -> IntV $ x `div` y
+    (Logical Equ) -> BoolV $ x == y
+    (Logical Neq) -> BoolV $ x /= y
+    (Logical Lt) -> BoolV $ x < y
+    (Logical Gt) -> BoolV $ x > y
 
 
 eval :: Expr -> Expr

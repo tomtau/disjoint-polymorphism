@@ -1,5 +1,7 @@
 {
 module Tokens where
+
+import Common
 }
 
 %wrapper "basic"
@@ -28,10 +30,14 @@ tokens :-
   \#                            { \s -> TSharp }
   \\                            { \s -> TLam }
   \-\>                          { \s -> TArr }
-  \+                            { \s -> TPlus }
-  \-                            { \s -> TMinus }
-  \*                            { \s -> TMult }
+  \+                            { \s -> TAdd }
+  \-                            { \s -> TSub }
+  \*                            { \s -> TMul }
   \/                            { \s -> TDiv }
+  \=\=                          { \s -> TEqu }
+  \!\=                          { \s -> TNeq }
+  \<                            { \s -> TLt }
+  \>                            { \s -> TGt }
   \(                            { \s -> TLParen }
   \)                            { \s -> TRParen }
   \[                            { \s -> TLSquare }
@@ -53,7 +59,7 @@ data Token = TLet | TIn
            | TLam
            | TArr
            | TColon | TComma | TDot
-           | TPlus | TMinus | TMult | TDiv
+           | TAdd | TSub | TMul | TDiv | TEqu | TNeq | TLt | TGt
            | TLParen | TRParen | TLSquare | TRSquare | TLCurly | TRCurly
            | TSharp
            | TAnd | TMerge

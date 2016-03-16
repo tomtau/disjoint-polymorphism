@@ -38,21 +38,13 @@ data Type = IntT
   deriving (Show, Generic, Typeable)
 
 
-addExpr :: Expr -> Expr -> Expr
-addExpr = PrimOp Add
-
-subExpr :: Expr -> Expr -> Expr
-subExpr = PrimOp Sub
-
-multExpr :: Expr -> Expr -> Expr
-multExpr = PrimOp Mul
-
-
 instance Alpha Type
 instance Alpha Expr
 
 
 instance Subst Expr Type
+instance Subst Expr ArithOp
+instance Subst Expr LogicalOp
 instance Subst Expr Operation
 instance Subst Expr Expr where
   isvar (Var v) = Just (SubstName v)

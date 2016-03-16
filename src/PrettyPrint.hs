@@ -14,10 +14,23 @@ class Pretty p where
   ppr :: (Applicative m, LFresh m) => p -> m Doc
 
 
+instance Pretty ArithOp where
+  ppr Add = return $ text "+"
+  ppr Mul = return $ text "*"
+  ppr Sub = return $ text "-"
+  ppr Div = return $ text "/"
+
+
+instance Pretty LogicalOp where
+  ppr Equ = return $ text "=="
+  ppr Neq = return $ text "!="
+  ppr Lt = return $ text "<"
+  ppr Gt = return $ text ">"
+
+
 instance Pretty Operation where
-  ppr Add = return . text $ "+"
-  ppr Mul = return . text $ "*"
-  ppr Sub = return . text $ "-"
+  ppr (Arith a) = ppr a
+  ppr (Logical a) = ppr a
 
 
 instance Pretty S.Type where

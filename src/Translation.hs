@@ -3,6 +3,7 @@
 
 module Translation where
 
+import           Common
 import           Control.Applicative              ((<|>))
 import           Control.Monad                    (unless)
 import           Control.Monad.Trans.Maybe
@@ -132,10 +133,16 @@ trans expr = case expr of
         a' <- check a t1
         return (t2, T.App f' a')
       _ -> throwStrErr $ pprint arr ++ " is not an arrow type"
-  (S.PrimOp op e1 e2) -> do
-    e1' <- check e1 S.IntT
-    e2' <- check e2 S.IntT
-    return (S.IntT, T.PrimOp op e1' e2')
+  (S.PrimOp op e1 e2) ->
+    let
+      ck ta ts = do
+        e1' <- check e1 ta
+        e2' <- check e2 ta
+        return (ts, T.PrimOp op e1' e2')
+    in
+    case op of
+      (Arith _) -> ck S.IntT S.IntT
+      (Logical _) -> ck S.IntT S.BoolT
   (S.Merge e1 e2) -> do
     (t1, e1') <- trans e1
     (t2, e2') <- trans e2

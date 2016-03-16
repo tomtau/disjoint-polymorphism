@@ -37,22 +37,29 @@ import Tokens
     '->'     { TArr }
     '('      { TLParen }
     ')'      { TRParen }
-    '*'      { TMult }
     '\\'     { TLam }
-    '+'      { TPlus }
-    '-'      { TMinus }
     '&'      { TAnd }
     ',,'     { TMerge }
     '._'     { TProj }
     top      { TTop }
+    '+'      { TAdd }
+    '-'      { TSub }
+    '*'      { TMul }
+    '/'      { TDiv }
+    '<'      { TLt }
+    '>'      { TGt }
+    '=='     { TEqu }
+    '!='     { TNeq }
 
 
 %nonassoc ',,' '&'
 %right LAM LET
 %right '->'
 %nonassoc IF
+%nonassoc '==' '!='
+%nonassoc '<' '>'
 %left '+' '-'
-%left '*'
+%left '*' '/'
 %left '._'
 %nonassoc ':'
 
@@ -65,9 +72,14 @@ expr : '\\' id '.' expr   %prec LAM          { elam $2 $4 }
      | expr ':' type                         { Anno $1 $3 }
      | aexp                                  { $1 }
      | let id '=' expr in expr  %prec LET    { Let $ ebindt ($2, $4) $6 }
-     | expr '+' expr                         { PrimOp Add $1 $3 }
-     | expr '-' expr                         { PrimOp Sub $1 $3 }
-     | expr '*' expr                         { PrimOp Mul $1 $3 }
+     | expr '+' expr                         { PrimOp (Arith Add) $1 $3 }
+     | expr '-' expr                         { PrimOp (Arith Sub) $1 $3 }
+     | expr '*' expr                         { PrimOp (Arith Mul) $1 $3 }
+     | expr '/' expr                         { PrimOp (Arith Div) $1 $3 }
+     | expr '==' expr                        { PrimOp (Logical Equ) $1 $3 }
+     | expr '!=' expr                        { PrimOp (Logical Neq) $1 $3 }
+     | expr '<' expr                         { PrimOp (Logical Lt) $1 $3 }
+     | expr '>' expr                         { PrimOp (Logical Gt) $1 $3 }
      | expr ',,' expr                        { Merge $1 $3 }
      | expr '._' intVal                      { Project $1 $3 }
      | if expr then expr else expr  %prec IF { If $2 $4 $6 }
