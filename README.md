@@ -1,13 +1,50 @@
 # Disjoint Intersection Types
 
-## Run
+## Build and Run
 
+This project can be built with `cabal` or `stack`.
+
+* cabal
+```
+cabal sandbox init
+cabal install --only-dependencies
+cabal build
+cabal exec disjoint-intersection-exe
+```
+
+* stack
 ```
 stack build
 stack exec disjoint-intersection-exe
 ```
 
-## Syntax
+## REPL
+
+The REPL prompt is `>`, type `:q` to quit or input any expression in the source language to check its result.
+
+```
+> 2 : int
+
+Abstract syntax
+Anno (IntV 2) IntT
+
+Pretty printing
+2 : int
+
+Source typing result
+int
+
+After translation
+2
+
+Target typing result
+int
+
+Target evaluation result
+2
+```
+
+## Syntax of the source langauge
 
 * Primitive type: `int`, `bool`
 * Top type/value: `T : T`
