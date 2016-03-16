@@ -31,4 +31,7 @@ let succ = (\x.x+1):int->int in ((1,,true) ,, (2,,false))
 
 let succ = (\x.x+1):int->int in let not = (\x.if x then false else true):bool->bool in ((succ,,not):int->int) (3,,true)
 # 4
+
+((\f . f (3,,true)) : ((int & bool) -> T) -> T) ((\x.x) : int->int ,, (\x.x) : bool -> bool)
+# ()
 ```
