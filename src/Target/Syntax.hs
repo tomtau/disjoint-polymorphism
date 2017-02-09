@@ -2,18 +2,20 @@
 
 module Target.Syntax where
 
-import           Common
-import           Unbound.LocallyNameless
-
+import Common
+import Unbound.LocallyNameless
 
 type TmName = Name Expr
 
 
 data Expr = Var TmName
           | App Expr Expr
-          | Lam (Bind (TmName, Type) Expr)
+          | Lam (Bind TmName Expr)
+          | BLam (Bind TyName Expr)
+          | TApp Expr Type
           | Pair Expr Expr
-          | Project Expr Int
+          | Proj1 Expr
+          | Proj2 Expr
           | IntV Int
           | BoolV Bool
           | Unit
@@ -22,12 +24,16 @@ data Expr = Var TmName
   deriving Show
 
 
-data Type = IntT
+type TyName = Name Type
+
+data Type = TVar TyName
+          | IntT
           | BoolT
           | UnitT
           | Arr Type Type
-          | Product Type Type
-  deriving Show
+          | Forall (Bind TyName Type)
+          | Prod Type Type
+    deriving Show
 
 
 $(derive [''Expr, ''Type])
@@ -42,19 +48,26 @@ instance Subst Expr Operation
 instance Subst Expr Expr where
   isvar (Var v) = Just (SubstName v)
   isvar _ = Nothing
+instance Subst Type Expr
+instance Subst Type Operation
+instance Subst Type LogicalOp
+instance Subst Type ArithOp
+instance Subst Type Type where
+  isvar (TVar v) = Just (SubstName v)
+  isvar _ = Nothing
 
 
 evar :: String -> Expr
 evar = Var . s2n
 
-ebindt :: (String, Type) -> Expr -> Bind (TmName, Type) Expr
-ebindt (n, e1) = bind (s2n n, e1)
-
 ebind :: String -> Expr -> Bind TmName Expr
 ebind n = bind (s2n n)
 
-elam :: (String, Type) -> Expr -> Expr
-elam b e = Lam (ebindt b e)
+elam :: String -> Expr -> Expr
+elam b e = Lam (ebind b e)
 
 eapp :: Expr -> Expr -> Expr
 eapp = App
+
+etapp :: Expr -> Type -> Expr
+etapp = TApp
