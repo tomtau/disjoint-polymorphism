@@ -27,7 +27,7 @@ library
                        Target.Syntax
                        Target.TypeCheck
   build-depends:       base >= 4.7 && < 5
-                     , unbound-generics
+                     , unbound
                      , array
                      , text
                      , ansi-wl-pprint

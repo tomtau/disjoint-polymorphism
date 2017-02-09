@@ -1,22 +1,28 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE MultiParamTypeClasses
+            , TemplateHaskell
+            , ScopedTypeVariables
+            , FlexibleInstances
+            , FlexibleContexts
+            , UndecidableInstances
+#-}
 
 module Common where
 
-import           Data.Typeable                    (Typeable)
-import           GHC.Generics                     (Generic)
-import           Unbound.Generics.LocallyNameless
+import           Unbound.LocallyNameless
 
 
 data Operation = Arith ArithOp
                | Logical LogicalOp
-               deriving (Eq, Show, Generic, Typeable)
+               deriving (Eq, Show)
 
 
-data ArithOp = Add | Sub | Mul | Div deriving (Eq, Show, Generic, Typeable)
+data ArithOp = Add | Sub | Mul | Div deriving (Eq, Show)
 
+data LogicalOp = Lt | Gt | Equ | Neq deriving (Eq, Show)
 
-data LogicalOp = Lt | Gt | Equ | Neq deriving (Eq, Show, Generic, Typeable)
-
+$(derive [''Operation])
+$(derive [''ArithOp])
+$(derive [''LogicalOp])
 
 instance Alpha ArithOp
 instance Alpha LogicalOp

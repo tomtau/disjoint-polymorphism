@@ -1,17 +1,9 @@
-{-# LANGUAGE DeriveDataTypeable    #-}
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE MultiParamTypeClasses, TemplateHaskell, ScopedTypeVariables, FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
 
 module Target.Syntax where
 
 import           Common
-import           Data.Typeable                    (Typeable)
-import           GHC.Generics                     (Generic)
-import           Unbound.Generics.LocallyNameless
+import           Unbound.LocallyNameless
 
 
 type TmName = Name Expr
@@ -27,7 +19,7 @@ data Expr = Var TmName
           | Unit
           | PrimOp Operation Expr Expr
           | If Expr Expr Expr
-  deriving (Show, Generic, Typeable)
+  deriving Show
 
 
 data Type = IntT
@@ -35,12 +27,13 @@ data Type = IntT
           | UnitT
           | Arr Type Type
           | Product Type Type
-  deriving (Show, Generic, Typeable)
+  deriving Show
 
+
+$(derive [''Expr, ''Type])
 
 instance Alpha Type
 instance Alpha Expr
-
 
 instance Subst Expr Type
 instance Subst Expr ArithOp
@@ -56,8 +49,6 @@ evar = Var . s2n
 
 ebindt :: (String, Type) -> Expr -> Bind (TmName, Type) Expr
 ebindt (n, e1) = bind (s2n n, e1)
--- ebindt :: (String, Type) -> Expr -> Bind (TmName, Embed Type) Expr
--- ebindt (n, e1) = bind (s2n n, embed e1)
 
 ebind :: String -> Expr -> Bind TmName Expr
 ebind n = bind (s2n n)

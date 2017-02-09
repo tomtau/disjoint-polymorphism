@@ -5,10 +5,10 @@ module Env (lookupTy, runTcMonad, TcMonad, extendCtx, throwStrErr) where
 import           Control.Monad.Except
 import           Control.Monad.Reader
 import qualified Data.Text as T
-import           Unbound.Generics.LocallyNameless
+import           Unbound.LocallyNameless
 
 
-data (Eq i, Show i) => Context i t = Ctx {env :: [(i, t)]}
+data Context i t = Ctx {env :: [(i, t)]}
 
 
 emptyCtx :: (Eq i, Show i) => Context i t

@@ -1,17 +1,15 @@
-{-# LANGUAGE DeriveDataTypeable    #-}
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE MultiParamTypeClasses
+            , TemplateHaskell
+            , ScopedTypeVariables
+            , FlexibleInstances
+            , FlexibleContexts
+            , UndecidableInstances
+#-}
 
 module Source.Syntax where
 
 import           Common
-import           Data.Typeable                    (Typeable)
-import           GHC.Generics                     (Generic)
-import           Unbound.Generics.LocallyNameless
+import           Unbound.LocallyNameless
 
 
 type TmName = Name Expr
@@ -30,7 +28,7 @@ data Expr = Anno Expr Type
           | Pair Expr Expr
           | Project Expr Int
           | Top
-  deriving (Show, Generic, Typeable)
+  deriving Show
 
 
 data Type = IntT
@@ -39,8 +37,9 @@ data Type = IntT
           | Inter Type Type
           | Product Type Type
           | TopT
-  deriving (Eq, Show, Generic, Typeable)
+  deriving (Show, Eq)
 
+$(derive [''Expr, ''Type])
 
 instance Alpha Type
 instance Alpha Expr

@@ -5,9 +5,8 @@ module PrettyPrint where
 import           Common
 import qualified Source.Syntax                    as S
 import qualified Target.Syntax                    as T
-import           Text.PrettyPrint.ANSI.Leijen     (Doc, colon, dot, parens,
-                                                   text, (<+>), (<>))
-import           Unbound.Generics.LocallyNameless
+import           Text.PrettyPrint.ANSI.Leijen     (Doc, colon, dot, parens, text, (<+>), (<>))
+import           Unbound.LocallyNameless
 
 
 class Pretty p where

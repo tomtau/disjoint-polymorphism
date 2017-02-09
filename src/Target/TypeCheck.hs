@@ -8,7 +8,7 @@ import qualified Data.Text                        as T
 import           Env
 import           PrettyPrint
 import           Target.Syntax
-import           Unbound.Generics.LocallyNameless
+import           Unbound.LocallyNameless
 
 
 type TMonad = TcMonad TmName Type

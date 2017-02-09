@@ -12,7 +12,7 @@ import           Env
 import           PrettyPrint                      (pprint)
 import           Source.Syntax                    as S
 import           Target.Syntax                    as T
-import           Unbound.Generics.LocallyNameless
+import           Unbound.LocallyNameless
 
 
 type TMonad = TcMonad S.TmName S.Type
