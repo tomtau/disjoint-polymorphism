@@ -10,14 +10,18 @@ import Control.Monad.Except
 import Data.Text
 import PrettyPrint
 
-type SubMonad = FreshMT (Except Text)
+data TcName
+  = Trm TmName
+  | Typ TyName
+  deriving (Show, Eq)
 
+type TMonad = TcMonad TcName Type
 
 ----------------
 -- A <: B ~> E
 ----------------
 
-(<:) :: Type -> Type -> SubMonad T.Expr
+(<:) :: Type -> Type -> TMonad T.Expr
 
 {-
 
