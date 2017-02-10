@@ -8,6 +8,7 @@ import Source.Syntax
 import qualified Target.Syntax as T
 import Control.Monad.Except
 import Data.Text
+import PrettyPrint
 
 type SubMonad = FreshMT (Except Text)
 
@@ -85,7 +86,7 @@ A <: B ~> E
 (<:) (SRecT l1 a) (SRecT l2 b) = do
   e <- a <: b
   if (l1 /= l2)
-    then throwStrErr $ "labels not equal"
+    then throwStrErr $ "labels not equal: " ++ l1 ++ " and " ++ l2
     else return e
 
 
@@ -96,7 +97,7 @@ a <: a ~> λx.x
 -}
 (<:) (TVar a) (TVar b) = do
   if a /= b
-    then throwStrErr $ "variables not equal"
+    then throwStrErr $ "variables not equal: " ++ show a ++ " and " ++ show b
     else return (T.elam "x" (T.evar "x"))
 
 {-
