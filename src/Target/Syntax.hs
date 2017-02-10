@@ -60,11 +60,17 @@ instance Subst Type Type where
 evar :: String -> Expr
 evar = Var . s2n
 
+tvar :: String -> Type
+tvar = TVar . s2n
+
 ebind :: String -> Expr -> Bind TmName Expr
 ebind n = bind (s2n n)
 
 elam :: String -> Expr -> Expr
 elam b e = Lam (ebind b e)
+
+blam :: String -> Expr -> Expr
+blam b e = BLam (bind (s2n b) e)
 
 eapp :: Expr -> Expr -> Expr
 eapp = App

@@ -1,15 +1,15 @@
 {-# LANGUAGE MultiParamTypeClasses
-            , TemplateHaskell
-            , ScopedTypeVariables
-            , FlexibleInstances
-            , FlexibleContexts
-            , UndecidableInstances
+           , TemplateHaskell
+           , ScopedTypeVariables
+           , FlexibleInstances
+           , FlexibleContexts
+           , UndecidableInstances
 #-}
 
 module Source.Syntax where
 
-import           Common
-import           Unbound.LocallyNameless
+import Common
+import Unbound.LocallyNameless
 
 
 type TmName = Name Expr
@@ -19,25 +19,30 @@ data Expr = Anno Expr Type
           | Var TmName
           | App Expr Expr
           | Lam (Bind TmName Expr)
+          | DLam (Bind (TmName, Type) Expr)
+          | TApp Expr Type
+          | DRec Label Expr
+          | Acc Expr Label
           | Merge Expr Expr
           | IntV Int
           | BoolV Bool
           | PrimOp Operation Expr Expr
           | If Expr Expr Expr
-          | Let (Bind (TmName, Embed Expr) Expr)
-          | Pair Expr Expr
-          | Project Expr Int
           | Top
   deriving Show
 
+type TyName = Name Type
+type Label = String
 
 data Type = IntT
           | BoolT
           | Arr Type Type
-          | Inter Type Type
-          | Product Type Type
+          | And Type Type
+          | TVar TyName
+          | DForall (Bind (TyName, Type) Type)
+          | SRecT Label Type
           | TopT
-  deriving (Show, Eq)
+  deriving Show
 
 $(derive [''Expr, ''Type])
 
@@ -52,19 +57,28 @@ instance Subst Expr Operation
 instance Subst Expr Expr where
   isvar (Var v) = Just (SubstName v)
   isvar _ = Nothing
-
+instance Subst Type Expr
+instance Subst Type Operation
+instance Subst Type LogicalOp
+instance Subst Type ArithOp
+instance Subst Type Type where
+  isvar (TVar v) = Just (SubstName v)
+  isvar _ = Nothing
 
 evar :: String -> Expr
 evar = Var . s2n
 
-ebindt :: Alpha a => (String, a) -> Expr -> Bind (TmName, Embed a) Expr
-ebindt (n, e1) = bind (s2n n, embed e1)
+tvar :: String -> Type
+tvar = TVar . s2n
 
 ebind :: String -> Expr -> Bind TmName Expr
 ebind n = bind (s2n n)
 
 elam :: String -> Expr -> Expr
-elam x e = Lam (ebind x e)
+elam b e = Lam (ebind b e)
 
 eapp :: Expr -> Expr -> Expr
 eapp = App
+
+etapp :: Expr -> Type -> Expr
+etapp = TApp
