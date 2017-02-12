@@ -3,9 +3,9 @@
 module PrettyPrint where
 
 import           Common
-import qualified Source.Syntax                    as S
-import qualified Target.Syntax                    as T
-import           Text.PrettyPrint.ANSI.Leijen     (Doc, colon, dot, parens, braces, text, (<+>), (<>))
+import qualified Source.Syntax as S
+import qualified Target.Syntax as T
+import           Text.PrettyPrint.ANSI.Leijen (Doc, colon, dot, parens, braces, text, (<+>), (<>))
 import           Unbound.LocallyNameless
 
 
@@ -45,7 +45,7 @@ instance Pretty S.Type where
     return $ parens (t1' <+> text "&" <+> t2')
   ppr (S.TVar x) = return . text . show $ x
   ppr (S.DForall t) =
-    lunbind t $ \((x, a), t) -> do
+    lunbind t $ \((x, Embed a), t) -> do
       a' <- ppr a
       t' <- ppr t
       return
@@ -76,7 +76,7 @@ instance Pretty S.Expr where
       b' <- ppr b
       return (parens $ text "λ" <> text (show x) <+> dot <+> b')
   ppr (S.DLam bnd) =
-    lunbind bnd $ \((x, t), b) -> do
+    lunbind bnd $ \((x, Embed t), b) -> do
       b' <- ppr b
       t' <- ppr t
       return

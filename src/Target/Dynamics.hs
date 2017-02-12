@@ -2,9 +2,9 @@
 module Target.Dynamics where
 
 
-import Unbound.LocallyNameless
-import Target.Syntax
 import Common
+import Target.Syntax
+import Unbound.LocallyNameless
 
 ------------------------
 -- big-step evaluation

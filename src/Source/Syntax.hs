@@ -19,7 +19,7 @@ data Expr = Anno Expr Type
           | Var TmName
           | App Expr Expr
           | Lam (Bind TmName Expr)
-          | DLam (Bind (TmName, Type) Expr)
+          | DLam (Bind (TyName, Embed Type) Expr)
           | TApp Expr Type
           | DRec Label Expr
           | Acc Expr Label
@@ -39,7 +39,7 @@ data Type = IntT
           | Arr Type Type
           | And Type Type
           | TVar TyName
-          | DForall (Bind (TyName, Type) Type)
+          | DForall (Bind (TyName, Embed Type) Type)
           | SRecT Label Type
           | TopT
   deriving Show

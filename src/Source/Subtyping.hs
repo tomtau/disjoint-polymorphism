@@ -1,14 +1,14 @@
 
 module Source.Subtyping where
 
-import Common
-import Env
-import Unbound.LocallyNameless
-import Source.Syntax
+import           Common
+import           Control.Monad.Except
+import           Data.Text
+import           Env
+import           PrettyPrint
+import           Source.Syntax
 import qualified Target.Syntax as T
-import Control.Monad.Except
-import Data.Text
-import PrettyPrint
+import           Unbound.LocallyNameless
 
 data TcName
   = Trm TmName
@@ -125,25 +125,15 @@ B1 <: B2 ~> E1    A2 <: A1 ~> E2
 
 -}
 (<:) (DForall t1) (DForall t2) = do
-  ((a, a1) , b1) <- unbind t1
-  ((a', a2) , b2) <- unbind t2
+  ((a, Embed a1) , b1) <- unbind t1
+  ((a', Embed a2) , b2) <- unbind t2
   let b2' = subst a' (TVar a) b2 -- FIXME: Overkill?
   e1 <- b1 <: b2'
   e2 <- a2 <: a1
   return $ T.elam "f" (T.blam "a" (T.App e1 (T.TApp (T.evar "f") (T.tvar "a"))))
 
-(<:) _ _ = throwStrErr $ "Invalid subtyping"
+(<:) a b = throwStrErr $ "Invalid subtyping: " ++ pprint a ++ " and " ++ pprint b
 
-
------------
--- Test
------------
-
-ty1 :: Type
-ty1 = DForall (bind (s2n "a" , IntT) (Arr BoolT (tvar "a")))
-
-ty2 :: Type
-ty2 = DForall (bind (s2n "b" , IntT) (Arr (And BoolT IntT) (tvar "b")))
 
 --------------
 -- A ordinary
