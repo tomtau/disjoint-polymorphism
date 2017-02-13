@@ -1,0 +1,1 @@
+(/\A . /\B * A . (\ x . x) : A & B -> B) @ int @ bool (1,,true)

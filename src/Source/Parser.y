@@ -57,16 +57,15 @@ import Tokens
 
 
 %right FORALL
-%nonassoc ',,' '&'
 %right LAM LET DLAM FIX
 %right '->'
+%nonassoc ',,' '&'
 %nonassoc IF
 %nonassoc '==' '!='
 %nonassoc '<' '>'
-%nonassoc '@'
+%left '@'
 %left '+' '-'
 %left '*' '/'
-%left '._'
 %nonassoc ':'
 
 
@@ -76,6 +75,7 @@ import Tokens
 
 expr : '\\' id '.' expr   %prec LAM           { elam $2 $4 }
      | '\/\\' id '*' type '.' expr %prec DLAM { dlam $2 $4 $6 }
+     | '\/\\' id '.' expr %prec DLAM          { dlam $2 TopT $4 }
      | fix id '.' expr    %prec FIX           { efix $2 $4 }
      | expr ':' type                          { Anno $1 $3 }
      | aexp                                   { $1 }
@@ -88,10 +88,10 @@ expr : '\\' id '.' expr   %prec LAM           { elam $2 $4 }
      | expr '<' expr                          { PrimOp (Logical Lt) $1 $3 }
      | expr '>' expr                          { PrimOp (Logical Gt) $1 $3 }
      | expr ',,' expr                         { Merge $1 $3 }
-     | expr '@' type                          { TApp $1 $3 }
      | if expr then expr else expr  %prec IF  { If $2 $4 $6 }
 
 aexp : aexp term                                { App $1 $2 }
+     | aexp '@' type                            { TApp $1 $3 }
      | term                                     { $1 }
 
 term : id                                       { evar $1 }
@@ -106,6 +106,7 @@ type : int                                      { IntT }
      | type '->' type                           { Arr $1 $3 }
      | '(' type ')'                             { $2 }
      | '\\\/' id '*' type '.' type %prec FORALL { tforall $2 $4 $6 }
+     | '\\\/' id '.' type %prec FORALL          { tforall $2 TopT $4 }
      | top                                      { TopT }
      | id                                       { tvar $1 }
 
