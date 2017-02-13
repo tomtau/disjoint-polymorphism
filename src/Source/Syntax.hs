@@ -94,6 +94,14 @@ eapp = App
 etapp :: Expr -> Type -> Expr
 etapp = TApp
 
+mkRecds :: [(Label, Expr)] -> Expr
+mkRecds [(l, e)] = DRec l e
+mkRecds ((l, e) : r) = Merge (DRec l e) (mkRecds r)
+
+mkRecdsT :: [(Label, Type)] -> Type
+mkRecdsT [(l, e)] = SRecT l e
+mkRecdsT ((l, e) : r) = And (SRecT l e) (mkRecdsT r)
+
 data TcName
   = Trm TmName
   | Typ TyName

@@ -69,6 +69,8 @@ import qualified Data.Text as T
 %left '+' '-'
 %left '*' '/'
 %nonassoc ':'
+%left '.'
+
 
 
 %monad { Either T.Text }
@@ -81,7 +83,7 @@ expr : '\\' id '.' expr   %prec LAM           { elam $2 $4 }
      | '\/\\' id '.' expr %prec DLAM          { dlam $2 TopT $4 }
      | fix id '.' expr    %prec FIX           { efix $2 $4 }
      | expr ':' type                          { Anno $1 $3 }
-     | aexp                                   { $1 }
+     | '{' recds '}'                          { mkRecds $2 }
      | expr '+' expr                          { PrimOp (Arith Add) $1 $3 }
      | expr '-' expr                          { PrimOp (Arith Sub) $1 $3 }
      | expr '*' expr                          { PrimOp (Arith Mul) $1 $3 }
@@ -91,7 +93,15 @@ expr : '\\' id '.' expr   %prec LAM           { elam $2 $4 }
      | expr '<' expr                          { PrimOp (Logical Lt) $1 $3 }
      | expr '>' expr                          { PrimOp (Logical Gt) $1 $3 }
      | expr ',,' expr                         { Merge $1 $3 }
+     | expr '.' id                            { Acc $1 $3 }
      | if expr then expr else expr  %prec IF  { If $2 $4 $6 }
+     | aexp                                   { $1 }
+
+recds :: { [(String, Expr)] }
+recds : recd                 { [$1] }
+      | recd ',' recds       { $1 : $3 }
+
+recd : id '=' expr          { ($1, $3) }
 
 aexp :: { Expr }
 aexp : aexp term                                { App $1 $2 }
@@ -110,11 +120,18 @@ type : int                                      { IntT }
      | bool                                     { BoolT }
      | type '&' type                            { And $1 $3 }
      | type '->' type                           { Arr $1 $3 }
+     | '{' recdsT '}'                           { mkRecdsT $2 }
      | '(' type ')'                             { $2 }
      | '\\\/' id '*' type '.' type %prec FORALL { tforall $2 $4 $6 }
      | '\\\/' id '.' type %prec FORALL          { tforall $2 TopT $4 }
      | top                                      { TopT }
      | id                                       { tvar $1 }
+
+recdsT :: { [(String, Type)] }
+recdsT : recdT                 { [$1] }
+      | recdT ',' recdsT       { $1 : $3 }
+
+recdT : id ':' type          { ($1, $3) }
 
 {
 

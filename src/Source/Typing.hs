@@ -138,7 +138,7 @@ infer (Acc e l) = do
     SRecT l' a ->
       if l == l'
         then return (a, e)
-        else throwStrErr $ "labels not equal" ++ l ++ " and " ++ l'
+        else throwStrErr $ "labels not equal: " ++ l ++ " and " ++ l'
     _ -> throwStrErr $ pprint e ++ " is not a record"
 
 {-
@@ -196,6 +196,8 @@ check (Lam l) (Arr a b) = do
   wf a
   e' <- extendCtx (Trm x, a) $ check e b
   return (T.Lam (bind (translate x) e'))
+
+check (Lam l) t = throwStrErr $ "lambda expects arrow type: " ++ pprint t
 
 check (FixP b) t = do
   (x, e) <- unbind b
@@ -257,14 +259,17 @@ disjoint (DForall t) (DForall t') = do
   let c' = subst y (TVar x) c
   extendCtx (Typ x, And a1 a2) $ disjoint b c'
 disjoint (DForall _) _ = return ()
+disjoint _ (DForall _) = return ()
 disjoint (SRecT l a) (SRecT l' b) =
   if l == l'
     then disjoint a b
     else return ()
 disjoint (SRecT _ _) _ = return ()
+disjoint _ (SRecT _ _) = return ()
 disjoint (Arr a1 a2) (Arr b1 b2) =
   disjoint a2 b2
 disjoint (Arr _ _) _ = return ()
+disjoint _ (Arr _ _) = return ()
 disjoint (And a1 a2) b = do
   disjoint a1 b
   disjoint a2 b
