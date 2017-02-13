@@ -18,6 +18,7 @@ import Tokens
     let      { TLet }
     in       { TIn }
     int      { TIntTy }
+    fix      { TFix }
     bool     { TBoolTy }
     boolVal  { TBool $$ }
     id       { TStr $$ }
@@ -38,6 +39,8 @@ import Tokens
     '('      { TLParen }
     ')'      { TRParen }
     '\\'     { TLam }
+    '\\\/'   { TForall }
+    '\/\\'   { TDLam }
     '&'      { TAnd }
     ',,'     { TMerge }
     '._'     { TProj }
@@ -50,14 +53,17 @@ import Tokens
     '>'      { TGt }
     '=='     { TEqu }
     '!='     { TNeq }
+    '@'      { TAt }
 
 
+%right FORALL
 %nonassoc ',,' '&'
-%right LAM LET
+%right LAM LET DLAM FIX
 %right '->'
 %nonassoc IF
 %nonassoc '==' '!='
 %nonassoc '<' '>'
+%nonassoc '@'
 %left '+' '-'
 %left '*' '/'
 %left '._'
@@ -68,39 +74,40 @@ import Tokens
 
 %%
 
-expr : '\\' id '.' expr   %prec LAM          { elam $2 $4 }
-     | expr ':' type                         { Anno $1 $3 }
-     | aexp                                  { $1 }
-     | let id '=' expr in expr  %prec LET    { Let $ ebindt ($2, $4) $6 }
-     | expr '+' expr                         { PrimOp (Arith Add) $1 $3 }
-     | expr '-' expr                         { PrimOp (Arith Sub) $1 $3 }
-     | expr '*' expr                         { PrimOp (Arith Mul) $1 $3 }
-     | expr '/' expr                         { PrimOp (Arith Div) $1 $3 }
-     | expr '==' expr                        { PrimOp (Logical Equ) $1 $3 }
-     | expr '!=' expr                        { PrimOp (Logical Neq) $1 $3 }
-     | expr '<' expr                         { PrimOp (Logical Lt) $1 $3 }
-     | expr '>' expr                         { PrimOp (Logical Gt) $1 $3 }
-     | expr ',,' expr                        { Merge $1 $3 }
-     | expr '._' intVal                      { Project $1 $3 }
-     | if expr then expr else expr  %prec IF { If $2 $4 $6 }
+expr : '\\' id '.' expr   %prec LAM           { elam $2 $4 }
+     | '\/\\' id '*' type '.' expr %prec DLAM { dlam $2 $4 $6 }
+     | fix id '.' expr    %prec FIX           { efix $2 $4 }
+     | expr ':' type                          { Anno $1 $3 }
+     | aexp                                   { $1 }
+     | expr '+' expr                          { PrimOp (Arith Add) $1 $3 }
+     | expr '-' expr                          { PrimOp (Arith Sub) $1 $3 }
+     | expr '*' expr                          { PrimOp (Arith Mul) $1 $3 }
+     | expr '/' expr                          { PrimOp (Arith Div) $1 $3 }
+     | expr '==' expr                         { PrimOp (Logical Equ) $1 $3 }
+     | expr '!=' expr                         { PrimOp (Logical Neq) $1 $3 }
+     | expr '<' expr                          { PrimOp (Logical Lt) $1 $3 }
+     | expr '>' expr                          { PrimOp (Logical Gt) $1 $3 }
+     | expr ',,' expr                         { Merge $1 $3 }
+     | expr '@' type                          { TApp $1 $3 }
+     | if expr then expr else expr  %prec IF  { If $2 $4 $6 }
 
-aexp : aexp term                      { App $1 $2 }
-     | term                           { $1 }
+aexp : aexp term                                { App $1 $2 }
+     | term                                     { $1 }
 
-term : id                             { evar $1 }
-     | intVal                         { IntV $1 }
-     | boolVal                        { BoolV $1 }
-     | top                            { Top }
-     | '(' expr ')'                   { $2 }
-     | '(' expr ',' expr ')'          { Pair $2 $4 }
+term : id                                       { evar $1 }
+     | intVal                                   { IntV $1 }
+     | boolVal                                  { BoolV $1 }
+     | top                                      { Top }
+     | '(' expr ')'                             { $2 }
 
-type : int                            { IntT }
-     | bool                           { BoolT }
-     | type '&' type                  { Inter $1 $3 }
-     | '(' type ',' type ')'          { Product $2 $4 }
-     | type '->' type                 { Arr $1 $3 }
-     | '(' type ')'                   { $2 }
-     | top                            { TopT }
+type : int                                      { IntT }
+     | bool                                     { BoolT }
+     | type '&' type                            { And $1 $3 }
+     | type '->' type                           { Arr $1 $3 }
+     | '(' type ')'                             { $2 }
+     | '\\\/' id '*' type '.' type %prec FORALL { tforall $2 $4 $6 }
+     | top                                      { TopT }
+     | id                                       { tvar $1 }
 
 {
 

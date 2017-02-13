@@ -5,6 +5,7 @@ import           Common
 import           Control.Monad
 import           Env
 import           PrettyPrint
+import           Source.Parser
 import           Source.Subtyping
 import           Source.Syntax
 import qualified Target.Syntax as T
@@ -293,25 +294,3 @@ transTyp (DForall t) = do
 transTyp (SRecT l t) = transTyp t
 transTyp TopT = return T.UnitT
 transTyp (TVar x) = return . T.TVar . translate $ x
-
-
-----------
--- Test
-----------
-
--- (/\ A. /\ (B * A). A&B -> A
-fst_ex :: Type
-fst_ex = (DForall (bind (s2n "A", embed TopT) (DForall (bind (s2n "B", embed (tvar "A")) (Arr (And (tvar "A") (tvar "B")) (tvar "A"))))))
-
--- (\fst. fst int bool (1,,true))
-test1 :: Expr
-test1 =
-  DLam
-    (bind
-       (s2n "A", embed TopT)
-       (DLam
-          (bind
-             (s2n "B", embed (tvar "A"))
-             (Anno
-                (Lam (bind (s2n "x") (evar "x")))
-                (Arr (And (tvar "A") (tvar "B")) (tvar "A"))))))

@@ -20,7 +20,7 @@ library
                        Common
                        PrettyPrint
                        -- Translation
-                       -- Source.Parser
+                       Source.Parser
                        Source.Syntax
                        Source.Subtyping
                        Source.Typing

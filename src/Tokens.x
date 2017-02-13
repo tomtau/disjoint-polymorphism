@@ -15,6 +15,7 @@ tokens :-
   "--".*                        ;
   let                           { \s -> TLet }
   in                            { \s -> TIn }
+  fix                           { \s -> TFix }
   int                           { \s -> TIntTy }
   bool                          { \s -> TBoolTy }
   true                          { \s -> TBool True }
@@ -30,6 +31,8 @@ tokens :-
   \#                            { \s -> TSharp }
   \\                            { \s -> TLam }
   \-\>                          { \s -> TArr }
+  \\\/                          { \s -> TForall }
+  \/\\                          { \s -> TDLam }
   \+                            { \s -> TAdd }
   \-                            { \s -> TSub }
   \*                            { \s -> TMul }
@@ -47,6 +50,7 @@ tokens :-
   \&                            { \s -> TAnd }
   \,\,                          { \s -> TMerge }
   \.\_                          { \s -> TProj }
+  \@                            { \s -> TAt }
   T                             { \s -> TTop }
   $alpha [$alpha $digit \_ \']* { \s -> TStr s }
 
@@ -57,6 +61,8 @@ data Token = TLet | TIn
            | TStr String
            | TEq
            | TLam
+           | TForall
+           | TDLam
            | TArr
            | TColon | TComma | TDot
            | TAdd | TSub | TMul | TDiv | TEqu | TNeq | TLt | TGt
@@ -66,6 +72,8 @@ data Token = TLet | TIn
            | TIf | TThen | TElse
            | TProj
            | TTop
+           | TAt
+           | TFix
            deriving (Eq, Show)
 
 scanTokens = alexScanTokens

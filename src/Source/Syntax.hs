@@ -78,6 +78,15 @@ ebind n = bind (s2n n)
 elam :: String -> Expr -> Expr
 elam b e = Lam (ebind b e)
 
+efix :: String -> Expr -> Expr
+efix b e = FixP (ebind b e)
+
+dlam :: String -> Type -> Expr -> Expr
+dlam s t b = DLam (bind (s2n s, embed t) b)
+
+tforall :: String -> Type -> Type -> Type
+tforall s t b = DForall (bind (s2n s, embed t) b)
+
 eapp :: Expr -> Expr -> Expr
 eapp = App
 
