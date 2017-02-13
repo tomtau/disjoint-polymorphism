@@ -28,6 +28,7 @@ data Expr = Anno Expr Type
           | BoolV Bool
           | PrimOp Operation Expr Expr
           | If Expr Expr Expr
+          | FixP (Bind TmName Expr)
           | Top
   deriving Show
 

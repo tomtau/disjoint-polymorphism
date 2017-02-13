@@ -21,6 +21,7 @@ data Expr = Var TmName
           | Unit
           | PrimOp Operation Expr Expr
           | If Expr Expr Expr
+          | FixP (Bind TmName Expr)
   deriving Show
 
 

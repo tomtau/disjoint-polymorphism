@@ -105,6 +105,10 @@ instance Pretty S.Expr where
     e' <- ppr e
     return $ e' <> dot <> text l
   ppr S.Top = return $ text "T"
+  ppr (S.FixP b) =
+    lunbind b $ \(x, e) -> do
+      e' <- ppr e
+      return $ text "fix" <+> text (show x) <+> dot <+> e'
 
 
 instance Pretty T.Type where
@@ -167,7 +171,10 @@ instance Pretty T.Expr where
     e1' <- ppr e1
     e2' <- ppr e2
     return $ text "if" <+> p' <+> text "then" <+> e1' <+> text "else" <+> e2'
-
+  ppr (T.FixP b) =
+    lunbind b $ \(x, e) -> do
+      e' <- ppr e
+      return $ text "fix" <+> text (show x) <+> dot <+> e'
 
 pprint :: (Pretty a) => a -> String
 pprint = show . runLFreshM . ppr

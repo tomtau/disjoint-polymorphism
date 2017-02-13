@@ -196,6 +196,11 @@ check (Lam l) (Arr a b) = do
   e' <- extendCtx (Trm x, a) $ check e b
   return (T.Lam (bind (translate x) e'))
 
+check (FixP b) t = do
+  (x, e) <- unbind b
+  e' <- extendCtx (Trm x, t) $ check e t
+  return (T.FixP (bind (translate x) e'))
+
 {-
 Γ ⊢ e ⇒ A ~> E
 A <: B ~> Esub
@@ -204,6 +209,7 @@ A <: B ~> Esub
 Γ ⊢ e ⇐ B ~> Esub E
 
 -}
+
 check e b = do
   (a, e) <- infer e
   c <- a <: b

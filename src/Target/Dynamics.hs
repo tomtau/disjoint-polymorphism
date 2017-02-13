@@ -10,7 +10,7 @@ import Unbound.LocallyNameless
 -- big-step evaluation
 ------------------------
 
-eval :: Expr -> FreshM Expr
+eval :: Fresh m => Expr -> m Expr
 eval (App e1 e2) = do
   Lam t <- eval e1
   (x, body) <- unbind t
@@ -42,6 +42,9 @@ eval (If c e1 e2) = do
   BoolV t <- eval c
   if t then eval e1
     else eval e2
+eval t@(FixP b) = do
+  (x, e) <- unbind b
+  eval (subst x t e)
 
 evaluate :: Expr -> Expr
 evaluate = runFreshM . eval
