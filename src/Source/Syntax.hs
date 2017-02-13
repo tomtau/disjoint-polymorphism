@@ -10,6 +10,7 @@ module Source.Syntax where
 
 import Common
 import Unbound.LocallyNameless
+import Env
 
 
 type TmName = Name Expr
@@ -92,3 +93,14 @@ eapp = App
 
 etapp :: Expr -> Type -> Expr
 etapp = TApp
+
+data TcName
+  = Trm TmName
+  | Typ TyName
+  deriving Eq
+
+instance Show TcName where
+  show (Trm x) = show x
+  show (Typ x) = show x
+
+type TMonad = TcMonad TcName Type

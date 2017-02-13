@@ -9,6 +9,8 @@ import System.Environment (getArgs)
 import Control.Monad.State.Strict
 import Data.List (isPrefixOf)
 import System.Console.Repline
+import qualified Data.Text as T
+import qualified Data.Text.IO as TI
 
 import Source.Typing (infer)
 import Target.Dynamics (evaluate)
@@ -19,9 +21,9 @@ import PrettyPrint (pprint)
 
 type Repl a = HaskelineT IO a
 
-hoistErr :: Show e => Either e a -> Repl a
+hoistErr :: Either T.Text a -> Repl a
 hoistErr (Left str) = do
-  liftIO $ putStrLn (show str)
+  liftIO $ TI.putStrLn str
   abort
 hoistErr (Right val) = return val
 

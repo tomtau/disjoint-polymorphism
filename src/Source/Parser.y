@@ -6,6 +6,8 @@ import Data.List (stripPrefix)
 import Source.Syntax
 import Common
 import Tokens
+import PrettyPrint
+import qualified Data.Text as T
 }
 
 
@@ -69,10 +71,11 @@ import Tokens
 %nonassoc ':'
 
 
-%monad { Either String }
+%monad { Either T.Text }
 
 %%
 
+expr :: { Expr }
 expr : '\\' id '.' expr   %prec LAM           { elam $2 $4 }
      | '\/\\' id '*' type '.' expr %prec DLAM { dlam $2 $4 $6 }
      | '\/\\' id '.' expr %prec DLAM          { dlam $2 TopT $4 }
@@ -90,16 +93,19 @@ expr : '\\' id '.' expr   %prec LAM           { elam $2 $4 }
      | expr ',,' expr                         { Merge $1 $3 }
      | if expr then expr else expr  %prec IF  { If $2 $4 $6 }
 
+aexp :: { Expr }
 aexp : aexp term                                { App $1 $2 }
      | aexp '@' type                            { TApp $1 $3 }
      | term                                     { $1 }
 
+term :: { Expr }
 term : id                                       { evar $1 }
      | intVal                                   { IntV $1 }
      | boolVal                                  { BoolV $1 }
      | top                                      { Top }
      | '(' expr ')'                             { $2 }
 
+type :: { Type }
 type : int                                      { IntT }
      | bool                                     { BoolT }
      | type '&' type                            { And $1 $3 }
@@ -112,7 +118,7 @@ type : int                                      { IntT }
 
 {
 
-parseError _ = Left "Parse error!"
+parseError t = Left . T.pack $ "Cannot parse: " ++ show t
 
 parseExpr = parser . scanTokens
 

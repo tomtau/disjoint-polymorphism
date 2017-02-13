@@ -10,13 +10,6 @@ import           Source.Syntax
 import qualified Target.Syntax as T
 import           Unbound.LocallyNameless
 
-data TcName
-  = Trm TmName
-  | Typ TyName
-  deriving (Show, Eq)
-
-type TMonad = TcMonad TcName Type
-
 ----------------
 -- A <: B ~> E
 ----------------
