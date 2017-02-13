@@ -1,4 +1,6 @@
-# Disjoint Intersection Types
+# Disjoint Polymorphism
+
+Implementation of [Disjoint Polymorphism](http://i.cs.hku.hk/~bruno/papers/ESOP2017.pdf).
 
 ## Build and Run
 
@@ -23,24 +25,14 @@ stack exec disjoint-intersection-exe
 The REPL prompt is `>`, type `:q` to quit or input any expression in the source language to check its result.
 
 ```
-> 2 : int
-
-Abstract syntax
-Anno (IntV 2) IntT
-
-Pretty printing
-2 : int
-
+> 2
 Source typing result
 int
 
-Target expression after translation
+Target expression
 2
 
-Target typing result
-int
-
-Target evaluation result
+Evaluation result
 2
 ```
 
@@ -50,48 +42,23 @@ Target evaluation result
 * Top type/value: `T : T`
 * Type annotation: `2 : int`
 * Lambda: `(\x . x+1) : int->int`
-* Pair: `(1, true)`
-* Projection: `(1, true)._1`, `(1, true)._2`
 * Merge: `true ,, (\x.x) : int->int`
 * Intersection type: `bool & (int->int)`
-* Let: `let x = 3 in (x, x + 1)`
 * If: `if x == 0 then true else false`
+* Disjoint (universal) quantification: `\/A*int. A -> A`
+* Type-level lambda: `/\A * int . (\x . x) : A -> A`
 
 ## Examples
 
 ```
-let x = (3,,true) in let succ = (\x.x+1):int->int in let not = (\x.if x then false else true):bool->bool in (succ x, not x)
-
-Target typing result
-(int, bool)
-
-Target evaluation result
-(4, False)
-```
-
-```
-let succ = (\x.x+1):int->int in ((1,,true) ,, (2,,false))
+> (/\A . /\B * A . (\ x . x) : A & B -> B) @ int @ bool (1,,true)
 
 Source typing result
-(int & bool) and (int & bool) are not disjoint
-```
+bool
 
-```
-let succ = (\x.x+1):int->int in let not = (\x.if x then false else true):bool->bool in ((succ,,not):int->int) (3,,true)
+Target expression
+((((ΛA . (ΛB . (λx . ((λx1 . ((λx2 . x2) x1.2)) x))))@int)@bool) ((λx . (((λx1 . ((λx2 . x2) x1.1)) x),  ((λx1 . ((λx2 . x2) x1.2)) x))) (1,  True)))
 
-Target typing result
-int
-
-Target evaluation result
-4
-```
-
-```
-((\f . f (3,,true)) : ((int & bool) -> T) -> T) ((\x.x) : int->int ,, (\x.x) : bool -> bool)
-
-Target typing result
-()
-
-Target evaluation result
-()
+Evaluation result
+True
 ```
