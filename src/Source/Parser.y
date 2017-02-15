@@ -4,65 +4,62 @@ module Source.Parser (parseExpr) where
 import Data.Char (isDigit, isSpace, isAlpha)
 import Data.List (stripPrefix)
 import Source.Syntax
-import           Unbound.LocallyNameless
+import Unbound.LocallyNameless
 import Common
-import Tokens
+import Lexer
 import PrettyPrint
-import qualified Data.Text as T
 }
 
 
 %name parser
 %tokentype { Token }
+%monad { Alex } { (>>=) } { return }
+%lexer { lexer } { T _ TEOF "" }
 %error { parseError }
 
 
 %token
-    'let'      { TLet }
-    'in'       { TIn }
-    'int'      { TIntTy }
-    'fix'      { TFix }
-    'bool'     { TBoolTy }
-    boolVal  { TBool $$ }
-    id       { TStr $$ }
-    intVal   { TInt $$ }
-    'if'       { TIf }
-    'then'     { TThen }
-    'else'     { TElse }
-    ':'      { TColon }
-    '='      { TEq }
-    '#'      { TSharp }
-    '.'      { TDot }
-    ','      { TComma }
-    '['      { TLSquare }
-    ']'      { TRSquare }
-    '{'      { TLCurly }
-    '}'      { TRCurly }
-    '->'     { TArr }
-    '('      { TLParen }
-    ')'      { TRParen }
-    '\\'     { TLam }
-    '\\\/'   { TForall }
-    '\/\\'   { TDLam }
-    '&'      { TAnd }
-    ',,'     { TMerge }
-    'top'      { TTop }
-    '+'      { TAdd }
-    '-'      { TSub }
-    '*'      { TMul }
-    '/'      { TDiv }
-    '<'      { TLt }
-    '>'      { TGt }
-    '=='     { TEqu }
-    '!='     { TNeq }
-    '@'      { TAt }
+    let      { T _ TKey "let" }
+    in       { T _ TKey "in" }
+    int      { T _ TKey "int" }
+    bool     { T _ TKey "bool" }
+    boolV     { T _ (TBool $$) _ }
+    id       { T _ (TId $$) _ }
+    num      { T _ (TInt $$) _ }
+    if       { T _ TKey "if" }
+    then     { T _ TKey "then" }
+    else     { T _ TKey "else" }
+    ':'      { T _ TSym ":" }
+    '='      { T _ TSym "=" }
+    '.'      { T _ TSym "." }
+    ','      { T _ TSym "," }
+    '{'      { T _ TSym "{" }
+    '}'      { T _ TSym "}" }
+    '->'     { T _ TSym "->" }
+    '('      { T _ TSym "(" }
+    ')'      { T _ TSym ")" }
+    lam      { T _ TSym "\\" }
+    forall   { T _ TSym "\\/" }
+    blam     { T _ TSym "/\\" }
+    '&'      { T _ TSym "&" }
+    ',,'     { T _ TSym ",," }
+    top      { T _ TSym "T" }
+    '+'      { T _ TSym "+" }
+    '-'      { T _ TSym "-" }
+    '*'      { T _ TSym "*" }
+    '/'      { T _ TSym "/" }
+    '<'      { T _ TSym "<" }
+    '>'      { T _ TSym ">" }
+    '=='     { T _ TSym "==" }
+    '/='     { T _ TSym "/=" }
+    '@'      { T _ TSym "@" }
 
 
 %right LAM LET DLAM FIX FORALL
 %right '->'
-%nonassoc ',,' '&'
+%left ',,' '&'
 %nonassoc IF
-%nonassoc '==' '!='
+%nonassoc '==' '/='
 %nonassoc '<' '>'
 %left '@'
 %left '+' '-'
@@ -72,30 +69,28 @@ import qualified Data.Text as T
 
 
 
-%monad { Either T.Text }
-
 %%
 
 expr :: { Expr }
-expr : '\\' id '.' expr   %prec LAM           { elam $2 $4 }
-     | '\/\\' id '*' type '.' expr %prec DLAM { dlam $2 $4 $6 }
-     | '\/\\' id '.' expr %prec DLAM          { dlam $2 TopT $4 }
-     -- | 'fix' id '.' expr    %prec FIX           { efix $2 $4 }
-     | expr ':' type                          { Anno $1 $3 }
-     | '{' recds '}'                          { mkRecds $2 }
-     | 'let' id ':' type '=' expr 'in' expr %prec LET       { elet $2 $4 $6 $8 }
-     | expr '+' expr                          { PrimOp (Arith Add) $1 $3 }
-     | expr '-' expr                          { PrimOp (Arith Sub) $1 $3 }
-     | expr '*' expr                          { PrimOp (Arith Mul) $1 $3 }
-     | expr '/' expr                          { PrimOp (Arith Div) $1 $3 }
-     | expr '==' expr                         { PrimOp (Logical Equ) $1 $3 }
-     | expr '!=' expr                         { PrimOp (Logical Neq) $1 $3 }
-     | expr '<' expr                          { PrimOp (Logical Lt) $1 $3 }
-     | expr '>' expr                          { PrimOp (Logical Gt) $1 $3 }
-     | expr ',,' expr                         { Merge $1 $3 }
-     | expr '.' id                            { Acc $1 $3 }
-     | 'if' expr 'then' expr 'else' expr  %prec IF  { If $2 $4 $6 }
-     | aexp                                   { $1 }
+expr : lam id '.' expr   %prec LAM                { elam $2 $4 }
+     | blam id '*' type '.' expr %prec DLAM       { dlam $2 $4 $6 }
+     | blam id '.' expr %prec DLAM                { dlam $2 TopT $4 }
+     -- | 'fix' id '.' expr    %prec FIX          { efix $2 $4 }
+     | expr ':' type                              { Anno $1 $3 }
+     | '{' recds '}'                              { mkRecds $2 }
+     | let id ':' type '=' expr in expr %prec LET { elet $2 $4 $6 $8 }
+     | expr '+' expr                              { PrimOp (Arith Add) $1 $3 }
+     | expr '-' expr                              { PrimOp (Arith Sub) $1 $3 }
+     | expr '*' expr                              { PrimOp (Arith Mul) $1 $3 }
+     | expr '/' expr                              { PrimOp (Arith Div) $1 $3 }
+     | expr '==' expr                             { PrimOp (Logical Equ) $1 $3 }
+     | expr '/=' expr                             { PrimOp (Logical Neq) $1 $3 }
+     | expr '<' expr                              { PrimOp (Logical Lt) $1 $3 }
+     | expr '>' expr                              { PrimOp (Logical Gt) $1 $3 }
+     | expr ',,' expr                             { Merge $1 $3 }
+     | expr '.' id                                { Acc $1 $3 }
+     | if expr then expr else expr  %prec IF      { If $2 $4 $6 }
+     | aexp                                       { $1 }
 
 recds :: { [(String, Expr)] }
 recds : recd                 { [$1] }
@@ -110,21 +105,21 @@ aexp : aexp term                                { App $1 $2 }
 
 term :: { Expr }
 term : id                                       { evar $1 }
-     | intVal                                   { IntV $1 }
-     | boolVal                                  { BoolV $1 }
-     | 'top'                                      { Top }
+     | num                                   { IntV $1 }
+     | boolV                                  { BoolV $1 }
+     | top                                      { Top }
      | '(' expr ')'                             { $2 }
 
 type :: { Type }
-type : 'int'                                      { IntT }
-     | 'bool'                                     { BoolT }
+type : int                                      { IntT }
+     | bool                                     { BoolT }
      | type '&' type                            { And $1 $3 }
      | type '->' type                           { Arr $1 $3 }
      | '{' recdsT '}'                           { mkRecdsT $2 }
      | '(' type ')'                             { $2 }
-     | '\\\/' id '*' type '.' type %prec FORALL { tforall $2 $4 $6 }
-     | '\\\/' id '.' type %prec FORALL          { tforall $2 TopT $4 }
-     | 'top'                                      { TopT }
+     | forall id '*' type '.' type %prec FORALL { tforall $2 $4 $6 }
+     | forall id '.' type %prec FORALL          { tforall $2 TopT $4 }
+     | top                                      { TopT }
      | id                                       { tvar $1 }
 
 recdsT :: { [(String, Type)] }
@@ -146,9 +141,6 @@ ebind n = bind (s2n n)
 
 elam :: String -> Expr -> Expr
 elam b e = Lam (ebind b e)
-
--- efix :: String -> Expr -> Expr
--- efix b e = FixP (ebind b e)
 
 dlam :: String -> Type -> Expr -> Expr
 dlam s t b = DLam (bind (s2n s, embed t) b)
@@ -173,8 +165,11 @@ mkRecdsT ((l, e) : r) = And (SRecT l e) (mkRecdsT r)
 elet :: String -> Type -> Expr -> Expr -> Expr
 elet s t e b = Let (bind (s2n s, embed t) (e, b))
 
-parseError t = Left . T.pack $ "Cannot parse: " ++ show t
+parseError :: Token -> Alex a
+parseError (T p _ s) =
+  alexError (showPosn p ++ ": parse error at token '" ++ s ++ "'")
 
-parseExpr = parser . scanTokens
+parseExpr :: String -> Either String Expr
+parseExpr inp = runAlex inp parser
 
 }

@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Tokens
+  exposed-modules:     Lexer
                        Env
                        Common
                        PrettyPrint
@@ -34,7 +34,7 @@ library
                      , transformers
                      , mtl
   default-language:    Haskell2010
-  ghc-options:         -W
+  ghc-options:         -fwarn-incomplete-patterns
   build-tools:         alex
                      , happy
 

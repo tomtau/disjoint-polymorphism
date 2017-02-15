@@ -12,7 +12,6 @@ module Env
 
 import           Control.Monad.Except
 import           Control.Monad.Reader
-import qualified Data.Text as T
 import           Unbound.LocallyNameless
 
 
@@ -23,32 +22,42 @@ emptyCtx :: (Eq i, Show i) => Context i t
 emptyCtx = Ctx []
 
 
-type TcMonad i t = FreshMT (ReaderT (Context i t) (Except T.Text))
+type TcMonad i t = FreshMT (ReaderT (Context i t) (Except String))
 
 
-runTcMonad :: (Eq i, Show i) => TcMonad i t a -> Either T.Text a
+runTcMonad
+  :: (Eq i, Show i)
+  => TcMonad i t a -> Either String a
 runTcMonad m = runExcept $ runReaderT (runFreshMT m) emptyCtx
 
 
-lookupTy :: (Eq i, Show i, MonadReader (Context i t) m, MonadError T.Text m) => i -> m t
+lookupTy
+  :: (Eq i, Show i, MonadReader (Context i t) m, MonadError String m)
+  => i -> m t
 lookupTy v = do
   x <- lookupTyMaybe v
   case x of
-    Nothing  -> throwError $ T.concat ["Not in scope: ", T.pack . show $ v]
+    Nothing  -> throwError $ concat ["Not in scope: ", show $ v]
     Just res -> return res
 
 
-lookupTyMaybe :: (Eq i, Show i, MonadReader (Context i t) m, MonadError T.Text m) => i -> m (Maybe t)
+lookupTyMaybe
+  :: (Eq i, Show i, MonadReader (Context i t) m, MonadError String m)
+  => i -> m (Maybe t)
 lookupTyMaybe v = do
   ctx <- asks env
   return (lookup v ctx)
 
 
-extendCtx :: (Eq i, Show i, MonadReader (Context i t) m) => (i, t) -> m a -> m a
+extendCtx
+  :: (Eq i, Show i, MonadReader (Context i t) m)
+  => (i, t) -> m a -> m a
 extendCtx d = local (\ctx -> ctx { env = d : env ctx })
 
 addToCtx :: (i, t) -> Context i t -> Context i t
 addToCtx d ctx = ctx {env = d : env ctx}
 
-throwStrErr :: MonadError T.Text m => String -> m a
-throwStrErr s = throwError $ (T.append (T.pack s) "\n")
+throwStrErr
+  :: MonadError String m
+  => String -> m a
+throwStrErr s = throwError $ s ++ "\n"

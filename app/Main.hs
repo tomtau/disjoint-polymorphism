@@ -20,9 +20,9 @@ import Env (runTcMonad)
 
 type Repl a = HaskelineT IO a
 
-hoistErr :: Either T.Text a -> Repl a
+hoistErr :: Either String a -> Repl a
 hoistErr (Left str) = do
-  liftIO $ TI.putStrLn str
+  liftIO $ putStrLn str
   abort
 hoistErr (Right val) = return val
 
