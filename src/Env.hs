@@ -48,4 +48,4 @@ extendCtx d = local (\ctx -> ctx { env = d : env ctx })
 
 
 throwStrErr :: MonadError T.Text m => String -> m a
-throwStrErr = throwError . T.pack
+throwStrErr s = throwError $ (T.append (T.pack s) "\n")

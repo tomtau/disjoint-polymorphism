@@ -83,7 +83,7 @@ expr : '\\' id '.' expr   %prec LAM           { elam $2 $4 }
      -- | 'fix' id '.' expr    %prec FIX           { efix $2 $4 }
      | expr ':' type                          { Anno $1 $3 }
      | '{' recds '}'                          { mkRecds $2 }
-     -- | 'let' id ':' type '=' expr 'in' expr %prec LET       { }
+     | 'let' id ':' type '=' expr 'in' expr %prec LET       { elet $2 $4 $6 $8 }
      | expr '+' expr                          { PrimOp (Arith Add) $1 $3 }
      | expr '-' expr                          { PrimOp (Arith Sub) $1 $3 }
      | expr '*' expr                          { PrimOp (Arith Mul) $1 $3 }
@@ -170,6 +170,8 @@ mkRecdsT :: [(Label, Type)] -> Type
 mkRecdsT [(l, e)] = SRecT l e
 mkRecdsT ((l, e) : r) = And (SRecT l e) (mkRecdsT r)
 
+elet :: String -> Type -> Expr -> Expr -> Expr
+elet s t e b = Let (bind (s2n s, embed t) (e, b))
 
 parseError t = Left . T.pack $ "Cannot parse: " ++ show t
 

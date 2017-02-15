@@ -20,7 +20,7 @@ data Expr = Anno Expr Type
           | Var TmName
           | App Expr Expr
           | Lam (Bind TmName Expr)
-          | Let (Bind (TmName, Embed Type, Embed Expr) Expr) -- recursive let
+          | Let (Bind (TmName, Embed Type) (Expr, Expr)) -- recursive let
           | DLam (Bind (TyName, Embed Type) Expr)
           | TApp Expr Type
           | DRec Label Expr

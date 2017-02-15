@@ -12,7 +12,7 @@ data Expr = Var TmName
           | App Expr Expr
           | Lam (Bind TmName Expr)
           | BLam (Bind TyName Expr)
-          | Let (Bind (TmName, Embed Expr) Expr) -- recursive let
+          | Let (Bind TmName (Expr, Expr)) -- recursive let
           | TApp Expr Type
           | Pair Expr Expr
           | Proj1 Expr
@@ -90,7 +90,7 @@ type UName = Name UExpr
 data UExpr = UVar UName
            | UApp UExpr UExpr
            | ULam (Bind UName UExpr)
-           | ULet (Bind (UName, Embed UExpr) UExpr)
+           | ULet (Bind UName (UExpr, UExpr))
            | UPair UExpr UExpr
            | UP1 UExpr
            | UP2 UExpr

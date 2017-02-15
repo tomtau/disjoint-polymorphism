@@ -176,10 +176,10 @@ infer (If e1 e2 e3) = do
 
 -- Recursive let binding
 infer (Let b) = do
-  ((x, Embed t, Embed e), body) <- unbind b
+  ((x, Embed t), (e, body)) <- unbind b
   e' <- extendCtx (Trm x, t) $ check e t
   (tbody, b') <- extendCtx (Trm x, t) $ infer body
-  return (tbody, T.Let (bind (translate x, embed e') b'))
+  return (tbody, T.Let (bind (translate x) (e', b')))
 
 infer a = throwStrErr $ "Infer not implemented: " ++ pprint a
 

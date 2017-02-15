@@ -52,10 +52,10 @@ unType (If e1 e2 e3) = do
   e3' <- unType e3
   return $ UIf e1' e2' e3'
 unType (Let t) = do
-  ((x, Embed e), body) <- unbind t
+  (x, (e, body)) <- unbind t
   e' <- unType e
   b' <- unType body
-  return $ ULet (bind ((translate x), embed e') b')
+  return $ ULet (bind (translate x) (e', b'))
 
 ------------------------
 -- big-step evaluation
@@ -93,7 +93,7 @@ eval (ULam b) = do
   return $ VClosure b ctx
 -- Recursive let binding
 eval (ULet b) = mdo
-  ((x, Embed e), body) <- unbind b
+  (x, (e, body)) <- unbind b
   v <- extendCtx (x, v) $ eval e
   extendCtx (x, v) $ eval body
 eval (UPair e1 e2) = do
