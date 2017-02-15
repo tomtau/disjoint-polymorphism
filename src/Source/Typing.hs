@@ -205,10 +205,15 @@ check (Lam l) (Arr a b) = do
 
 check (Lam _) t = throwStrErr $ "lambda expects arrow type: " ++ pprint t
 
--- check (FixP b) t = do
---   (x, e) <- unbind b
---   e' <- extendCtx (Trm x, t) $ check e t
---   return (T.FixP (bind (translate x) e'))
+check (DLam l) (DForall b) = do
+  t <- unbind2 l b
+  case t of
+    Just ((x, Embed t1), eb, _, t2) -> do
+      l' <- extendCtx (Typ x, t1) $ check eb t2
+      return $ (T.BLam (bind (translate x) l'))
+    Nothing -> throwStrErr $ "Patterns have different binding variables"
+
+check (DLam _) t = throwStrErr $ "type-level lambda expects forall type: " ++ pprint t
 
 {-
 Γ ⊢ e ⇒ A ~> E
