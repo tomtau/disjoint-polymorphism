@@ -19,14 +19,12 @@ library
                        Env
                        Common
                        PrettyPrint
-                       -- Translation
                        Source.Parser
                        Source.Syntax
                        Source.Subtyping
                        Source.Typing
                        Target.Syntax
                        Target.Dynamics
-                       -- Target.TypeCheck
   build-depends:       base >= 4.7 && < 5
                      , unbound
                      , array
@@ -35,6 +33,7 @@ library
                      , transformers
                      , mtl
   default-language:    Haskell2010
+  ghc-options:         -W
   build-tools:         alex
                      , happy
 

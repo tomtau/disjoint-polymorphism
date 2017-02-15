@@ -67,40 +67,6 @@ instance Subst Type Type where
   isvar (TVar v) = Just (SubstName v)
   isvar _ = Nothing
 
-evar :: String -> Expr
-evar = Var . s2n
-
-tvar :: String -> Type
-tvar = TVar . s2n
-
-ebind :: String -> Expr -> Bind TmName Expr
-ebind n = bind (s2n n)
-
-elam :: String -> Expr -> Expr
-elam b e = Lam (ebind b e)
-
-efix :: String -> Expr -> Expr
-efix b e = FixP (ebind b e)
-
-dlam :: String -> Type -> Expr -> Expr
-dlam s t b = DLam (bind (s2n s, embed t) b)
-
-tforall :: String -> Type -> Type -> Type
-tforall s t b = DForall (bind (s2n s, embed t) b)
-
-eapp :: Expr -> Expr -> Expr
-eapp = App
-
-etapp :: Expr -> Type -> Expr
-etapp = TApp
-
-mkRecds :: [(Label, Expr)] -> Expr
-mkRecds [(l, e)] = DRec l e
-mkRecds ((l, e) : r) = Merge (DRec l e) (mkRecds r)
-
-mkRecdsT :: [(Label, Type)] -> Type
-mkRecdsT [(l, e)] = SRecT l e
-mkRecdsT ((l, e) : r) = And (SRecT l e) (mkRecdsT r)
 
 data TcName
   = Trm TmName

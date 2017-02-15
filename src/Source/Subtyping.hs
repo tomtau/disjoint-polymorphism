@@ -1,14 +1,13 @@
+{-# LANGUAGE FlexibleContexts #-}
 
 module Source.Subtyping where
 
-import           Common
-import           Control.Monad.Except
-import           Data.Text
 import           Env
 import           PrettyPrint
 import           Source.Syntax
 import qualified Target.Syntax as T
 import           Unbound.LocallyNameless
+import Control.Monad.Except
 
 ----------------
 -- A <: B ~> E
@@ -122,7 +121,7 @@ B1 <: B2 ~> E1    A2 <: A1 ~> E2
   ((a', Embed a2) , b2) <- unbind t2
   let b2' = subst a' (TVar a) b2 -- FIXME: Overkill?
   e1 <- b1 <: b2'
-  e2 <- a2 <: a1
+  a2 <: a1
   return $ T.elam "f" (T.blam "a" (T.App e1 (T.TApp (T.evar "f") (T.tvar "a"))))
 
 (<:) a b = throwStrErr $ "Invalid subtyping: " ++ pprint a ++ " and " ++ pprint b
@@ -146,16 +145,16 @@ ordinary _ = False
 -- [[A]]C = T
 ---------------
 
-coerce :: Fresh m => Type -> T.Expr -> m T.Expr
+coerce :: Type -> T.Expr -> TMonad T.Expr
 coerce a c = do
   isTopLike <- topLike a
   if isTopLike
     then coerce' a
     else return c
   where
-    coerce' :: Fresh m => Type -> m T.Expr
+    coerce' :: Type -> TMonad T.Expr
     coerce' TopT = return T.Unit
-    coerce' (Arr a1 a2) = do
+    coerce' (Arr _ a2) = do
       a2' <- coerce' a2
       return (T.elam "x" a2')
     coerce' (And a1 a2) = do
@@ -167,6 +166,7 @@ coerce a c = do
       ((_, _) , a) <- unbind t
       a' <- coerce' a
       return $ T.blam "b" a'
+    coerce' t = throwStrErr $ "Cannot coerce " ++ pprint t
 
 ------------
 -- ⌉A⌈
@@ -178,7 +178,7 @@ topLike (And a b) = do
   a' <- topLike a
   b' <- topLike b
   return (a' && b')
-topLike (Arr a b) = topLike b
+topLike (Arr _ b) = topLike b
 topLike (SRecT _ a) = topLike a
 topLike (DForall t) = do
   ((_, _), a) <- unbind t

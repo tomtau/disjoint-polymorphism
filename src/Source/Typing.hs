@@ -5,7 +5,6 @@ import           Common
 import           Control.Monad
 import           Env
 import           PrettyPrint
-import           Source.Parser
 import           Source.Subtyping
 import           Source.Syntax
 import qualified Target.Syntax as T
@@ -197,7 +196,7 @@ check (Lam l) (Arr a b) = do
   e' <- extendCtx (Trm x, a) $ check e b
   return (T.Lam (bind (translate x) e'))
 
-check (Lam l) t = throwStrErr $ "lambda expects arrow type: " ++ pprint t
+check (Lam _) t = throwStrErr $ "lambda expects arrow type: " ++ pprint t
 
 check (FixP b) t = do
   (x, e) <- unbind b
@@ -231,7 +230,7 @@ wf (DForall t) = do
   ((x, Embed a),b) <- unbind t
   wf a
   extendCtx (Typ x, a) $ wf b
-wf (SRecT l t) = wf t
+wf (SRecT _ t) = wf t
 wf TopT = return ()
 
 disjoint :: Type -> Type -> TMonad ()
@@ -266,7 +265,7 @@ disjoint (SRecT l a) (SRecT l' b) =
     else return ()
 disjoint (SRecT _ _) _ = return ()
 disjoint _ (SRecT _ _) = return ()
-disjoint (Arr a1 a2) (Arr b1 b2) =
+disjoint (Arr _ a2) (Arr _ b2) =
   disjoint a2 b2
 disjoint (Arr _ _) _ = return ()
 disjoint _ (Arr _ _) = return ()
@@ -293,9 +292,9 @@ transTyp (And t1 t2) = do
   t2' <- transTyp t2
   return (T.Prod t1' t2')
 transTyp (DForall t) = do
-  ((x, p), body) <- unbind t
+  ((x, _), body) <- unbind t
   b <- transTyp body
   return (T.Forall (bind (translate x) b))
-transTyp (SRecT l t) = transTyp t
+transTyp (SRecT _ t) = transTyp t
 transTyp TopT = return T.UnitT
 transTyp (TVar x) = return . T.TVar . translate $ x
