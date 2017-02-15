@@ -61,11 +61,13 @@ unType (Let t) = do
 -- big-step evaluation
 ------------------------
 
+type Env = Context UName Value
+
 data Value = VInt Int
            | VBool Bool
            | VPair Value Value
            | VUnit
-           | VClosure (Bind UName UExpr) (Context UName Value)
+           | VClosure (Bind UName UExpr) Env
 
 instance Show Value where
   show (VInt n) = show n

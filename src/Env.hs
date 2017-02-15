@@ -5,6 +5,7 @@ module Env
   , runTcMonad
   , TcMonad
   , extendCtx
+  , addToCtx
   , throwStrErr
   , Context
   ) where
@@ -46,6 +47,8 @@ lookupTyMaybe v = do
 extendCtx :: (Eq i, Show i, MonadReader (Context i t) m) => (i, t) -> m a -> m a
 extendCtx d = local (\ctx -> ctx { env = d : env ctx })
 
+addToCtx :: (i, t) -> Context i t -> Context i t
+addToCtx d ctx = ctx {env = d : env ctx}
 
 throwStrErr :: MonadError T.Text m => String -> m a
 throwStrErr s = throwError $ (T.append (T.pack s) "\n")

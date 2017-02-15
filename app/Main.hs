@@ -1,6 +1,5 @@
 module Main where
 
-import qualified Data.Text
 import           PrettyPrint              (pprint)
 import           Source.Parser            (parseExpr)
 
@@ -14,8 +13,8 @@ import qualified Data.Text.IO as TI
 
 import Source.Typing (infer)
 import Target.Dynamics (evaluate)
+import qualified Target.CBN as CBN
 import Env (runTcMonad)
-import PrettyPrint (pprint)
 
 -- Types
 
@@ -47,7 +46,7 @@ exec source = do
 
   liftIO . putStrLn $ ""
 
-  res <- hoistErr . runTcMonad $ evaluate tar
+  res <- hoistErr . runTcMonad $ CBN.evaluate tar
 
   liftIO . putStrLn $ "Evaluation result"
   liftIO . print $ res

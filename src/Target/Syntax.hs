@@ -99,6 +99,7 @@ data UExpr = UVar UName
            | UUinit
            | UPrimOp Operation UExpr UExpr
            | UIf UExpr UExpr UExpr
+           deriving Show
 
 instance Alpha UExpr
 

@@ -25,6 +25,7 @@ library
                        Source.Typing
                        Target.Syntax
                        Target.Dynamics
+                       Target.CBN
   build-depends:       base >= 4.7 && < 5
                      , unbound
                      , array
