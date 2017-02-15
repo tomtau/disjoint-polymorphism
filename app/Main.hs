@@ -47,10 +47,10 @@ exec source = do
 
   liftIO . putStrLn $ ""
 
-  let res = evaluate tar
+  res <- hoistErr . runTcMonad $ evaluate tar
 
   liftIO . putStrLn $ "Evaluation result"
-  liftIO . putStrLn . pprint $ res
+  liftIO . print $ res
 
 
 -- :load command

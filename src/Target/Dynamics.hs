@@ -1,64 +1,131 @@
+{-# LANGUAGE RecursiveDo #-}
+
 
 module Target.Dynamics where
 
 
 import Common
+import Control.Monad.Reader
+import Env
 import Target.Syntax
 import Unbound.LocallyNameless
+
+------------------
+-- Type removal
+------------------
+
+unType :: Fresh m => Expr -> m UExpr
+unType (Var x) = return $ UVar (translate x)
+unType (App e1 e2) = do
+  e1' <- unType e1
+  e2' <- unType e2
+  return $ UApp e1' e2'
+unType (Lam b) = do
+  (x, body) <- unbind b
+  b' <- unType body
+  return $ ULam (bind (translate x) b')
+unType (BLam b) = do
+  (_, body) <- unbind b
+  b' <- unType body
+  return b'
+unType (TApp e _) = unType e
+unType (Pair e1 e2) = do
+  e1' <- unType e1
+  e2' <- unType e2
+  return (UPair e1' e2')
+unType (Proj1 e) = do
+  e' <- unType e
+  return $ UP1 e'
+unType (Proj2 e) = do
+  e' <- unType e
+  return $ UP2 e'
+unType (IntV n) = return $ UIntV n
+unType (BoolV n) = return $ UBoolV n
+unType Unit = return UUinit
+unType (PrimOp op e1 e2) = do
+  e1' <- unType e1
+  e2' <- unType e2
+  return $ UPrimOp op e1' e2'
+unType (If e1 e2 e3) = do
+  e1' <- unType e1
+  e2' <- unType e2
+  e3' <- unType e3
+  return $ UIf e1' e2' e3'
+unType (Let t) = do
+  ((x, Embed e), body) <- unbind t
+  e' <- unType e
+  b' <- unType body
+  return $ ULet (bind ((translate x), embed e') b')
 
 ------------------------
 -- big-step evaluation
 ------------------------
 
-eval :: Fresh m => Expr -> m Expr
-eval (App e1 e2) = do
-  Lam t <- eval e1
-  (x, body) <- unbind t
-  eval (subst x e2 body)
-eval (Lam t) = return (Lam t)
-eval (BLam t) = return (BLam t)
-eval (TApp e t) = do
-  BLam b <- eval e
+data Value = VInt Int
+           | VBool Bool
+           | VPair Value Value
+           | VUnit
+           | VClosure (Bind UName UExpr) (Context UName Value)
+
+instance Show Value where
+  show (VInt n) = show n
+  show (VBool n) = show n
+  show (VPair v1 v2) = "(" ++ show v1 ++ ", " ++ show v2 ++ ")"
+  show VUnit = "()"
+  show _ = "Cannot show functions"
+
+
+type EvalMonad = TcMonad UName Value
+
+
+evaluate :: Expr -> EvalMonad Value
+evaluate e = unType e >>= eval
+
+eval :: UExpr -> EvalMonad Value
+eval (UVar x) = lookupTy x
+eval (UApp e1 e2) = do
+  VClosure b env' <- eval e1
   (x, body) <- unbind b
-  eval (subst x t body)
-eval (Pair e1 e2) = do
+  v2 <- eval e2
+  local (const env') $ extendCtx (x, v2) (eval body)
+eval (ULam b) = do
+  ctx <- ask
+  return $ VClosure b ctx
+-- Recursive let binding
+eval (ULet b) = mdo
+  ((x, Embed e), body) <- unbind b
+  v <- extendCtx (x, v) $ eval e
+  extendCtx (x, v) $ eval body
+eval (UPair e1 e2) = do
   v1 <- eval e1
   v2 <- eval e2
-  return (Pair v1 v2)
-eval (Proj1 e) = do
-  (Pair v1 v2) <- eval e
+  return $ VPair v1 v2
+eval (UP1 e) = do
+  VPair v1 _ <- eval e
   return v1
-eval (Proj2 e) = do
-  (Pair v1 v2) <- eval e
+eval (UP2 e) = do
+  VPair _ v2 <- eval e
   return v2
-eval (IntV n) = return (IntV n)
-eval (BoolV b) = return (BoolV b)
-eval Unit = return Unit
-eval (PrimOp op e1 e2) = do
-  IntV v1 <- eval e1
-  IntV v2 <- eval e2
-  return (evalOp op v1 v2)
-eval (If c e1 e2) = do
-  BoolV t <- eval c
-  if t then eval e1
-    else eval e2
-eval t@(FixP b) = do
-  (x, e) <- unbind b
-  eval (subst x t e)
-
-evaluate :: Expr -> Expr
-evaluate = runFreshM . eval
+eval (UIntV n) = return $ VInt n
+eval (UBoolV n) = return $ VBool n
+eval UUinit = return VUnit
+eval (UPrimOp op e1 e2) = do
+  (VInt v1) <- eval e1
+  (VInt v2) <- eval e2
+  return $ evalOp op v1 v2
+eval (UIf e1 e2 e3) = do
+  (VBool v) <- eval e1
+  if v then eval e2 else eval e3
 
 
-
-evalOp :: Operation -> Int -> Int -> Expr
+evalOp :: Operation -> Int -> Int -> Value
 evalOp op x y =
   case op of
-    (Arith Add) -> IntV $ x + y
-    (Arith Sub) -> IntV $ x - y
-    (Arith Mul) -> IntV $ x * y
-    (Arith Div) -> IntV $ x `div` y
-    (Logical Equ) -> BoolV $ x == y
-    (Logical Neq) -> BoolV $ x /= y
-    (Logical Lt) -> BoolV $ x < y
-    (Logical Gt) -> BoolV $ x > y
+    (Arith Add) -> VInt $ x + y
+    (Arith Sub) -> VInt $ x - y
+    (Arith Mul) -> VInt $ x * y
+    (Arith Div) -> VInt $ x `div` y
+    (Logical Equ) -> VBool $ x == y
+    (Logical Neq) -> VBool $ x /= y
+    (Logical Lt) -> VBool $ x < y
+    (Logical Gt) -> VBool $ x > y

@@ -20,6 +20,7 @@ data Expr = Anno Expr Type
           | Var TmName
           | App Expr Expr
           | Lam (Bind TmName Expr)
+          | Let (Bind (TmName, Embed Type, Embed Expr) Expr) -- recursive let
           | DLam (Bind (TyName, Embed Type) Expr)
           | TApp Expr Type
           | DRec Label Expr
@@ -29,7 +30,7 @@ data Expr = Anno Expr Type
           | BoolV Bool
           | PrimOp Operation Expr Expr
           | If Expr Expr Expr
-          | FixP (Bind TmName Expr)
+          -- | FixP (Bind TmName Expr)
           | Top
   deriving Show
 

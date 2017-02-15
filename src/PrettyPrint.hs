@@ -105,10 +105,16 @@ instance Pretty S.Expr where
     e' <- ppr e
     return $ e' <> dot <> text l
   ppr S.Top = return $ text "T"
-  ppr (S.FixP b) =
-    lunbind b $ \(x, e) -> do
+  -- ppr (S.FixP b) =
+  --   lunbind b $ \(x, e) -> do
+  --     e' <- ppr e
+  --     return $ text "fix" <+> text (show x) <+> dot <+> e'
+  ppr (S.Let b) = do
+    lunbind b $ \((x, Embed t, Embed e), body) -> do
       e' <- ppr e
-      return $ text "fix" <+> text (show x) <+> dot <+> e'
+      t' <- ppr t
+      b' <- ppr body
+      return $ text "let" <+> text (show x) <+> colon <+> t' <+> text "=" <+> e' <+> text "in" <+> b'
 
 
 instance Pretty T.Type where
@@ -171,10 +177,15 @@ instance Pretty T.Expr where
     e1' <- ppr e1
     e2' <- ppr e2
     return $ text "if" <+> p' <+> text "then" <+> e1' <+> text "else" <+> e2'
-  ppr (T.FixP b) =
-    lunbind b $ \(x, e) -> do
+  -- ppr (T.FixP b) =
+  --   lunbind b $ \(x, e) -> do
+  --     e' <- ppr e
+  --     return $ text "fix" <+> text (show x) <+> dot <+> e'
+  ppr (T.Let b) = do
+    lunbind b $ \((x, Embed e), body) -> do
       e' <- ppr e
-      return $ text "fix" <+> text (show x) <+> dot <+> e'
+      b' <- ppr body
+      return $ text "let" <+> text (show x) <+> text "=" <+> e' <+> text "in" <+> b'
 
 pprint :: (Pretty a) => a -> String
 pprint = show . runLFreshM . ppr

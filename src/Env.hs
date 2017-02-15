@@ -1,6 +1,13 @@
 {-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
 
-module Env (lookupTy, runTcMonad, TcMonad, extendCtx, throwStrErr) where
+module Env
+  ( lookupTy
+  , runTcMonad
+  , TcMonad
+  , extendCtx
+  , throwStrErr
+  , Context
+  ) where
 
 import           Control.Monad.Except
 import           Control.Monad.Reader

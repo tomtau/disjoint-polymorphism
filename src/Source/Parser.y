@@ -46,7 +46,6 @@ import qualified Data.Text as T
     '\/\\'   { TDLam }
     '&'      { TAnd }
     ',,'     { TMerge }
-    '._'     { TProj }
     'top'      { TTop }
     '+'      { TAdd }
     '-'      { TSub }
@@ -59,8 +58,7 @@ import qualified Data.Text as T
     '@'      { TAt }
 
 
-%right FORALL
-%right LAM LET DLAM FIX
+%right LAM LET DLAM FIX FORALL
 %right '->'
 %nonassoc ',,' '&'
 %nonassoc IF
@@ -82,7 +80,7 @@ expr :: { Expr }
 expr : '\\' id '.' expr   %prec LAM           { elam $2 $4 }
      | '\/\\' id '*' type '.' expr %prec DLAM { dlam $2 $4 $6 }
      | '\/\\' id '.' expr %prec DLAM          { dlam $2 TopT $4 }
-     | 'fix' id '.' expr    %prec FIX           { efix $2 $4 }
+     -- | 'fix' id '.' expr    %prec FIX           { efix $2 $4 }
      | expr ':' type                          { Anno $1 $3 }
      | '{' recds '}'                          { mkRecds $2 }
      -- | 'let' id ':' type '=' expr 'in' expr %prec LET       { }
@@ -149,8 +147,8 @@ ebind n = bind (s2n n)
 elam :: String -> Expr -> Expr
 elam b e = Lam (ebind b e)
 
-efix :: String -> Expr -> Expr
-efix b e = FixP (ebind b e)
+-- efix :: String -> Expr -> Expr
+-- efix b e = FixP (ebind b e)
 
 dlam :: String -> Type -> Expr -> Expr
 dlam s t b = DLam (bind (s2n s, embed t) b)

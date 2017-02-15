@@ -12,6 +12,7 @@ data Expr = Var TmName
           | App Expr Expr
           | Lam (Bind TmName Expr)
           | BLam (Bind TyName Expr)
+          | Let (Bind (TmName, Embed Expr) Expr) -- recursive let
           | TApp Expr Type
           | Pair Expr Expr
           | Proj1 Expr
@@ -21,7 +22,7 @@ data Expr = Var TmName
           | Unit
           | PrimOp Operation Expr Expr
           | If Expr Expr Expr
-          | FixP (Bind TmName Expr)
+          -- | FixP (Bind TmName Expr)
   deriving Show
 
 
@@ -78,3 +79,34 @@ eapp = App
 
 etapp :: Expr -> Type -> Expr
 etapp = TApp
+
+
+---------------------------
+-- Untyped lambda calculus
+---------------------------
+
+type UName = Name UExpr
+
+data UExpr = UVar UName
+           | UApp UExpr UExpr
+           | ULam (Bind UName UExpr)
+           | ULet (Bind (UName, Embed UExpr) UExpr)
+           | UPair UExpr UExpr
+           | UP1 UExpr
+           | UP2 UExpr
+           | UIntV Int
+           | UBoolV Bool
+           | UUinit
+           | UPrimOp Operation UExpr UExpr
+           | UIf UExpr UExpr UExpr
+
+instance Alpha UExpr
+
+$(derive [''UExpr])
+
+instance Subst UExpr ArithOp
+instance Subst UExpr LogicalOp
+instance Subst UExpr Operation
+instance Subst UExpr UExpr where
+  isvar (UVar v) = Just (SubstName v)
+  isvar _ = Nothing

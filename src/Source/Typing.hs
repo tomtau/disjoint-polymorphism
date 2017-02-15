@@ -174,6 +174,13 @@ infer (If e1 e2 e3) = do
     then return (t2, T.If e1' e2' e3')
     else throwStrErr $ pprint t2 ++ " and " ++ pprint t3 ++ " must be the same type"
 
+-- Recursive let binding
+infer (Let b) = do
+  ((x, Embed t, Embed e), body) <- unbind b
+  e' <- extendCtx (Trm x, t) $ check e t
+  (tbody, b') <- extendCtx (Trm x, t) $ infer body
+  return (tbody, T.Let (bind (translate x, embed e') b'))
+
 infer a = throwStrErr $ "Infer not implemented: " ++ pprint a
 
 ------------------------
@@ -198,10 +205,10 @@ check (Lam l) (Arr a b) = do
 
 check (Lam _) t = throwStrErr $ "lambda expects arrow type: " ++ pprint t
 
-check (FixP b) t = do
-  (x, e) <- unbind b
-  e' <- extendCtx (Trm x, t) $ check e t
-  return (T.FixP (bind (translate x) e'))
+-- check (FixP b) t = do
+--   (x, e) <- unbind b
+--   e' <- extendCtx (Trm x, t) $ check e t
+--   return (T.FixP (bind (translate x) e'))
 
 {-
 Γ ⊢ e ⇒ A ~> E
