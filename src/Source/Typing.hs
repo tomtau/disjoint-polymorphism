@@ -289,7 +289,8 @@ disjoint a (And b1 b2) = do
   disjoint a b2
 disjoint IntT BoolT = return ()
 disjoint BoolT IntT = return ()
-disjoint a b = throwStrErr $ "Types are not disjoint: " ++ pprint a ++ " and " ++ pprint b
+disjoint a b =
+  throwStrErr $ "Types are not disjoint: " ++ pprint a ++ " and " ++ pprint b
 
 
 transTyp :: Fresh m => Type -> m T.Type

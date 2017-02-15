@@ -8,8 +8,6 @@ import System.Environment (getArgs)
 import Control.Monad.State.Strict
 import Data.List (isPrefixOf)
 import System.Console.Repline
-import qualified Data.Text as T
-import qualified Data.Text.IO as TI
 
 import Source.Typing (infer)
 import Target.Dynamics (evaluate)
