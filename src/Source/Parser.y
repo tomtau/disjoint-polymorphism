@@ -19,40 +19,41 @@ import PrettyPrint
 
 
 %token
-    let      { T _ TKey "let" }
-    in       { T _ TKey "in" }
-    int      { T _ TKey "int" }
-    bool     { T _ TKey "bool" }
-    boolV     { T _ (TBool $$) _ }
-    id       { T _ (TId $$) _ }
-    num      { T _ (TInt $$) _ }
-    if       { T _ TKey "if" }
-    then     { T _ TKey "then" }
-    else     { T _ TKey "else" }
-    ':'      { T _ TSym ":" }
-    '='      { T _ TSym "=" }
-    '.'      { T _ TSym "." }
-    ','      { T _ TSym "," }
-    '{'      { T _ TSym "{" }
-    '}'      { T _ TSym "}" }
-    '->'     { T _ TSym "->" }
-    '('      { T _ TSym "(" }
-    ')'      { T _ TSym ")" }
-    lam      { T _ TSym "\\" }
-    forall   { T _ TSym "\\/" }
-    blam     { T _ TSym "/\\" }
-    '&'      { T _ TSym "&" }
-    ',,'     { T _ TSym ",," }
-    top      { T _ TSym "T" }
-    '+'      { T _ TSym "+" }
-    '-'      { T _ TSym "-" }
-    '*'      { T _ TSym "*" }
-    '/'      { T _ TSym "/" }
-    '<'      { T _ TSym "<" }
-    '>'      { T _ TSym ">" }
-    '=='     { T _ TSym "==" }
-    '/='     { T _ TSym "/=" }
-    '@'      { T _ TSym "@" }
+
+    let    { T _ TKey "let" }
+    in     { T _ TKey "in" }
+    int    { T _ TKey "int" }
+    bool   { T _ TKey "bool" }
+    boolV  { T _ (TBool $$) _ }
+    id     { T _ (TId $$) _ }
+    num    { T _ (TInt $$) _ }
+    if     { T _ TKey "if" }
+    then   { T _ TKey "then" }
+    else   { T _ TKey "else" }
+    ':'    { T _ TSym ":" }
+    '='    { T _ TSym "=" }
+    '.'    { T _ TSym "." }
+    ','    { T _ TSym "," }
+    '{'    { T _ TSym "{" }
+    '}'    { T _ TSym "}" }
+    '->'   { T _ TSym "->" }
+    '('    { T _ TSym "(" }
+    ')'    { T _ TSym ")" }
+    lam    { T _ TSym "\\" }
+    forall { T _ TSym "\\/" }
+    blam   { T _ TSym "/\\" }
+    '&'    { T _ TSym "&" }
+    ',,'   { T _ TSym ",," }
+    top    { T _ TSym "T" }
+    '+'    { T _ TSym "+" }
+    '-'    { T _ TSym "-" }
+    '*'    { T _ TSym "*" }
+    '/'    { T _ TSym "/" }
+    '<'    { T _ TSym "<" }
+    '>'    { T _ TSym ">" }
+    '=='   { T _ TSym "==" }
+    '/='   { T _ TSym "/=" }
+    '@'    { T _ TSym "@" }
 
 
 %right LAM LET DLAM FIX FORALL
@@ -129,41 +130,6 @@ recdsT : recdT                 { [$1] }
 recdT : id ':' type          { ($1, $3) }
 
 {
-
-evar :: String -> Expr
-evar = Var . s2n
-
-tvar :: String -> Type
-tvar = TVar . s2n
-
-ebind :: String -> Expr -> Bind TmName Expr
-ebind n = bind (s2n n)
-
-elam :: String -> Expr -> Expr
-elam b e = Lam (ebind b e)
-
-dlam :: String -> Type -> Expr -> Expr
-dlam s t b = DLam (bind (s2n s, embed t) b)
-
-tforall :: String -> Type -> Type -> Type
-tforall s t b = DForall (bind (s2n s, embed t) b)
-
-eapp :: Expr -> Expr -> Expr
-eapp = App
-
-etapp :: Expr -> Type -> Expr
-etapp = TApp
-
-mkRecds :: [(Label, Expr)] -> Expr
-mkRecds [(l, e)] = DRec l e
-mkRecds ((l, e) : r) = Merge (DRec l e) (mkRecds r)
-
-mkRecdsT :: [(Label, Type)] -> Type
-mkRecdsT [(l, e)] = SRecT l e
-mkRecdsT ((l, e) : r) = And (SRecT l e) (mkRecdsT r)
-
-elet :: String -> Type -> Expr -> Expr -> Expr
-elet s t e b = Let (bind (s2n s, embed t) (e, b))
 
 parseError :: Token -> Alex a
 parseError (T p _ s) =

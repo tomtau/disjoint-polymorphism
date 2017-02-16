@@ -7,8 +7,7 @@ import Control.Monad.Reader
 import Env
 import Target.Syntax
 import Unbound.LocallyNameless
-import Target.Dynamics (unType)
-
+import PrettyPrint
 
 data ClosureExp = CExp UExpr Env
 
@@ -23,15 +22,11 @@ data Value = VInt Int
 instance Show Value where
   show (VInt n) = show n
   show (VBool n) = show n
-  show (VPair (CExp e1 _) (CExp e2 _)) = "(" ++ show e1 ++ ", " ++ show e2 ++ ")"
+  show (VPair (CExp e1 _) (CExp e2 _)) = "(" ++ pprint e1 ++ ", " ++ pprint e2 ++ ")"
   show VUnit = "()"
   show _ = "Cannot show functions"
 
 type EvalMonad = TcMonad UName ClosureExp
-
-
-evaluate :: Expr -> EvalMonad Value
-evaluate e = unType e >>= eval
 
 eval :: UExpr -> EvalMonad Value
 eval (UVar x) = do
@@ -64,7 +59,7 @@ eval (UP2 e) = do
   return v2
 eval (UIntV n) = return $ VInt n
 eval (UBoolV n) = return $ VBool n
-eval UUinit = return VUnit
+eval UUnit = return VUnit
 eval (UPrimOp op e1 e2) = do
   (VInt v1) <- eval e1
   (VInt v2) <- eval e2

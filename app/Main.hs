@@ -10,7 +10,7 @@ import Data.List (isPrefixOf)
 import System.Console.Repline
 
 import Source.Typing (infer)
-import Target.Dynamics (evaluate)
+import Target.Dynamics (eval)
 import qualified Target.CBN as CBN
 import Env (runTcMonad)
 
@@ -44,7 +44,7 @@ exec source = do
 
   liftIO . putStrLn $ ""
 
-  res <- hoistErr . runTcMonad $ CBN.evaluate tar
+  res <- hoistErr . runTcMonad $ eval tar
 
   liftIO . putStrLn $ "Evaluation result"
   liftIO . print $ res

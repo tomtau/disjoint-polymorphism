@@ -8,6 +8,11 @@ import Unbound.LocallyNameless
 type TmName = Name Expr
 
 
+
+-------------
+-- Sysyem F
+-------------
+
 data Expr = Var TmName
           | App Expr Expr
           | Lam (Bind TmName Expr)
@@ -59,28 +64,6 @@ instance Subst Type Type where
   isvar _ = Nothing
 
 
-evar :: String -> Expr
-evar = Var . s2n
-
-tvar :: String -> Type
-tvar = TVar . s2n
-
-ebind :: String -> Expr -> Bind TmName Expr
-ebind n = bind (s2n n)
-
-elam :: String -> Expr -> Expr
-elam b e = Lam (ebind b e)
-
-blam :: String -> Expr -> Expr
-blam b e = BLam (bind (s2n b) e)
-
-eapp :: Expr -> Expr -> Expr
-eapp = App
-
-etapp :: Expr -> Type -> Expr
-etapp = TApp
-
-
 ---------------------------
 -- Untyped lambda calculus
 ---------------------------
@@ -90,13 +73,13 @@ type UName = Name UExpr
 data UExpr = UVar UName
            | UApp UExpr UExpr
            | ULam (Bind UName UExpr)
-           | ULet (Bind UName (UExpr, UExpr))
+           | ULet (Bind UName (UExpr, UExpr))  -- recursive let
            | UPair UExpr UExpr
            | UP1 UExpr
            | UP2 UExpr
            | UIntV Int
            | UBoolV Bool
-           | UUinit
+           | UUnit
            | UPrimOp Operation UExpr UExpr
            | UIf UExpr UExpr UExpr
            deriving Show
@@ -111,3 +94,18 @@ instance Subst UExpr Operation
 instance Subst UExpr UExpr where
   isvar (UVar v) = Just (SubstName v)
   isvar _ = Nothing
+
+evar :: String -> UExpr
+evar = UVar . s2n
+
+tvar :: String -> Type
+tvar = TVar . s2n
+
+ebind :: String -> UExpr -> Bind UName UExpr
+ebind n = bind (s2n n)
+
+elam :: String -> UExpr -> UExpr
+elam b e = ULam (ebind b e)
+
+eapp :: UExpr -> UExpr -> UExpr
+eapp = UApp

@@ -9,18 +9,20 @@ import qualified Target.Syntax as T
 import           Unbound.LocallyNameless
 import Control.Monad.Except
 
-----------------
+----------------------------
 -- A <: B ~> E
-----------------
 
-(<:) :: Type -> Type -> TMonad T.Expr
+-- note: target is untyped
+----------------------------
+
+(<:) :: Type -> Type -> TMonad T.UExpr
 
 {-
 
 A <: ⊤  ~> λx.()
 
 -}
-(<:) _ TopT = return (T.elam "x" T.Unit)
+(<:) _ TopT = return (T.elam "x" T.UUnit)
 
 {-
 
@@ -32,7 +34,7 @@ A1 <: A2&A3   ~>  λx. (E1 x, E2 x)
 (<:) a1 (And a2 a3) = do
   e1 <- a1 <: a2
   e2 <- a1 <: a3
-  let co = T.elam "x" (T.Pair (T.App e1 (T.evar "x")) (T.App e2 (T.evar "x")))
+  let co = T.elam "x" (T.UPair (T.eapp e1 (T.evar "x")) (T.eapp e2 (T.evar "x")))
   return co
 
 {-
@@ -60,17 +62,19 @@ A1&A2 <: A3 ~> λx . [[A3]](E (proj2 x))
 
 
 -}
-(<:) (And a1 a2) a3 =
-  let left = do e <- a1 <: a3
-                let c = T.App e (T.Proj1 (T.evar "x"))
-                b <- coerce a3 c
-                return (T.elam "x" b)
-      right = do e <- a2 <: a3
-                 let c = T.App e (T.Proj2 (T.evar "x"))
-                 b <- coerce a3 c
-                 return (T.elam "x" b)
-
-  in mplus left right
+(<:) (And a1 a2) a3
+  | ordinary a3 =
+    let left = do
+          e <- a1 <: a3
+          let c = T.eapp e (T.UP1 (T.evar "x"))
+          b <- coerce a3 c
+          return (T.elam "x" b)
+        right = do
+          e <- a2 <: a3
+          let c = T.eapp e (T.UP2 (T.evar "x"))
+          b <- coerce a3 c
+          return (T.elam "x" b)
+    in mplus left right
 
 {-
 
@@ -106,7 +110,7 @@ A1 -> A2 <: B1 -> B2   ~> λf . λ x . E2 (f (E1 x))
 (<:) (Arr a1 a2) (Arr b1 b2) = do
   e1 <- b1 <: a1
   e2 <- a2 <: b2
-  let body = T.App e2 (T.App (T.evar "f") (T.App e1 (T.evar "x")))
+  let body = T.eapp e2 (T.eapp (T.evar "f") (T.eapp e1 (T.evar "x")))
   return $ T.elam "f" (T.elam "x" body)
 
 {-
@@ -117,12 +121,12 @@ B1 <: B2 ~> E1    A2 <: A1 ~> E2
 
 -}
 (<:) (DForall t1) (DForall t2) = do
-  ((a, Embed a1) , b1) <- unbind t1
-  ((a', Embed a2) , b2) <- unbind t2
-  let b2' = subst a' (TVar a) b2 -- FIXME: Overkill?
-  e1 <- b1 <: b2'
-  a2 <: a1
-  return $ T.elam "f" (T.blam "a" (T.App e1 (T.TApp (T.evar "f") (T.tvar "a"))))
+  t <- unbind2 t1 t2
+  case t of
+    Just ((_, Embed a1), b1, (_, Embed a2), b2) -> do
+      a2 <: a1
+      b1 <: b2
+    Nothing -> throwStrErr $ "Patterns have different binding variables"
 
 (<:) a b = throwStrErr $ "Invalid subtyping: " ++ pprint a ++ " and " ++ pprint b
 
@@ -145,27 +149,26 @@ ordinary _ = False
 -- [[A]]C = T
 ---------------
 
-coerce :: Type -> T.Expr -> TMonad T.Expr
+coerce :: Type -> T.UExpr -> TMonad T.UExpr
 coerce a c = do
   isTopLike <- topLike a
   if isTopLike
     then coerce' a
     else return c
   where
-    coerce' :: Type -> TMonad T.Expr
-    coerce' TopT = return T.Unit
+    coerce' :: Type -> TMonad T.UExpr
+    coerce' TopT = return T.UUnit
     coerce' (Arr _ a2) = do
       a2' <- coerce' a2
       return (T.elam "x" a2')
     coerce' (And a1 a2) = do
       a1' <- coerce' a1
       a2' <- coerce' a2
-      return $ T.Pair a1' a2'
+      return $ T.UPair a1' a2'
     coerce' (SRecT _ a) = coerce' a
     coerce' (DForall t) = do
       ((_, _) , a) <- unbind t
-      a' <- coerce' a
-      return $ T.blam "b" a'
+      coerce' a
     coerce' t = throwStrErr $ "Cannot coerce " ++ pprint t
 
 ------------

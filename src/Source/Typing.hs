@@ -13,32 +13,34 @@ import           Unbound.LocallyNameless
 
 
 
-------------------------
+---------------------------
 -- Γ ⊢ e ⇒ A ~> E
-------------------------
 
-infer :: Expr -> TMonad (Type, T.Expr)
+-- note: target is untyped
+---------------------------
+
+infer :: Expr -> TMonad (Type, T.UExpr)
 
 {-
 
 Γ ⊢ ⊤ ⇒ ⊤  ~> ()
 
 -}
-infer Top = return (TopT, T.Unit)
+infer Top = return (TopT, T.UUnit)
 
 {-
 
 Γ ⊢ i ⇒ Int ~> i
 
 -}
-infer (IntV n) = return (IntT, T.IntV n)
+infer (IntV n) = return (IntT, T.UIntV n)
 
 {-
 
 Γ ⊢ b ⇒ bool ~> b
 
 -}
-infer (BoolV b) = return (BoolT, T.BoolV b)
+infer (BoolV b) = return (BoolT, T.UBoolV b)
 
 {-
 
@@ -49,7 +51,7 @@ infer (BoolV b) = return (BoolT, T.BoolV b)
 -}
 infer (Var x) = do
   t <- lookupTy (Trm x)
-  return (t, T.Var (translate x))  -- Change the sort of a name
+  return (t, T.UVar (translate x))  -- Change the sort of a name
 
 {-
 
@@ -65,7 +67,7 @@ infer (Anno e a) = do
 {-
 
 Γ ⊢ e1 ⇒ A1 -> A2  ~> E1
-Γ ⊢ e1 ⇐ A1        ~> E2
+Γ ⊢ e2 ⇐ A1        ~> E2
 ----------------------------
 Γ ⊢ e1 e2 ⇒ A2     ~> E1 E2
 
@@ -75,7 +77,7 @@ infer (App e1 e2) = do
   case arr of
     Arr a1 a2 -> do
       e2' <- check e2 a1
-      return (a2, T.App e1' e2')
+      return (a2, T.UApp e1' e2')
     _ -> throwStrErr $ pprint arr ++ " is not an arrow type"
 
 {-
@@ -84,7 +86,7 @@ infer (App e1 e2) = do
 Γ ⊢ A
 Γ ⊢ A ∗ B
 -------------------------------
-Γ ⊢ e A ⇒ [α := A] C  ~> E |A|
+Γ ⊢ e A ⇒ [α := A] C  ~> E
 
 -}
 infer (TApp e a) = do
@@ -94,8 +96,7 @@ infer (TApp e a) = do
     DForall t' -> do
       ((x, Embed b), c) <- unbind t'
       disjoint a b
-      a' <- transTyp a
-      return (subst x a c, T.TApp e' a')
+      return (subst x a c, e')
     _ -> throwStrErr $ pprint t ++ " is not a quantifier"
 
 {-
@@ -111,7 +112,7 @@ infer (Merge e1 e2) = do
   (a, e1') <- infer e1
   (b, e2') <- infer e2
   disjoint a b
-  return (And a b, T.Pair e1' e2')
+  return (And a b, T.UPair e1' e2')
 
 {-
 
@@ -132,11 +133,11 @@ infer (DRec l e) = do
 
 -}
 infer (Acc e l) = do
-  (t, e) <- infer e
+  (t, e') <- infer e
   case t of
     SRecT l' a ->
       if l == l'
-        then return (a, e)
+        then return (a, e')
         else throwStrErr $ "labels not equal: " ++ l ++ " and " ++ l'
     _ -> throwStrErr $ pprint e ++ " is not a record"
 
@@ -146,48 +147,60 @@ infer (Acc e l) = do
 Γ , a * A ⊢ e ⇒ B ~> E
 a fresh
 ---------------------------------
-Γ ⊢ Λ(α∗A).e ⇒ ∀(α∗A).B ~> Λα.E
+Γ ⊢ Λ(α∗A).e ⇒ ∀(α∗A).B ~> E
 
 -}
 infer (DLam t) = do
   ((x, Embed a), e) <- unbind t
   wf a
   (b, e') <- extendCtx (Typ x, a) $ infer e
-  return (DForall (bind (x, embed a) b), T.BLam (bind (translate x) e'))
+  return (DForall (bind (x, embed a) b), e')
 
 infer (PrimOp op e1 e2) =
   case op of
     Arith _ -> do
       e1' <- check e1 IntT
       e2' <- check e2 IntT
-      return (IntT, T.PrimOp op e1' e2')
+      return (IntT, T.UPrimOp op e1' e2')
     Logical _ -> do
       e1' <- check e1 IntT
       e2' <- check e2 IntT
-      return (BoolT, T.PrimOp op e1' e2')
+      return (BoolT, T.UPrimOp op e1' e2')
 
 infer (If e1 e2 e3) = do
   e1' <- check e1 BoolT
   (t2, e2') <- infer e2
   (t3, e3') <- infer e3
   if aeq t2 t3
-    then return (t2, T.If e1' e2' e3')
+    then return (t2, T.UIf e1' e2' e3')
     else throwStrErr $ pprint t2 ++ " and " ++ pprint t3 ++ " must be the same type"
 
--- Recursive let binding
+{-
+
+Γ, x:t ⊢ e1 ⇐ t ~> e1'
+Γ, x:t ⊢ e2 ⇒ t' ~> e2'
+-----------------------------------------------------
+Γ ⊢ let x : t = e1 in e2 ⇒ t' ~> let x = e1' in e2'
+
+Note: Recursive let binding
+
+-}
 infer (Let b) = do
-  ((x, Embed t), (e, body)) <- unbind b
-  e' <- extendCtx (Trm x, t) $ check e t
-  (tbody, b') <- extendCtx (Trm x, t) $ infer body
-  return (tbody, T.Let (bind (translate x) (e', b')))
+  ((x, Embed t), (e1, e2)) <- unbind b
+  e1' <- extendCtx (Trm x, t) $ check e1 t
+  (t', e2') <- extendCtx (Trm x, t) $ infer e2
+  return (t', T.ULet (bind (translate x) (e1', e2')))
 
 infer a = throwStrErr $ "Infer not implemented: " ++ pprint a
+
+
+
 
 ------------------------
 -- Γ ⊢ e ⇐ A ~> E
 ------------------------
 
-check :: Expr -> Type -> TMonad T.Expr
+check :: Expr -> Type -> TMonad T.UExpr
 
 {-
 
@@ -201,34 +214,45 @@ check (Lam l) (Arr a b) = do
   (x, e) <- unbind l
   wf a
   e' <- extendCtx (Trm x, a) $ check e b
-  return (T.Lam (bind (translate x) e'))
+  return (T.ULam (bind (translate x) e'))
 
 check (Lam _) t = throwStrErr $ "lambda expects arrow type: " ++ pprint t
 
+
+{-
+
+
+Γ ⊢ A
+Γ , a * A ⊢ e ⇐ B ~> E
+---------------------------------
+Γ ⊢ Λ(α∗A).e ⇐ ∀(α∗A).B ~> E
+
+
+-}
 check (DLam l) (DForall b) = do
   t <- unbind2 l b
   case t of
-    Just ((x, Embed t1), eb, _, t2) -> do
-      l' <- extendCtx (Typ x, t1) $ check eb t2
-      return $ (T.BLam (bind (translate x) l'))
+    Just ((x, Embed a), e, _, b) -> do
+      wf a
+      extendCtx (Typ x, a) $ check e b
     Nothing -> throwStrErr $ "Patterns have different binding variables"
 
 check (DLam _) t = throwStrErr $ "type-level lambda expects forall type: " ++ pprint t
 
 {-
+
 Γ ⊢ e ⇒ A ~> E
-A <: B ~> Esub
+A <: B ~> c
 Γ ⊢ B
 -------------------
-Γ ⊢ e ⇐ B ~> Esub E
+Γ ⊢ e ⇐ B ~> c E
 
 -}
-
 check e b = do
-  (a, e) <- infer e
+  (a, e') <- infer e
   c <- a <: b
   wf b
-  return (T.App c e)
+  return (T.UApp c e')
 
 
 

@@ -10,51 +10,51 @@ import Env
 import Target.Syntax
 import Unbound.LocallyNameless
 
-------------------
--- Type removal
-------------------
+-----------------------
+-- System F -> untyped
+-----------------------
 
-unType :: Fresh m => Expr -> m UExpr
-unType (Var x) = return $ UVar (translate x)
-unType (App e1 e2) = do
-  e1' <- unType e1
-  e2' <- unType e2
+erase :: Fresh m => Expr -> m UExpr
+erase (Var x) = return $ UVar (translate x)
+erase (App e1 e2) = do
+  e1' <- erase e1
+  e2' <- erase e2
   return $ UApp e1' e2'
-unType (Lam b) = do
+erase (Lam b) = do
   (x, body) <- unbind b
-  b' <- unType body
+  b' <- erase body
   return $ ULam (bind (translate x) b')
-unType (BLam b) = do
+erase (BLam b) = do
   (_, body) <- unbind b
-  b' <- unType body
+  b' <- erase body
   return b'
-unType (TApp e _) = unType e
-unType (Pair e1 e2) = do
-  e1' <- unType e1
-  e2' <- unType e2
+erase (TApp e _) = erase e
+erase (Pair e1 e2) = do
+  e1' <- erase e1
+  e2' <- erase e2
   return (UPair e1' e2')
-unType (Proj1 e) = do
-  e' <- unType e
+erase (Proj1 e) = do
+  e' <- erase e
   return $ UP1 e'
-unType (Proj2 e) = do
-  e' <- unType e
+erase (Proj2 e) = do
+  e' <- erase e
   return $ UP2 e'
-unType (IntV n) = return $ UIntV n
-unType (BoolV n) = return $ UBoolV n
-unType Unit = return UUinit
-unType (PrimOp op e1 e2) = do
-  e1' <- unType e1
-  e2' <- unType e2
+erase (IntV n) = return $ UIntV n
+erase (BoolV n) = return $ UBoolV n
+erase Unit = return UUnit
+erase (PrimOp op e1 e2) = do
+  e1' <- erase e1
+  e2' <- erase e2
   return $ UPrimOp op e1' e2'
-unType (If e1 e2 e3) = do
-  e1' <- unType e1
-  e2' <- unType e2
-  e3' <- unType e3
+erase (If e1 e2 e3) = do
+  e1' <- erase e1
+  e2' <- erase e2
+  e3' <- erase e3
   return $ UIf e1' e2' e3'
-unType (Let t) = do
+erase (Let t) = do
   (x, (e, body)) <- unbind t
-  e' <- unType e
-  b' <- unType body
+  e' <- erase e
+  b' <- erase body
   return $ ULet (bind (translate x) (e', b'))
 
 ------------------------
@@ -78,10 +78,6 @@ instance Show Value where
 
 
 type EvalMonad = TcMonad UName Value
-
-
-evaluate :: Expr -> EvalMonad Value
-evaluate e = unType e >>= eval
 
 eval :: UExpr -> EvalMonad Value
 eval (UVar x) = lookupTy x
@@ -110,7 +106,7 @@ eval (UP2 e) = do
   return v2
 eval (UIntV n) = return $ VInt n
 eval (UBoolV n) = return $ VBool n
-eval UUinit = return VUnit
+eval UUnit = return VUnit
 eval (UPrimOp op e1 e2) = do
   (VInt v1) <- eval e1
   (VInt v2) <- eval e2

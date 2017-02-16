@@ -187,5 +187,45 @@ instance Pretty T.Expr where
       b' <- ppr body
       return $ text "let" <+> text (show x) <+> text "=" <+> e' <+> text "in" <+> b'
 
+instance Pretty T.UExpr where
+  ppr (T.UVar x) = return . text . show $ x
+  ppr (T.UApp f a) = do
+    f' <- ppr f
+    a' <- ppr a
+    return $ parens (f' <+> a')
+  ppr (T.ULam bnd) =
+    lunbind bnd $ \(x, b) -> do
+      b' <- ppr b
+      return (parens $ text "λ" <> text (show x) <+> dot <+> b')
+  ppr (T.UIntV n) = return . text . show $ n
+  ppr (T.UBoolV b) = return . text . show $ b
+  ppr (T.UPrimOp op e1 e2) = do
+    e1' <- ppr e1
+    e2' <- ppr e2
+    op' <- ppr op
+    return $ parens (e1' <+> op' <+> e2')
+  ppr (T.UPair e1 e2) = do
+    e1' <- ppr e1
+    e2' <- ppr e2
+    return $ parens (e1' <> ", " <+> e2')
+  ppr (T.UP1 e) = do
+    e' <- ppr e
+    return $ e' <> dot <> text (show 1)
+  ppr (T.UP2 e) = do
+    e' <- ppr e
+    return $ e' <> dot <> text (show 2)
+  ppr T.UUnit = return $ text "()"
+  ppr (T.UIf p e1 e2) = do
+    p' <- ppr p
+    e1' <- ppr e1
+    e2' <- ppr e2
+    return $ text "if" <+> p' <+> text "then" <+> e1' <+> text "else" <+> e2'
+  ppr (T.ULet b) = do
+    lunbind b $ \(x, (e, body)) -> do
+      e' <- ppr e
+      b' <- ppr body
+      return $ text "let" <+> text (show x) <+> text "=" <+> e' <+> text "in" <+> b'
+
+
 pprint :: (Pretty a) => a -> String
 pprint = show . runLFreshM . ppr
