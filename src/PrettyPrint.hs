@@ -105,16 +105,14 @@ instance Pretty S.Expr where
     e' <- ppr e
     return $ e' <> dot <> text l
   ppr S.Top = return $ text "T"
-  -- ppr (S.FixP b) =
-  --   lunbind b $ \(x, e) -> do
-  --     e' <- ppr e
-  --     return $ text "fix" <+> text (show x) <+> dot <+> e'
   ppr (S.Let b) = do
-    lunbind b $ \((x, Embed t), (e, body)) -> do
+    lunbind b $ \((x, Embed t, Embed e), body) -> do
       e' <- ppr e
       t' <- ppr t
       b' <- ppr body
-      return $ text "let" <+> text (show x) <+> colon <+> t' <+> text "=" <+> e' <+> text "in" <+> b'
+      return $
+        text "let" <+>
+        text (show x) <+> colon <+> t' <+> text "=" <+> e' <+> text "in" <+> b'
 
 
 instance Pretty T.Type where
