@@ -1,1 +1,3 @@
-(/\A . /\B * A . (\ x . x) : A & B -> B) @ int @ bool (1,,true)
+def fst : \/A . \/B*A . A & B -> B = /\A . /\B * A . \ x . x ;
+
+fst @ int @ bool (1,,true)

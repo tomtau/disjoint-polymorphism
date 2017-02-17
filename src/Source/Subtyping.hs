@@ -2,7 +2,7 @@
 
 module Source.Subtyping where
 
-import           Env
+import           Environment
 import           PrettyPrint
 import           Source.Syntax
 import qualified Target.Syntax as T
@@ -15,7 +15,9 @@ import Control.Monad.Except
 -- note: target is untyped
 ----------------------------
 
-(<:) :: Type -> Type -> TMonad T.UExpr
+(<:)
+  :: (Fresh m, MonadError String m, MonadPlus m)
+  => Type -> Type -> m T.UExpr
 
 {-
 
@@ -149,14 +151,18 @@ ordinary _ = False
 -- [[A]]C = T
 ---------------
 
-coerce :: Type -> T.UExpr -> TMonad T.UExpr
+coerce
+  :: (Fresh m, MonadError String m)
+  => Type -> T.UExpr -> m T.UExpr
 coerce a c = do
   isTopLike <- topLike a
   if isTopLike
     then coerce' a
     else return c
   where
-    coerce' :: Type -> TMonad T.UExpr
+    coerce'
+      :: (Fresh m, MonadError String m)
+      => Type -> m T.UExpr
     coerce' TopT = return T.UUnit
     coerce' (Arr _ a2) = do
       a2' <- coerce' a2
@@ -167,7 +173,7 @@ coerce a c = do
       return $ T.UPair a1' a2'
     coerce' (SRecT _ a) = coerce' a
     coerce' (DForall t) = do
-      ((_, _) , a) <- unbind t
+      ((_, _), a) <- unbind t
       coerce' a
     coerce' t = throwStrErr $ "Cannot coerce " ++ pprint t
 

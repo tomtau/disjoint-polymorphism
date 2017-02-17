@@ -9,10 +9,10 @@ import Control.Monad.State.Strict
 import Data.List (isPrefixOf)
 import System.Console.Repline
 
-import Source.Typing (infer)
-import Target.Dynamics (eval)
+import Source.Typing
+-- import Target.Dynamics (eval)
 import qualified Target.CBN as CBN
-import Env (runTcMonad)
+import Environment
 
 -- Types
 
@@ -31,23 +31,23 @@ exec source = do
 
   abt <- hoistErr $ parseExpr source
 
-  (typ, tar) <- hoistErr . runTcMonad $ infer abt
+  typ <- hoistErr . (runTcMonad emptyEnv) $ tcModule abt
 
   liftIO . putStrLn $ "Source typing result"
   liftIO . putStrLn . pprint $ typ
 
-  liftIO . putStrLn $ ""
+  -- liftIO . putStrLn $ ""
 
 
-  liftIO . putStrLn $ "Target expression"
-  liftIO . putStrLn . pprint $ tar
+  -- liftIO . putStrLn $ "Target expression"
+  -- liftIO . putStrLn . pprint $ tar
 
-  liftIO . putStrLn $ ""
+  -- liftIO . putStrLn $ ""
 
-  res <- hoistErr . runTcMonad $ eval tar
+  -- let res = CBN.evaluate tar
 
-  liftIO . putStrLn $ "Evaluation result"
-  liftIO . print $ res
+  -- liftIO . putStrLn $ "Evaluation result"
+  -- liftIO . print $ res
 
 
 -- :load command

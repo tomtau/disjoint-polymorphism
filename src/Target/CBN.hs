@@ -4,14 +4,13 @@ module Target.CBN where
 
 import Common
 import Control.Monad.Reader
-import Env
 import Target.Syntax
 import Unbound.LocallyNameless
 import PrettyPrint
 
 data ClosureExp = CExp UExpr Env
 
-type Env = Context UName ClosureExp
+type Env = [(UName, ClosureExp)]
 
 data Value = VInt Int
            | VBool Bool
@@ -26,17 +25,22 @@ instance Show Value where
   show VUnit = "()"
   show _ = "Cannot show functions"
 
-type EvalMonad = TcMonad UName ClosureExp
+type EvalMonad = FreshMT (Reader Env)
+
+
+evaluate :: UExpr -> Value
+evaluate e = runReader (runFreshMT (eval e)) []
+
 
 eval :: UExpr -> EvalMonad Value
 eval (UVar x) = do
-  CExp e env <- lookupTy x
+  Just (CExp e env) <- asks (lookup x)
   local (const env) $ eval e
 eval (UApp e1 e2) = do
   VClosure b env' <- eval e1
   (x, body) <- unbind b
   env <- ask
-  local (const env') $ extendCtx (x, CExp e2 env) (eval body)
+  local (const $ (x, CExp e2 env) : env') $ (eval body)
 eval (ULam b) = do
   env <- ask
   return $ VClosure b env
@@ -44,8 +48,8 @@ eval (ULam b) = do
 eval (ULet b) = do
   (x, (e, body)) <- unbind b
   env <- ask
-  let env' = addToCtx (x, CExp e env') env
-  extendCtx (x, CExp e env') $ eval body
+  let env' = (x, CExp e env') : env
+  local ((:) (x, CExp e env')) $ eval body
 eval (UPair e1 e2) = do
   env <- ask
   return $ VPair (CExp e1 env) (CExp e2 env)

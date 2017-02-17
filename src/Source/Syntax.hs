@@ -10,7 +10,6 @@ module Source.Syntax where
 
 import Common
 import Unbound.LocallyNameless
-import Env
 
 -- Unbound library
 type TmName = Name Expr
@@ -21,7 +20,8 @@ data Expr = Anno Expr Type
           | Var TmName
           | App Expr Expr
           | Lam (Bind TmName Expr)
-          | Let (Bind (TmName, Embed Type, Embed Expr) Expr) -- recursive let
+          | Let (Bind (TmName, Embed Type, Embed Expr) Expr)
+            -- ^ let expression, possibly recursive
           | DLam (Bind (TyName, Embed Type) Expr)
           | TApp Expr Type
           | DRec Label Expr
@@ -45,10 +45,17 @@ data Type = IntT
           | TopT
   deriving Show
 
+data Module = Module
+  { moduleEntries :: [Decl]
+  , mainExpr :: Expr
+  }
 
--- Declaration
-
-
+-- | Declarations are the components of modules
+data Decl = TmDef TmName Type (Maybe Expr)
+          -- ^ A term variable with type annotation and possibly definition
+          | TyDef TyName Type (Maybe Type)
+          -- ^ A type variable with disjoint constraint and possibly definition
+          deriving Show
 
 
 
@@ -75,22 +82,6 @@ instance Subst Type ArithOp
 instance Subst Type Type where
   isvar (TVar v) = Just (SubstName v)
   isvar _ = Nothing
-
-
-
--- Context holds term variables or type variables
-data TcName
-  = Trm TmName
-  | Typ TyName
-  deriving Eq
-
-instance Show TcName where
-  show (Trm x) = show x
-  show (Typ x) = show x
-
-type TMonad = TcMonad TcName Type
-
-
 
 -- Utility for parsing
 
@@ -119,10 +110,12 @@ etapp :: Expr -> Type -> Expr
 etapp = TApp
 
 mkRecds :: [(Label, Expr)] -> Expr
+mkRecds [] = Top
 mkRecds [(l, e)] = DRec l e
 mkRecds ((l, e) : r) = Merge (DRec l e) (mkRecds r)
 
 mkRecdsT :: [(Label, Type)] -> Type
+mkRecdsT [] = TopT
 mkRecdsT [(l, e)] = SRecT l e
 mkRecdsT ((l, e) : r) = And (SRecT l e) (mkRecdsT r)
 

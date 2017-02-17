@@ -20,6 +20,8 @@ import PrettyPrint
 
 %token
 
+    def    { T _ TKey "def" }
+    typ   { T _ TKey "type" }
     let    { T _ TKey "let" }
     in     { T _ TKey "in" }
     int    { T _ TKey "int" }
@@ -54,6 +56,8 @@ import PrettyPrint
     '=='   { T _ TSym "==" }
     '/='   { T _ TSym "/=" }
     '@'    { T _ TSym "@" }
+    ';'    { T _ TSym ";" }
+
 
 
 %right LAM LET DLAM FIX FORALL
@@ -71,6 +75,22 @@ import PrettyPrint
 
 
 %%
+
+mod :: { Module }
+mod : decls expr_or_unit    { Module $1 $2 }
+
+decls :: { [Decl] }
+decls : {- empty -}  { [] }
+      | decl ';' decls { $1 : $3}
+
+expr_or_unit :: { Expr }
+expr_or_unit : expr { $1 }
+             | {- empty -} { Top }
+
+decl :: { Decl }
+decl : def id ':' type '=' expr      { TmDef (s2n $2) $4 (Just $6) }
+     | typ id '=' type               { TyDef (s2n $2) TopT (Just $4) }
+
 
 expr :: { Expr }
 expr : lam id '.' expr   %prec LAM                { elam $2 $4 }
@@ -135,7 +155,7 @@ parseError :: Token -> Alex a
 parseError (T p _ s) =
   alexError (showPosn p ++ ": parse error at token '" ++ s ++ "'")
 
-parseExpr :: String -> Either String Expr
+parseExpr :: String -> Either String Module
 parseExpr inp = runAlex inp parser
 
 }

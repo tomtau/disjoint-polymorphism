@@ -3,7 +3,7 @@ module Source.Typing where
 
 import           Common
 import           Control.Monad
-import           Env
+import           Environment
 import           PrettyPrint
 import           Source.Subtyping
 import           Source.Syntax
@@ -12,6 +12,55 @@ import           Unbound.LocallyNameless
 
 
 
+-- Type check a module
+tcModule :: Module -> TcMonad Type
+tcModule m = do
+  let decls = moduleEntries m
+  let mainE = mainExpr m
+  -- Eliminate type dependencies
+  -- Note: after parsing, earlier declarations appear first in the list
+  let tydecls =
+        foldr
+          (\(TyDef n p t) ds -> (TyDef n p (substs (toSubst ds) t)) : ds)
+          []
+          (reverse ([decl | decl@(TyDef _ _ _) <- decls]))
+  let substPairs = toSubst tydecls
+  -- Resolve type declarations
+  let tmdecls =
+        map
+          (\(TmDef n p t) -> TmDef n (substs substPairs p) (substs substPairs t))
+          [decl | decl@(TmDef _ _ _) <- decls]
+  -- Check term declarations
+  checkedEntries <- foldr tcE (return []) tmdecls
+  -- Check main expression
+  (typ, _) <- extendCtxs checkedEntries $ infer (substs substPairs mainE)
+  return typ
+  where
+    toSubst ds = [(n, t) | TyDef n _ (Just t) <- ds]
+    tcE :: Decl -> TcMonad [Decl] -> TcMonad [Decl]
+    tcE d m = do
+      d' <- tcEntry d
+      (d' :) <$> extendCtx d' m
+
+-- Type check declarations
+tcEntry :: Decl -> TcMonad Decl
+tcEntry t@(TmDef n typ (Just term)) = do
+  oldDef <- lookupTmDef n
+  case oldDef of
+    Nothing -> do
+      trans <- check term typ
+      return t
+    Just _ -> throwStrErr $ "Multiple definitions of " ++ show n
+tcEntry t@(TyDef n typ (Just def)) = do
+  oldDef <- lookupTyDef n
+  case oldDef of
+    Nothing -> do
+        wf def
+        return t
+    Just _ -> throwStrErr $ "Multiple definitions of " ++ show n
+
+tcEntry _ = throwStrErr $ "Not implemented"
+
 
 ---------------------------
 -- Γ ⊢ e ⇒ A ~> E
@@ -19,7 +68,7 @@ import           Unbound.LocallyNameless
 -- note: target is untyped
 ---------------------------
 
-infer :: Expr -> TMonad (Type, T.UExpr)
+infer :: Expr -> TcMonad (Type, T.UExpr)
 
 {-
 
@@ -50,7 +99,7 @@ infer (BoolV b) = return (BoolT, T.UBoolV b)
 
 -}
 infer (Var x) = do
-  t <- lookupTy (Trm x)
+  t <- lookupTy x
   return (t, T.UVar (translate x))  -- Change the sort of a name
 
 {-
@@ -153,7 +202,7 @@ a fresh
 infer (DLam t) = do
   ((x, Embed a), e) <- unbind t
   wf a
-  (b, e') <- extendCtx (Typ x, a) $ infer e
+  (b, e') <- extendCtx (TyDef x a Nothing) $ infer e
   return (DForall (bind (x, embed a) b), e')
 
 infer (PrimOp op e1 e2) =
@@ -187,8 +236,8 @@ Note: Recursive let binding
 -}
 infer (Let b) = do
   ((x, Embed t, Embed e1), e2) <- unbind b
-  e1' <- extendCtx (Trm x, t) $ check e1 t
-  (t', e2') <- extendCtx (Trm x, t) $ infer e2
+  e1' <- extendCtx (TmDef x t Nothing) $ check e1 t
+  (t', e2') <- extendCtx (TmDef x t Nothing) $ infer e2
   return (t', T.ULet (bind (translate x) (e1', e2')))
 
 infer a = throwStrErr $ "Infer not implemented: " ++ pprint a
@@ -200,7 +249,7 @@ infer a = throwStrErr $ "Infer not implemented: " ++ pprint a
 -- Γ ⊢ e ⇐ A ~> E
 ------------------------
 
-check :: Expr -> Type -> TMonad T.UExpr
+check :: Expr -> Type -> TcMonad T.UExpr
 
 {-
 
@@ -213,7 +262,7 @@ check :: Expr -> Type -> TMonad T.UExpr
 check (Lam l) (Arr a b) = do
   (x, e) <- unbind l
   wf a
-  e' <- extendCtx (Trm x, a) $ check e b
+  e' <- extendCtx (TmDef x a Nothing) $ check e b
   return (T.ULam (bind (translate x) e'))
 
 check (Lam _) t = throwStrErr $ "lambda expects arrow type: " ++ pprint t
@@ -234,7 +283,7 @@ check (DLam l) (DForall b) = do
   case t of
     Just ((x, Embed a), e, _, b) -> do
       wf a
-      extendCtx (Typ x, a) $ check e b
+      extendCtx (TyDef x a Nothing) $ check e b
     Nothing -> throwStrErr $ "Patterns have different binding variables"
 
 check (DLam _) t = throwStrErr $ "type-level lambda expects forall type: " ++ pprint t
@@ -255,44 +304,43 @@ check e b = do
   return (T.UApp c e')
 
 
-
-wf :: Type -> TMonad ()
+wf :: Type -> TcMonad ()
 wf IntT = return ()
 wf BoolT = return ()
 wf (Arr a b) = wf a >> wf b
 wf (And a b) = wf a >> wf b >> disjoint a b
-wf (TVar x) = lookupTy (Typ x) >> return ()
+wf (TVar x) = lookupTyVar x >> return ()
 wf (DForall t) = do
   ((x, Embed a),b) <- unbind t
   wf a
-  extendCtx (Typ x, a) $ wf b
+  extendCtx (TyDef x a Nothing) $ wf b
 wf (SRecT _ t) = wf t
 wf TopT = return ()
 
-disjoint :: Type -> Type -> TMonad ()
+disjoint :: Type -> Type -> TcMonad ()
 disjoint TopT _ = return ()
 disjoint _ TopT = return ()
 disjoint t@(TVar x) t'@(TVar y) = do
-  let l = do a <- lookupTy (Typ x)
+  let l = do a <- lookupTyVar x
              a <: t'
              return ()
-  let r = do a <- lookupTy (Typ y)
+  let r = do a <- lookupTyVar y
              a <: t
              return ()
   mplus l r
 disjoint (TVar x) b = do
-  a <- lookupTy (Typ x)
+  a <- lookupTyVar x
   a <: b
   return ()
 disjoint b (TVar x) = do
-  a <- lookupTy (Typ x)
+  a <- lookupTyVar x
   a <: b
   return ()
 disjoint (DForall t) (DForall t') = do
   ((x, Embed a1), b) <- unbind t
   ((y, Embed a2), c) <- unbind t'
   let c' = subst y (TVar x) c
-  extendCtx (Typ x, And a1 a2) $ disjoint b c'
+  extendCtx (TyDef x (And a1 a2) Nothing) $ disjoint b c'
 disjoint (DForall _) _ = return ()
 disjoint _ (DForall _) = return ()
 disjoint (SRecT l a) (SRecT l' b) =
@@ -335,3 +383,4 @@ transTyp (DForall t) = do
 transTyp (SRecT _ t) = transTyp t
 transTyp TopT = return T.UnitT
 transTyp (TVar x) = return . T.TVar . translate $ x
+

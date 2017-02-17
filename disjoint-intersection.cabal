@@ -16,7 +16,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lexer
-                       Env
+                       Environment
                        Common
                        PrettyPrint
                        Source.Parser
@@ -24,7 +24,7 @@ library
                        Source.Subtyping
                        Source.Typing
                        Target.Syntax
-                       Target.Dynamics
+                       -- Target.Dynamics
                        Target.CBN
   build-depends:       base >= 4.7 && < 5
                      , unbound
