@@ -1,5 +1,9 @@
 
-module Target.CBN where
+module Target.CBN
+  ( Env
+  , evaluate
+  , extendCtx
+  ) where
 
 
 import Common
@@ -8,9 +12,12 @@ import Target.Syntax
 import Unbound.LocallyNameless
 import PrettyPrint
 
-data ClosureExp = CExp UExpr Env
+data ClosureExp = CExp UExpr Env deriving Show
 
 type Env = [(UName, ClosureExp)]
+
+extendCtx :: (UName, UExpr, Env) -> Env -> Env
+extendCtx (n, e,env) env' = (n, CExp e env) : env'
 
 data Value = VInt Int
            | VBool Bool
@@ -28,8 +35,8 @@ instance Show Value where
 type EvalMonad = FreshMT (Reader Env)
 
 
-evaluate :: UExpr -> Value
-evaluate e = runReader (runFreshMT (eval e)) []
+evaluate :: Env -> UExpr -> Value
+evaluate env e = runReader (runFreshMT (eval e)) env
 
 
 eval :: UExpr -> EvalMonad Value
@@ -44,12 +51,11 @@ eval (UApp e1 e2) = do
 eval (ULam b) = do
   env <- ask
   return $ VClosure b env
--- Recursive let binding
 eval (ULet b) = do
   (x, (e, body)) <- unbind b
   env <- ask
-  let env' = (x, CExp e env') : env
-  local ((:) (x, CExp e env')) $ eval body
+  let env' = (x, CExp e env') : env -- Recursive let binding
+  local ((x, CExp e env') :) $ eval body
 eval (UPair e1 e2) = do
   env <- ask
   return $ VPair (CExp e1 env) (CExp e2 env)

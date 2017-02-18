@@ -1,5 +1,7 @@
 
-module Source.Typing where
+module Source.Typing
+  ( tcModule
+  ) where
 
 import           Common
 import           Control.Monad
@@ -8,12 +10,13 @@ import           PrettyPrint
 import           Source.Subtyping
 import           Source.Syntax
 import qualified Target.Syntax as T
+import qualified Target.CBN as TC
 import           Unbound.LocallyNameless
 
 
 
 -- Type check a module
-tcModule :: Module -> TcMonad Type
+tcModule :: Module -> TcMonad (Type, T.UExpr, TC.Env)
 tcModule m = do
   let decls = moduleEntries m
   let mainE = mainExpr m
@@ -30,36 +33,32 @@ tcModule m = do
         map
           (\(TmDef n p t) -> TmDef n (substs substPairs p) (substs substPairs t))
           [decl | decl@(TmDef _ _ _) <- decls]
-  -- Check term declarations
-  checkedEntries <- foldr tcE (return []) tmdecls
+  -- Check term declarations and produce target declarations
+  targetDecls <- foldr tcE (return []) tmdecls
+  -- Generate initial environment for execution
+  let initEnv =
+        foldl (\env (n, e) -> TC.extendCtx (n, e, env) env) [] targetDecls
   -- Check main expression
-  (typ, _) <- extendCtxs checkedEntries $ infer (substs substPairs mainE)
-  return typ
+  (typ, transE) <- extendCtxs tmdecls $ infer (substs substPairs mainE)
+  return (typ, transE, initEnv)
   where
     toSubst ds = [(n, t) | TyDef n _ (Just t) <- ds]
-    tcE :: Decl -> TcMonad [Decl] -> TcMonad [Decl]
+    tcE :: Decl -> TcMonad [(T.UName, T.UExpr)] -> TcMonad [(T.UName, T.UExpr)]
     tcE d m = do
-      d' <- tcEntry d
-      (d' :) <$> extendCtx d' m
+      transD <- tcTmDecl d
+      (transD :) <$> extendCtx d m
 
 -- Type check declarations
-tcEntry :: Decl -> TcMonad Decl
-tcEntry t@(TmDef n typ (Just term)) = do
+tcTmDecl :: Decl -> TcMonad (T.UName, T.UExpr)
+tcTmDecl t@(TmDef n typ (Just term)) = do
   oldDef <- lookupTmDef n
   case oldDef of
     Nothing -> do
       trans <- check term typ
-      return t
-    Just _ -> throwStrErr $ "Multiple definitions of " ++ show n
-tcEntry t@(TyDef n typ (Just def)) = do
-  oldDef <- lookupTyDef n
-  case oldDef of
-    Nothing -> do
-        wf def
-        return t
+      return (translate n, trans)
     Just _ -> throwStrErr $ "Multiple definitions of " ++ show n
 
-tcEntry _ = throwStrErr $ "Not implemented"
+tcTmDecl _ = throwStrErr $ "Not implemented"
 
 
 ---------------------------

@@ -31,12 +31,12 @@ exec source = do
 
   abt <- hoistErr $ parseExpr source
 
-  typ <- hoistErr . (runTcMonad emptyEnv) $ tcModule abt
+  (typ, tar, initEnv) <- hoistErr . (runTcMonad emptyEnv) $ tcModule abt
 
   liftIO . putStrLn $ "Source typing result"
   liftIO . putStrLn . pprint $ typ
 
-  -- liftIO . putStrLn $ ""
+  liftIO . putStrLn $ ""
 
 
   -- liftIO . putStrLn $ "Target expression"
@@ -44,10 +44,10 @@ exec source = do
 
   -- liftIO . putStrLn $ ""
 
-  -- let res = CBN.evaluate tar
+  let res = CBN.evaluate initEnv tar
 
-  -- liftIO . putStrLn $ "Evaluation result"
-  -- liftIO . print $ res
+  liftIO . putStrLn $ "Evaluation result"
+  liftIO . print $ res
 
 
 -- :load command

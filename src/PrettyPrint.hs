@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module PrettyPrint where
+module PrettyPrint
+  ( pprint
+  ) where
 
 import           Common
 import qualified Source.Syntax as S
