@@ -23,6 +23,7 @@ $paren = [\(\)\[\]\{\}]
          | int | bool
          | if  | then | else
          | def | type | module
+         | defrec
 
 @compop = "==" | "/=" | \/\\ | \\\/ | "->" | ",,"
 

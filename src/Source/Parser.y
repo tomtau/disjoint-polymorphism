@@ -21,6 +21,7 @@ import PrettyPrint
 %token
 
     def    { T _ TKey "def" }
+    defrec { T _ TKey "defrec" }
     typ    { T _ TKey "type" }
     let    { T _ TKey "let" }
     in     { T _ TKey "in" }
@@ -92,8 +93,12 @@ expr_or_unit : expr { $1 }
 
 decl :: { Decl }
 decl : def id teleidlst lteleidlst ':' type '=' expr
-              { let (typ, trm) = teleToTmBind $3 $4 $6 $8 in TmDef (s2n $2) typ trm }
+              { let (typ, trm) = teleToTmBind $3 $4 $6 $8
+                in TmDef (s2n $2) typ (Just trm) }
      | typ id teleidlst '=' type     { TyDef (s2n $2) TopT (teleToBind $3 $5) }
+     | defrec id teleidlst lteleidlst ':' type '=' expr
+              { let (typ, trm) = teleToTmBind $3 $4 $6 $8
+                in TmDef (s2n $2) typ (Just (elet $2 typ trm (evar $2)))   }
 
 
 teleidlst :: { [(String, Type)] }

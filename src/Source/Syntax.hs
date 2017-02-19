@@ -147,10 +147,10 @@ teleToTmBind :: [(String, Type)]
              -> [(String, Type)]
              -> Type
              -> Expr
-             -> (Type, Maybe Expr)
+             -> (Type, Expr)
 teleToTmBind tys tms res e =
   let arr = foldr (\(_, t) tt -> Arr t tt) res tms
       tbind = foldr (\(n, s) tt -> tforall n s tt) arr tys
       fun = foldr (\(n, _) tm -> elam n tm) e tms
       bfun = foldr (\(n, s) tm -> dlam n s tm) fun tys
-  in (tbind, Just bfun)
+  in (tbind, bfun)
