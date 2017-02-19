@@ -1,3 +1,5 @@
-def fst : \/A . \/B*A . A & B -> B = /\A . /\B * A . \ x . x ;
+def fst A [B*A] (x : A&B) : A = x;
 
-fst @ int @ bool (1,,true)
+def snd A [B*A] (x : A&B) : B = x;
+
+snd @ int @ bool (1,,true)

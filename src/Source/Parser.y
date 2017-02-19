@@ -21,9 +21,10 @@ import PrettyPrint
 %token
 
     def    { T _ TKey "def" }
-    typ   { T _ TKey "type" }
+    typ    { T _ TKey "type" }
     let    { T _ TKey "let" }
     in     { T _ TKey "in" }
+    module { T _ TKey "module" }
     int    { T _ TKey "int" }
     bool   { T _ TKey "bool" }
     boolV  { T _ (TBool $$) _ }
@@ -38,6 +39,8 @@ import PrettyPrint
     ','    { T _ TSym "," }
     '{'    { T _ TSym "{" }
     '}'    { T _ TSym "}" }
+    '['    { T _ TSym "[" }
+    ']'    { T _ TSym "]" }
     '->'   { T _ TSym "->" }
     '('    { T _ TSym "(" }
     ')'    { T _ TSym ")" }
@@ -76,27 +79,46 @@ import PrettyPrint
 
 %%
 
-mod :: { Module }
-mod : decls expr_or_unit    { Module $1 $2 }
+prog : decllist expr_or_unit   { Module $1 $2 }
 
-decls :: { [Decl] }
-decls : {- empty -}  { [] }
-      | decl ';' decls { $1 : $3}
+
+decllist :: { [Decl] }
+decllist : {- empty -}  { [] }
+         | decl ';' decllist { $1 : $3}
 
 expr_or_unit :: { Expr }
 expr_or_unit : expr { $1 }
              | {- empty -} { Top }
 
 decl :: { Decl }
-decl : def id ':' type '=' expr      { TmDef (s2n $2) $4 (Just $6) }
-     | typ id '=' type               { TyDef (s2n $2) TopT (Just $4) }
+decl : def id teleidlst lteleidlst ':' type '=' expr
+              { let (typ, trm) = teleToTmBind $3 $4 $6 $8 in TmDef (s2n $2) typ trm }
+     | typ id teleidlst '=' type     { TyDef (s2n $2) TopT (teleToBind $3 $5) }
+
+
+teleidlst :: { [(String, Type)] }
+teleidlst : {- empty -}  { [] }
+          | teleid teleidlst  { $1 : $2 }
+
+teleid :: { (String, Type) }
+teleid : tele { $1 }
+       | id { ($1, TopT) }
+
+tele :: { (String, Type) }
+tele : '[' id '*' type ']'    { ($2, $4) }
+
+lteleidlst :: { [(String, Type)] }
+lteleidlst : {- empty -}  { [] }
+           | lamtele lteleidlst  { $1 : $2 }
+
+lamtele :: { (String, Type) }
+lamtele : '(' id ':' type ')' { ($2, $4) }
 
 
 expr :: { Expr }
 expr : lam id '.' expr   %prec LAM                { elam $2 $4 }
      | blam id '*' type '.' expr %prec DLAM       { dlam $2 $4 $6 }
      | blam id '.' expr %prec DLAM                { dlam $2 TopT $4 }
-     -- | 'fix' id '.' expr    %prec FIX          { efix $2 $4 }
      | expr ':' type                              { Anno $1 $3 }
      | '{' recds '}'                              { mkRecds $2 }
      | let id ':' type '=' expr in expr %prec LET { elet $2 $4 $6 $8 }

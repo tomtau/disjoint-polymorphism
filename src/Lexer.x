@@ -22,13 +22,13 @@ $paren = [\(\)\[\]\{\}]
 @keyword = let | in
          | int | bool
          | if  | then | else
-         | def | type
+         | def | type | module
 
 @compop = "==" | "/=" | \/\\ | \\\/ | "->" | ",,"
 
 @op = \\ | "/" | ":" | "," | "."
     | "+" | "-" | "*" | "T" | "@"
-    | "&" | "=" | ">" | "<" | ";"
+    | "&" | "=" | ">" | "<" | ";" | "[" | "]"
 
 @id = $alpha [$alpha $digit \_ \']*
 

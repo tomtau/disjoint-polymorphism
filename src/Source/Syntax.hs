@@ -121,3 +121,36 @@ mkRecdsT ((l, e) : r) = And (SRecT l e) (mkRecdsT r)
 
 elet :: String -> Type -> Expr -> Expr -> Expr
 elet s t e b = Let (bind (s2n s, embed t, embed e) b)
+
+teleToBind :: [(String, Type)] -> Type -> Maybe Type
+teleToBind ts t = Just (foldr (\(n, s) tt -> tforall n s tt) t ts)
+
+
+
+{-
+
+Translate
+
+[(A, T1), (B, T2)] [(x, A), (y, B)] C e
+
+to
+
+\/ A*T1. B*T2. A -> B -> C
+
+and
+
+/\ A*T1. B*T2. \x.\y.e
+
+-}
+
+teleToTmBind :: [(String, Type)]
+             -> [(String, Type)]
+             -> Type
+             -> Expr
+             -> (Type, Maybe Expr)
+teleToTmBind tys tms res e =
+  let arr = foldr (\(_, t) tt -> Arr t tt) res tms
+      tbind = foldr (\(n, s) tt -> tforall n s tt) arr tys
+      fun = foldr (\(n, _) tm -> elam n tm) e tms
+      bfun = foldr (\(n, s) tm -> dlam n s tm) fun tys
+  in (tbind, Just bfun)
