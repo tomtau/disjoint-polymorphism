@@ -12,6 +12,9 @@ module Environment
   , throwStrErr
   , Env
   , emptyEnv
+  , makeEnv
+  , addEnv
+  , getEnv
   ) where
 
 import Control.Monad.Except
@@ -32,12 +35,20 @@ runTcMonad env m = runExcept $ runReaderT (runFreshMT m) env
 data Hint = Hint TyName Type
 
 -- | Environment manipulation and accessing functions
-data Env = Env { ctx :: [Decl] }
+data Env = Env { ctx :: [Decl] } deriving Show
 
 
 emptyEnv :: Env
 emptyEnv = Env {ctx = []}
 
+makeEnv :: [Decl] -> Env
+makeEnv ds = Env ds
+
+addEnv :: Env -> Env -> Env
+addEnv (Env as) (Env bs) = Env (as ++ bs)
+
+getEnv :: Env -> [Decl]
+getEnv = ctx
 
 lookupTy
   :: (MonadReader Env m, MonadError String m)

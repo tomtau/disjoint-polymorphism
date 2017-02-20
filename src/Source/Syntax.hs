@@ -83,6 +83,11 @@ instance Subst Type Type where
   isvar (TVar v) = Just (SubstName v)
   isvar _ = Nothing
 
+topType :: Type -> Bool
+topType TopT = True
+topType _ = False
+
+
 -- Utility for parsing
 
 evar :: String -> Expr
