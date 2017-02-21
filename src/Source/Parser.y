@@ -8,6 +8,7 @@ import Unbound.LocallyNameless
 import Common
 import Lexer
 import PrettyPrint
+import Source.SrcLoc
 }
 
 

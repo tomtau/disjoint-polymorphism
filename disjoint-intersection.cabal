@@ -23,6 +23,7 @@ library
                        Source.Syntax
                        Source.Subtyping
                        Source.Typing
+                       Source.SrcLoc
                        Target.Syntax
                        -- Target.Dynamics
                        Target.CBN
