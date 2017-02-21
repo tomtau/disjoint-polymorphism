@@ -51,9 +51,9 @@ data Module = Module
   }
 
 -- | Declarations are the components of modules
-data Decl = TmDef TmName Type (Maybe Expr)
+data Decl = TmDef TmName Type Expr
           -- ^ A term variable with type annotation and possibly definition
-          | TyDef TyName Type (Maybe Type)
+          | TyDef TyName Type Type
           -- ^ A type variable with disjoint constraint and possibly definition
           deriving Show
 
@@ -127,8 +127,8 @@ mkRecdsT ((l, e) : r) = And (SRecT l e) (mkRecdsT r)
 elet :: String -> Type -> Expr -> Expr -> Expr
 elet s t e b = Let (bind (s2n s, embed t, embed e) b)
 
-teleToBind :: [(String, Type)] -> Type -> Maybe Type
-teleToBind ts t = Just (foldr (\(n, s) tt -> tforall n s tt) t ts)
+teleToBind :: [(String, Type)] -> Type -> Type
+teleToBind ts t = foldr (\(n, s) tt -> tforall n s tt) t ts
 
 
 

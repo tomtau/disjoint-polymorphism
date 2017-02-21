@@ -5,14 +5,14 @@ module Source.Typing
 
 import           Common
 import           Control.Monad
+import           Control.Monad.Reader
 import           Environment
 import           PrettyPrint
 import           Source.Subtyping
 import           Source.Syntax
-import qualified Target.Syntax as T
 import qualified Target.CBN as TC
+import qualified Target.Syntax as T
 import           Unbound.LocallyNameless
-
 
 
 -- Type check a module
@@ -37,20 +37,20 @@ tcModule m = do
   targetDecls <- foldr tcE (return []) tmdecls
   -- Generate initial environment for execution
   let initEnv =
-        foldl (\env (n, e) -> TC.extendCtx (n, e, env) env) [] targetDecls
+        foldl (\env (n, e) -> TC.extendCtx (n, e, env) env) TC.emptyEnv targetDecls
   -- Check main expression
-  (typ, transE) <- extendCtxs tmdecls $ infer (substs substPairs mainE)
+  (typ, transE) <- local (extendCtxs tmdecls) $ infer (substs substPairs mainE)
   return (typ, transE, initEnv)
   where
-    toSubst ds = [(n, t) | TyDef n _ (Just t) <- ds]
+    toSubst ds = [(n, t) | TyDef n _ t <- ds]
     tcE :: Decl -> TcMonad [(T.UName, T.UExpr)] -> TcMonad [(T.UName, T.UExpr)]
     tcE d m = do
       transD <- tcTmDecl d
-      (transD :) <$> extendCtx d m
+      (transD :) <$> local (extendCtx d) m
 
--- Type check declarations
+-- Type check term declarations
 tcTmDecl :: Decl -> TcMonad (T.UName, T.UExpr)
-tcTmDecl t@(TmDef n typ (Just term)) = do
+tcTmDecl (TmDef n typ term) = do
   oldDef <- lookupTmDef n
   case oldDef of
     Nothing -> do
@@ -201,7 +201,7 @@ a fresh
 infer (DLam t) = do
   ((x, Embed a), e) <- unbind t
   wf a
-  (b, e') <- extendCtx (TyDef x a Nothing) $ infer e
+  (b, e') <- local (extendTyVarCtx x a) $ infer e
   return (DForall (bind (x, embed a) b), e')
 
 infer (PrimOp op e1 e2) =
@@ -235,8 +235,8 @@ Note: Recursive let binding
 -}
 infer (Let b) = do
   ((x, Embed t, Embed e1), e2) <- unbind b
-  e1' <- extendCtx (TmDef x t Nothing) $ check e1 t
-  (t', e2') <- extendCtx (TmDef x t Nothing) $ infer e2
+  e1' <- local (extendVarCtx x t) $ check e1 t
+  (t', e2') <- local (extendVarCtx x t) $ infer e2
   return (t', T.ULet (bind (translate x) (e1', e2')))
 
 infer a = throwStrErr $ "Infer not implemented: " ++ pprint a
@@ -261,7 +261,7 @@ check :: Expr -> Type -> TcMonad T.UExpr
 check (Lam l) (Arr a b) = do
   (x, e) <- unbind l
   wf a
-  e' <- extendCtx (TmDef x a Nothing) $ check e b
+  e' <- local (extendVarCtx x a) $ check e b
   return (T.ULam (bind (translate x) e'))
 
 check (Lam _) t = throwStrErr $ "lambda expects arrow type: " ++ pprint t
@@ -282,7 +282,7 @@ check (DLam l) (DForall b) = do
   case t of
     Just ((x, Embed a), e, _, b) -> do
       wf a
-      extendCtx (TyDef x a Nothing) $ check e b
+      local (extendTyVarCtx x a) $ check e b
     Nothing -> throwStrErr $ "Patterns have different binding variables"
 
 check (DLam _) t = throwStrErr $ "type-level lambda expects forall type: " ++ pprint t
@@ -310,9 +310,9 @@ wf (Arr a b) = wf a >> wf b
 wf (And a b) = wf a >> wf b >> disjoint a b
 wf (TVar x) = lookupTyVar x >> return ()
 wf (DForall t) = do
-  ((x, Embed a),b) <- unbind t
+  ((x, Embed a), b) <- unbind t
   wf a
-  extendCtx (TyDef x a Nothing) $ wf b
+  local (extendTyVarCtx x a) $ wf b
 wf (SRecT _ t) = wf t
 wf TopT = return ()
 
@@ -339,7 +339,7 @@ disjoint (DForall t) (DForall t') = do
   ((x, Embed a1), b) <- unbind t
   ((y, Embed a2), c) <- unbind t'
   let c' = subst y (TVar x) c
-  extendCtx (TyDef x (And a1 a2) Nothing) $ disjoint b c'
+  local (extendTyVarCtx x (And a1 a2)) $ disjoint b c'
 disjoint (DForall _) _ = return ()
 disjoint _ (DForall _) = return ()
 disjoint (SRecT l a) (SRecT l' b) =

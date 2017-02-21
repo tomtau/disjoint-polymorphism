@@ -3,6 +3,7 @@ module Target.CBN
   ( Env
   , evaluate
   , extendCtx
+  , emptyEnv
   ) where
 
 
@@ -11,13 +12,16 @@ import Control.Monad.Reader
 import Target.Syntax
 import Unbound.LocallyNameless
 import PrettyPrint
+import qualified Data.Map.Strict as M
 
 data ClosureExp = CExp UExpr Env deriving Show
 
-type Env = [(UName, ClosureExp)]
+type Env = M.Map UName ClosureExp
+
+emptyEnv = M.empty
 
 extendCtx :: (UName, UExpr, Env) -> Env -> Env
-extendCtx (n, e,env) env' = (n, CExp e env) : env'
+extendCtx (n, e, env) env' = M.insert n (CExp e env) env'
 
 data Value = VInt Int
            | VBool Bool
@@ -41,21 +45,21 @@ evaluate env e = runReader (runFreshMT (eval e)) env
 
 eval :: UExpr -> EvalMonad Value
 eval (UVar x) = do
-  Just (CExp e env) <- asks (lookup x)
+  Just (CExp e env) <- asks (M.lookup x)
   local (const env) $ eval e
 eval (UApp e1 e2) = do
   VClosure b env' <- eval e1
   (x, body) <- unbind b
   env <- ask
-  local (const $ (x, CExp e2 env) : env') $ (eval body)
+  local (const $ M.insert x (CExp e2 env) env') $ (eval body)
 eval (ULam b) = do
   env <- ask
   return $ VClosure b env
 eval (ULet b) = do
   (x, (e, body)) <- unbind b
   env <- ask
-  let env' = (x, CExp e env') : env -- Recursive let binding
-  local ((x, CExp e env') :) $ eval body
+  let env' = M.insert x (CExp e env') env -- Recursive let binding
+  local (M.insert x (CExp e env')) $ eval body
 eval (UPair e1 e2) = do
   env <- ask
   return $ VPair (CExp e1 env) (CExp e2 env)

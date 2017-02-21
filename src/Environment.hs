@@ -4,110 +4,108 @@ module Environment
   ( lookupTy
   , lookupTyVar
   , lookupTmDef
-  , lookupTyDef
+  -- , lookupTyDef
   , runTcMonad
   , TcMonad
+  , extendVarCtx
+  , extendTyVarCtx
   , extendCtx
   , extendCtxs
   , throwStrErr
-  , Env
-  , emptyEnv
-  , makeEnv
-  , addEnv
-  , getEnv
+  , Ctx(..)
+  , emptyCtx
   ) where
 
 import Control.Monad.Except
 import Control.Monad.Reader
 import Source.Syntax
 import Unbound.LocallyNameless
-
+import qualified Data.Map.Strict as M
 import Data.Maybe (listToMaybe, catMaybes, isJust, fromJust)
 
 
-type TcMonad = FreshMT (ReaderT Env (Except String))
+type TcMonad = FreshMT (ReaderT Ctx (Except String))
 
-runTcMonad :: Env -> TcMonad a -> Either String a
+runTcMonad :: Ctx -> TcMonad a -> Either String a
 runTcMonad env m = runExcept $ runReaderT (runFreshMT m) env
 
 
--- | Type declarations
-data Hint = Hint TyName Type
+type VarCtx = M.Map TmName Type
+type TyCtx = M.Map TyName Type
+type BndCtx = M.Map TmName Expr
 
 -- | Environment manipulation and accessing functions
-data Env = Env { ctx :: [Decl] } deriving Show
+data Ctx = Ctx
+  { varCtx :: VarCtx
+  , tyCtx :: TyCtx
+  , bndCtx :: BndCtx
+  } deriving (Show)
 
+emptyCtx :: Ctx
+emptyCtx = Ctx {varCtx = M.empty, tyCtx = M.empty, bndCtx = M.empty}
 
-emptyEnv :: Env
-emptyEnv = Env {ctx = []}
-
-makeEnv :: [Decl] -> Env
-makeEnv ds = Env ds
-
-addEnv :: Env -> Env -> Env
-addEnv (Env as) (Env bs) = Env (as ++ bs)
-
-getEnv :: Env -> [Decl]
-getEnv = ctx
-
-lookupTy
-  :: (MonadReader Env m, MonadError String m)
-  => TmName -> m Type
-lookupTy v = do
-  x <- lookupTyMaybe v
-  case x of
-    Nothing  -> throwError $ concat ["Not in scope: ", show $ v]
-    Just res -> return res
-
-
-lookupTyMaybe
-  :: MonadReader Env m
-  => TmName -> m (Maybe Type)
-lookupTyMaybe v = do
-  ctx <- asks ctx
-  return $ listToMaybe [ty | TmDef v' ty _ <- ctx, v == v' ]
-
-lookupTyVar
-  :: (MonadReader Env m, MonadError String m)
-  => TyName -> m Type
-lookupTyVar v = do
-  x <- lookupTyVarMaybe v
-  case x of
-    Nothing  -> throwError $ concat ["Not in scope: ", show $ v]
-    Just res -> return res
-
-lookupTyVarMaybe
-  :: MonadReader Env m
-  => TyName -> m (Maybe Type)
-lookupTyVarMaybe v = do
-  ctx <- asks ctx
-  return $ listToMaybe [ty | TyDef v' ty _ <- ctx, v == v' ]
-
-lookupTmDef
-  :: (MonadReader Env m)
-  => TmName -> m (Maybe Expr)
-lookupTmDef v = do
-  ctx <- asks ctx
-  return $ listToMaybe [fromJust d | TmDef v' t d <- ctx, v == v', isJust d]
-
-
-lookupTyDef
-  :: (MonadReader Env m)
-  => TyName -> m (Maybe Type)
-lookupTyDef v = do
-  ctx <- asks ctx
-  return $ listToMaybe [fromJust d | TyDef v' t d <- ctx, v == v', isJust d]
-
+ctxMap :: (VarCtx -> VarCtx)
+       -> (TyCtx -> TyCtx)
+       -> (BndCtx -> BndCtx)
+       -> Ctx
+       -> Ctx
+ctxMap f1 f2 f3 ctx =
+  Ctx
+  {varCtx = f1 (varCtx ctx), tyCtx = f2 (tyCtx ctx), bndCtx = f3 (bndCtx ctx)}
 
 -- | Extend the context with a new binding.
-extendCtx :: (MonadReader Env m) => Decl -> m a -> m a
-extendCtx d = local (\m@(Env {ctx = cs}) -> m {ctx = d : cs})
+extendVarCtx :: TmName -> Type -> Ctx -> Ctx
+extendVarCtx v t = ctxMap (M.insert v t) id id
+
+-- | Extend the context with a new binding.
+extendTyVarCtx :: TyName -> Type  -> Ctx -> Ctx
+extendTyVarCtx v t = ctxMap id (M.insert v t) id
+
+extendCtx :: Decl -> Ctx -> Ctx
+extendCtx (TmDef x t _) = extendVarCtx x t
+extendCtx (TyDef x t _) = extendTyVarCtx x t
 
 -- | Extend the context with a list of bindings
-extendCtxs :: (MonadReader Env m) => [Decl] -> m a -> m a
-extendCtxs ds = local (\m@(Env {ctx = cs}) -> m {ctx = ds ++ cs})
+extendCtxs :: [Decl] -> Ctx -> Ctx
+extendCtxs ds ctx = foldr extendCtx ctx ds
 
 throwStrErr
   :: MonadError String m
   => String -> m a
 throwStrErr s = throwError $ s ++ "\n"
+
+
+lookupTy
+  :: (MonadReader Ctx m, MonadError String m)
+  => TmName -> m Type
+lookupTy v = do
+  env <- asks varCtx
+  case M.lookup v env of
+    Nothing  -> throwError $ concat ["Not in scope: ", show $ v]
+    Just res -> return res
+
+
+lookupTyVar
+  :: (MonadReader Ctx m, MonadError String m)
+  => TyName -> m Type
+lookupTyVar v = do
+  env <- asks tyCtx
+  case M.lookup v env of
+    Nothing  -> throwError $ concat ["Not in scope: ", show $ v]
+    Just res -> return res
+
+lookupTmDef
+  :: (MonadReader Ctx m)
+  => TmName -> m (Maybe Expr)
+lookupTmDef v = do
+  env <- asks bndCtx
+  return $ M.lookup v env
+
+-- lookupTyDef
+--   :: (MonadReader Ctx m)
+--   => TyName -> m (Maybe Type)
+-- lookupTyDef v = do
+--   ctx <- asks ctx
+--   return $ listToMaybe [fromJust d | TyDef v' t d <- ctx, v == v', isJust d]
+
+

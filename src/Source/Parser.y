@@ -94,11 +94,11 @@ expr_or_unit : expr { $1 }
 decl :: { Decl }
 decl : def id teleidlst lteleidlst ':' type '=' expr
               { let (typ, trm) = teleToTmBind $3 $4 $6 $8
-                in TmDef (s2n $2) typ (Just trm) }
+                in TmDef (s2n $2) typ trm }
      | typ id teleidlst '=' type     { TyDef (s2n $2) TopT (teleToBind $3 $5) }
      | defrec id teleidlst lteleidlst ':' type '=' expr
               { let (typ, trm) = teleToTmBind $3 $4 $6 $8
-                in TmDef (s2n $2) typ (Just (elet $2 typ trm (evar $2)))   }
+                in TmDef (s2n $2) typ (elet $2 typ trm (evar $2))   }
 
 
 teleidlst :: { [(String, Type)] }

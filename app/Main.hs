@@ -15,12 +15,12 @@ import qualified Target.CBN as CBN
 
 
 data ReplState = ReplState {
-  replCtx   :: Env
+  replCtx   :: Ctx
   }
 
 initState :: ReplState
 initState = ReplState {
-  replCtx = emptyEnv
+  replCtx = emptyCtx
   }
 
 type Repl a = HaskelineT (StateT ReplState IO) a
@@ -78,7 +78,7 @@ resetCtx :: Repl ()
 resetCtx = do
   st <- getCtx
   putCtx ReplState {
-    replCtx = emptyEnv
+    replCtx = emptyCtx
     }
 
 reset :: [String] -> Repl ()
