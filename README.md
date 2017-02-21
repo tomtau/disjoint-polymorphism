@@ -26,14 +26,11 @@ The REPL prompt is `>`, type `:q` to quit or input any expression in the source 
 
 ```
 > 2
-Source typing result
-int
-
-Target expression
-2
+Typing result
+: int
 
 Evaluation result
-2
+=> 2
 ```
 
 ## Syntax of the source langauge
@@ -47,18 +44,26 @@ Evaluation result
 * If: `if x == 0 then true else false`
 * Disjoint (universal) quantification: `\/A*int. A -> A`
 * Type-level lambda: `/\A * int . (\x . x) : A -> A`
+* Term declaration: `def id A (x : A) : A = x; id @ int 3`
+* Type declaration: `type Point = {isZero : bool, axis : int}; def point : Point = {isZero = true, axis = 3};`
 
 ## Examples
 
 ```
-> (/\A . /\B * A . (\ x . x) : A & B -> B) @ int @ bool (1,,true)
+$ less demo.txt
+def fst A [B*A] (x : A&B) : A = x;
 
-Source typing result
-bool
+def snd A [B*A] (x : A&B) : B = x;
 
-Target expression
-((((ΛA . (ΛB . (λx . ((λx1 . ((λx2 . x2) x1.2)) x))))@int)@bool) ((λx . (((λx1 . ((λx2 . x2) x1.1)) x),  ((λx1 . ((λx2 . x2) x1.2)) x))) (1,  True)))
+snd @ int @ bool (1,,true)
+```
+
+```
+> :load demo.txt
+Typing result
+: bool
 
 Evaluation result
-True
+=> True
 ```
+
