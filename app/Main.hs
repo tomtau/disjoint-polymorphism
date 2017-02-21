@@ -6,7 +6,7 @@ import           Data.List (isPrefixOf)
 import           Environment
 import           PrettyPrint
 import           Source.Parser (parseExpr)
-import           Source.Syntax (topType)
+import           Source.Syntax
 import           Source.Typing
 import           System.Console.Repline
 import           System.Environment (getArgs)
@@ -52,7 +52,7 @@ exec source =
       let res = runTcMonad (replCtx env) (tcModule abt)
       case res of
         Right (typ, tar, tEnv) ->
-          if topType typ
+          if topType typ && not (null (moduleEntries abt))
             then putMsg "Declaration added!"
             else do
               putMsg "Typing result"
