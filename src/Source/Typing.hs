@@ -5,13 +5,16 @@ module Source.Typing
 
 import           Common
 import           Control.Monad
+import           Control.Monad.Except
 import           Control.Monad.Reader
 import           Environment
+import           Prelude hiding ((<$>))
 import           PrettyPrint
 import           Source.Subtyping
 import           Source.Syntax
 import qualified Target.CBN as TC
 import qualified Target.Syntax as T
+import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 import           Unbound.LocallyNameless
 
 
@@ -46,7 +49,7 @@ tcModule m = do
     tcE :: Decl -> TcMonad [(T.UName, T.UExpr)] -> TcMonad [(T.UName, T.UExpr)]
     tcE d m = do
       transD <- tcTmDecl d
-      (transD :) <$> local (extendCtx d) m
+      fmap (transD :) $ local (extendCtx d) m
 
 -- Type check term declarations
 tcTmDecl :: Decl -> TcMonad (T.UName, T.UExpr)
@@ -56,9 +59,9 @@ tcTmDecl (TmDef n typ term) = do
     Nothing -> do
       trans <- check term typ
       return (translate n, trans)
-    Just _ -> throwStrErr $ "Multiple definitions of " ++ show n
+    Just _ -> throwError $ text "Multiple definitions of" <+>  text (show n)
 
-tcTmDecl _ = throwStrErr $ "Not implemented"
+tcTmDecl _ = throwError $ text "Not implemented"
 
 
 ---------------------------
@@ -120,13 +123,19 @@ infer (Anno e a) = do
 Γ ⊢ e1 e2 ⇒ A2     ~> E1 E2
 
 -}
-infer (App e1 e2) = do
+infer inp@(App e1 e2) = do
   (arr, e1') <- infer e1
   case arr of
     Arr a1 a2 -> do
       e2' <- check e2 a1
       return (a2, T.UApp e1' e2')
-    _ -> throwStrErr $ pprint arr ++ " is not an arrow type"
+    _ ->
+      throwError
+        (hang 2 $
+         text "type of application mismatch in" <+>
+         squotes (pprint inp) <> colon <$>
+         text "function" <+>
+         squotes (pprint e1) <+> text "has type" <+> squotes (pprint arr))
 
 {-
 
@@ -137,7 +146,7 @@ infer (App e1 e2) = do
 Γ ⊢ e A ⇒ [α := A] C  ~> E
 
 -}
-infer (TApp e a) = do
+infer inp@(TApp e a) = do
   (t, e') <- infer e
   wf a
   case t of
@@ -145,7 +154,13 @@ infer (TApp e a) = do
       ((x, Embed b), c) <- unbind t'
       disjoint a b
       return (subst x a c, e')
-    _ -> throwStrErr $ pprint t ++ " is not a quantifier"
+    _ ->
+      throwError
+        (hang 2 $
+         text "type of application mismatch in" <+>
+         squotes (pprint inp) <> colon <$>
+         text "type-level function" <+>
+         squotes (pprint e) <+> text "has type" <+> squotes (pprint t))
 
 {-
 
@@ -186,8 +201,12 @@ infer (Acc e l) = do
     SRecT l' a ->
       if l == l'
         then return (a, e')
-        else throwStrErr $ "labels not equal: " ++ l ++ " and " ++ l'
-    _ -> throwStrErr $ pprint e ++ " is not a record"
+        else throwError $
+             text "labels not equal:" <+> text l <+> text "and" <+> text l'
+    _ ->
+      throwError
+        (text "expect a record type for" <+>
+         pprint e <+> text "but got" <+> pprint t)
 
 {-
 
@@ -215,13 +234,17 @@ infer (PrimOp op e1 e2) =
       e2' <- check e2 IntT
       return (BoolT, T.UPrimOp op e1' e2')
 
-infer (If e1 e2 e3) = do
+infer inp@(If e1 e2 e3) = do
   e1' <- check e1 BoolT
   (t2, e2') <- infer e2
   (t3, e3') <- infer e3
   if aeq t2 t3
     then return (t2, T.UIf e1' e2' e3')
-    else throwStrErr $ pprint t2 ++ " and " ++ pprint t3 ++ " must be the same type"
+    else throwError $
+         (hang 2 $
+          text "if branches type mismatch in" <+> squotes (pprint inp) <> colon <$>
+          squotes (pprint e2) <+> text "has type" <+> squotes (pprint t2) <$>
+          squotes (pprint e3) <+> text "has type" <+> squotes (pprint t3))
 
 {-
 
@@ -239,7 +262,7 @@ infer (Let b) = do
   (t', e2') <- local (extendVarCtx x t) $ infer e2
   return (t', T.ULet (bind (translate x) (e1', e2')))
 
-infer a = throwStrErr $ "Infer not implemented: " ++ pprint a
+infer a = throwError $ text "Infer not implemented:" <+> pprint a
 
 
 
@@ -264,7 +287,10 @@ check (Lam l) (Arr a b) = do
   e' <- local (extendVarCtx x a) $ check e b
   return (T.ULam (bind (translate x) e'))
 
-check (Lam _) t = throwStrErr $ "lambda expects arrow type: " ++ pprint t
+check inp@(Lam _) t =
+  throwError $
+  text "expect an arrow type for " <+>
+  squotes (pprint inp) <+> text "but got" <+> squotes (pprint t)
 
 
 {-
@@ -283,9 +309,12 @@ check (DLam l) (DForall b) = do
     Just ((x, Embed a), e, _, b) -> do
       wf a
       local (extendTyVarCtx x a) $ check e b
-    Nothing -> throwStrErr $ "Patterns have different binding variables"
+    Nothing -> throwError $ text "Patterns have different binding variables"
 
-check (DLam _) t = throwStrErr $ "type-level lambda expects forall type: " ++ pprint t
+check inp@(DLam _) t =
+  throwError $
+  text "expect a forall type" <+>
+  squotes (pprint inp) <+> text "but got" <+> squotes (pprint t)
 
 {-
 
@@ -361,7 +390,8 @@ disjoint a (And b1 b2) = do
 disjoint IntT BoolT = return ()
 disjoint BoolT IntT = return ()
 disjoint a b =
-  throwStrErr $ "Types are not disjoint: " ++ pprint a ++ " and " ++ pprint b
+  throwError $
+  text "Types are not disjoint:" <+> pprint a <+> text "and" <+> pprint b
 
 
 transTyp :: Fresh m => Type -> m T.Type
@@ -382,4 +412,3 @@ transTyp (DForall t) = do
 transTyp (SRecT _ t) = transTyp t
 transTyp TopT = return T.UnitT
 transTyp (TVar x) = return . T.TVar . translate $ x
-

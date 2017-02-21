@@ -2,12 +2,14 @@
 
 module PrettyPrint
   ( pprint
+  , warn
+  , info
   ) where
 
 import           Common
 import qualified Source.Syntax as S
 import qualified Target.Syntax as T
-import           Text.PrettyPrint.ANSI.Leijen (Doc, colon, dot, parens, braces, text, (<+>), (<>))
+import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 import           Unbound.LocallyNameless
 
 
@@ -227,5 +229,11 @@ instance Pretty T.UExpr where
       return $ text "let" <+> text (show x) <+> text "=" <+> e' <+> text "in" <+> b'
 
 
-pprint :: (Pretty a) => a -> String
-pprint = show . runLFreshM . ppr
+pprint :: Pretty a => a -> Doc
+pprint = runLFreshM . ppr
+
+warn :: String -> Doc
+warn s = dullred . bold $ text "***" <+> text s <> colon
+
+info :: String -> Doc
+info = dullyellow . bold . brackets . text

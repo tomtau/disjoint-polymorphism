@@ -4,7 +4,7 @@ import           Control.Exception (SomeException, try)
 import           Control.Monad.State.Strict
 import           Data.List (isPrefixOf)
 import           Environment
-import           PrettyPrint (pprint)
+import           PrettyPrint
 import           Source.Parser (parseExpr)
 import           Source.Syntax (topType)
 import           Source.Typing
@@ -12,6 +12,7 @@ import           System.Console.Repline
 import           System.Environment (getArgs)
 import           System.Exit
 import qualified Target.CBN as CBN
+import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 
 
 data ReplState = ReplState {
@@ -32,33 +33,34 @@ getCtx = lift get
 putCtx :: ReplState -> Repl ()
 putCtx = lift . put
 
-
-hoistErr :: Either String a -> Repl a
-hoistErr (Left str) = do
-  liftIO $ putStrLn str
-  abort
-hoistErr (Right val) = return val
-
 readTry :: IO String -> Repl (Either SomeException String)
 readTry = liftIO . try
 
 putMsg :: String -> Repl ()
-putMsg s = liftIO . putStrLn $ (s ++ "\n")
+putMsg = liftIO . putStrLn
+
+ppMsg :: Doc -> Repl ()
+ppMsg d = liftIO . putDoc $ d <> line
 
 -- Execution
 exec :: String -> Repl ()
-exec source = do
-  abt <- hoistErr $ parseExpr source
-  env <- getCtx
-  (typ, tar, tEnv) <- hoistErr . (runTcMonad (replCtx env)) $ tcModule abt
-  if topType typ
-    then putMsg "Declaration added!"
-    else do
-      putMsg "Source typing result"
-      putMsg $ pprint typ
-      let res = CBN.evaluate tEnv tar
-      putMsg "Evaluation result"
-      putMsg (show res)
+exec source =
+  case parseExpr source of
+    Left err -> ppMsg $ warn "Syntax error" <+> text err
+    Right abt -> do
+      env <- getCtx
+      let res = runTcMonad (replCtx env) (tcModule abt)
+      case res of
+        Right (typ, tar, tEnv) ->
+          if topType typ
+            then putMsg "Declaration added!"
+            else do
+              putMsg "Typing result"
+              ppMsg $ colon <+> blue (pprint typ)
+              let res = CBN.evaluate tEnv tar
+              putMsg "\nEvaluation result"
+              ppMsg $ text "=>" <+> blue (text (show res))
+        Left err -> ppMsg err
 
 
 -- :load command
@@ -66,8 +68,10 @@ load :: [String] -> Repl ()
 load args = do
   contents <- readTry $ readFile (unwords args)
   case contents of
-    Left err -> putMsg . show $ err
-    Right s -> exec s
+    Left err -> ppMsg $ warn "Load file error" <+> text (show err)
+    Right s -> do
+      resetCtx
+      exec s
 
 -- :quit command
 quit :: a -> Repl ()

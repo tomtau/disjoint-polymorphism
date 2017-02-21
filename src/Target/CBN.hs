@@ -7,12 +7,13 @@ module Target.CBN
   ) where
 
 
-import Common
-import Control.Monad.Reader
-import Target.Syntax
-import Unbound.LocallyNameless
-import PrettyPrint
+import           Common
+import           Control.Monad.Except
+import           Control.Monad.Reader
 import qualified Data.Map.Strict as M
+import           PrettyPrint
+import           Target.Syntax
+import           Unbound.LocallyNameless
 
 data ClosureExp = CExp UExpr Env deriving Show
 
@@ -32,7 +33,7 @@ data Value = VInt Int
 instance Show Value where
   show (VInt n) = show n
   show (VBool n) = show n
-  show (VPair (CExp e1 _) (CExp e2 _)) = "(" ++ pprint e1 ++ ", " ++ pprint e2 ++ ")"
+  show (VPair (CExp e1 _) (CExp e2 _)) = "(" ++ show (pprint e1) ++ ", " ++ show (pprint e2) ++ ")"
   show VUnit = "()"
   show _ = "Cannot show functions"
 

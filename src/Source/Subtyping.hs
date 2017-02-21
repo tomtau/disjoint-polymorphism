@@ -2,12 +2,13 @@
 
 module Source.Subtyping where
 
+import           Control.Monad.Except
 import           Environment
 import           PrettyPrint
 import           Source.Syntax
 import qualified Target.Syntax as T
 import           Unbound.LocallyNameless
-import Control.Monad.Except
+import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 
 ----------------------------
 -- A <: B ~> E
@@ -16,7 +17,7 @@ import Control.Monad.Except
 ----------------------------
 
 (<:)
-  :: (Fresh m, MonadError String m, MonadPlus m)
+  :: (Fresh m, MonadError Doc m, MonadPlus m)
   => Type -> Type -> m T.UExpr
 
 {-
@@ -88,7 +89,8 @@ A <: B ~> E
 (<:) (SRecT l1 a) (SRecT l2 b) = do
   e <- a <: b
   if (l1 /= l2)
-    then throwStrErr $ "labels not equal: " ++ l1 ++ " and " ++ l2
+    then throwError $
+         text "labels not equal:" <+> text l1 <+> text "and" <+> text l2
     else return e
 
 
@@ -99,7 +101,9 @@ a <: a ~> λx.x
 -}
 (<:) (TVar a) (TVar b) = do
   if a /= b
-    then throwStrErr $ "variables not equal: " ++ show a ++ " and " ++ show b
+    then throwError $
+         text "variables not equal:" <+>
+         text (show a) <+> text "and" <+> text (show b)
     else return (T.elam "x" (T.evar "x"))
 
 {-
@@ -128,9 +132,9 @@ B1 <: B2 ~> E1    A2 <: A1 ~> E2
     Just ((_, Embed a1), b1, (_, Embed a2), b2) -> do
       a2 <: a1
       b1 <: b2
-    Nothing -> throwStrErr $ "Patterns have different binding variables"
+    Nothing -> throwError . text $ "Patterns have different binding variables"
 
-(<:) a b = throwStrErr $ "Invalid subtyping: " ++ pprint a ++ " and " ++ pprint b
+(<:) a b = throwError $ text "Invalid subtyping:" <+> pprint a <+> (text "and") <+> pprint b
 
 
 --------------
@@ -152,7 +156,7 @@ ordinary _ = False
 ---------------
 
 coerce
-  :: (Fresh m, MonadError String m)
+  :: (Fresh m, MonadError Doc m)
   => Type -> T.UExpr -> m T.UExpr
 coerce a c = do
   isTopLike <- topLike a
@@ -161,7 +165,7 @@ coerce a c = do
     else return c
   where
     coerce'
-      :: (Fresh m, MonadError String m)
+      :: (Fresh m, MonadError Doc m)
       => Type -> m T.UExpr
     coerce' TopT = return T.UUnit
     coerce' (Arr _ a2) = do
@@ -173,9 +177,9 @@ coerce a c = do
       return $ T.UPair a1' a2'
     coerce' (SRecT _ a) = coerce' a
     coerce' (DForall t) = do
-      ((_, _), a) <- unbind t
+      ((_,  _), a) <- unbind t
       coerce' a
-    coerce' t = throwStrErr $ "Cannot coerce " ++ pprint t
+    coerce' t = throwError $ text "Cannot coerce" <+> pprint t
 
 ------------
 -- ⌉A⌈

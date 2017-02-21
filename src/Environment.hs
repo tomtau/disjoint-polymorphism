@@ -11,22 +11,22 @@ module Environment
   , extendTyVarCtx
   , extendCtx
   , extendCtxs
-  , throwStrErr
   , Ctx(..)
   , emptyCtx
   ) where
 
-import Control.Monad.Except
-import Control.Monad.Reader
-import Source.Syntax
-import Unbound.LocallyNameless
+import           Control.Monad.Except
+import           Control.Monad.Reader
 import qualified Data.Map.Strict as M
-import Data.Maybe (listToMaybe, catMaybes, isJust, fromJust)
+import           Data.Maybe (listToMaybe, catMaybes, isJust, fromJust)
+import           Source.Syntax
+import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
+import           Unbound.LocallyNameless
 
 
-type TcMonad = FreshMT (ReaderT Ctx (Except String))
+type TcMonad = FreshMT (ReaderT Ctx (Except Doc))
 
-runTcMonad :: Ctx -> TcMonad a -> Either String a
+runTcMonad :: Ctx -> TcMonad a -> Either Doc a
 runTcMonad env m = runExcept $ runReaderT (runFreshMT m) env
 
 
@@ -69,29 +69,23 @@ extendCtx (TyDef x t _) = extendTyVarCtx x t
 extendCtxs :: [Decl] -> Ctx -> Ctx
 extendCtxs ds ctx = foldr extendCtx ctx ds
 
-throwStrErr
-  :: MonadError String m
-  => String -> m a
-throwStrErr s = throwError $ s ++ "\n"
-
-
 lookupTy
-  :: (MonadReader Ctx m, MonadError String m)
+  :: (MonadReader Ctx m, MonadError Doc m)
   => TmName -> m Type
 lookupTy v = do
   env <- asks varCtx
   case M.lookup v env of
-    Nothing  -> throwError $ concat ["Not in scope: ", show $ v]
+    Nothing  -> throwError $ text "Not in scope:" <+> text (show v)
     Just res -> return res
 
 
 lookupTyVar
-  :: (MonadReader Ctx m, MonadError String m)
+  :: (MonadReader Ctx m, MonadError Doc m)
   => TyName -> m Type
 lookupTyVar v = do
   env <- asks tyCtx
   case M.lookup v env of
-    Nothing  -> throwError $ concat ["Not in scope: ", show $ v]
+    Nothing  -> throwError $ text "Not in scope:" <+> text (show v)
     Just res -> return res
 
 lookupTmDef
