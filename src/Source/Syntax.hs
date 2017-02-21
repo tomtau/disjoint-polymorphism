@@ -29,6 +29,7 @@ data Expr = Anno Expr Type
           | Merge Expr Expr
           | IntV Int
           | BoolV Bool
+          | StrV String
           | PrimOp Operation Expr Expr
           | If Expr Expr Expr
           | Top
@@ -37,6 +38,7 @@ data Expr = Anno Expr Type
 type Label = String
 data Type = IntT
           | BoolT
+          | StringT
           | Arr Type Type
           | And Type Type
           | TVar TyName

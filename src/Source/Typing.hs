@@ -79,19 +79,11 @@ infer :: Expr -> TcMonad (Type, T.UExpr)
 -}
 infer Top = return (TopT, T.UUnit)
 
-{-
-
-Γ ⊢ i ⇒ Int ~> i
-
--}
 infer (IntV n) = return (IntT, T.UIntV n)
 
-{-
-
-Γ ⊢ b ⇒ bool ~> b
-
--}
 infer (BoolV b) = return (BoolT, T.UBoolV b)
+
+infer (StrV b) = return (StringT, T.UStrV b)
 
 {-
 
@@ -335,6 +327,7 @@ check e b = do
 wf :: Type -> TcMonad ()
 wf IntT = return ()
 wf BoolT = return ()
+wf StringT = return ()
 wf (Arr a b) = wf a >> wf b
 wf (And a b) = wf a >> wf b >> disjoint a b
 wf (TVar x) = lookupTyVar x >> return ()
@@ -387,28 +380,30 @@ disjoint (And a1 a2) b = do
 disjoint a (And b1 b2) = do
   disjoint a b1
   disjoint a b2
-disjoint IntT BoolT = return ()
-disjoint BoolT IntT = return ()
-disjoint a b =
-  throwError $
-  text "Types are not disjoint:" <+> pprint a <+> text "and" <+> pprint b
+disjoint IntT IntT = throwError $ text "int and int not disjoint"
+disjoint IntT _ = return ()
+disjoint _ IntT = return ()
+disjoint BoolT BoolT = throwError $ text "bool and bool not disjoint"
+disjoint BoolT _ = return ()
+disjoint _ BoolT = return ()
+disjoint StringT StringT = throwError $ text "string and string not disjoint"
 
 
-transTyp :: Fresh m => Type -> m T.Type
-transTyp IntT = return T.IntT
-transTyp BoolT = return T.BoolT
-transTyp (Arr t1 t2) = do
-  t1' <- transTyp t1
-  t2' <- transTyp t2
-  return (T.Arr t1' t2')
-transTyp (And t1 t2) = do
-  t1' <- transTyp t1
-  t2' <- transTyp t2
-  return (T.Prod t1' t2')
-transTyp (DForall t) = do
-  ((x, _), body) <- unbind t
-  b <- transTyp body
-  return (T.Forall (bind (translate x) b))
-transTyp (SRecT _ t) = transTyp t
-transTyp TopT = return T.UnitT
-transTyp (TVar x) = return . T.TVar . translate $ x
+-- transTyp :: Fresh m => Type -> m T.Type
+-- transTyp IntT = return T.IntT
+-- transTyp BoolT = return T.BoolT
+-- transTyp (Arr t1 t2) = do
+--   t1' <- transTyp t1
+--   t2' <- transTyp t2
+--   return (T.Arr t1' t2')
+-- transTyp (And t1 t2) = do
+--   t1' <- transTyp t1
+--   t2' <- transTyp t2
+--   return (T.Prod t1' t2')
+-- transTyp (DForall t) = do
+--   ((x, _), body) <- unbind t
+--   b <- transTyp body
+--   return (T.Forall (bind (translate x) b))
+-- transTyp (SRecT _ t) = transTyp t
+-- transTyp TopT = return T.UnitT
+-- transTyp (TVar x) = return . T.TVar . translate $ x

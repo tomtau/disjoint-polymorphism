@@ -32,6 +32,8 @@ import Source.SrcLoc
     boolV  { T _ (TBool $$) _ }
     id     { T _ (TId $$) _ }
     num    { T _ (TInt $$) _ }
+    string { T _ TKey "string" }
+    str    { T _ (TStr $$) _ }
     if     { T _ TKey "if" }
     then   { T _ TKey "then" }
     else   { T _ TKey "else" }
@@ -153,15 +155,17 @@ aexp : aexp term                                { App $1 $2 }
      | term                                     { $1 }
 
 term :: { Expr }
-term : id                                       { evar $1 }
-     | num                                   { IntV $1 }
+term : num                                   { IntV $1 }
      | boolV                                  { BoolV $1 }
+     | str                                    { StrV $1 }
+     | id                                       { evar $1 }
      | top                                      { Top }
      | '(' expr ')'                             { $2 }
 
 type :: { Type }
 type : int                                      { IntT }
      | bool                                     { BoolT }
+     | string                                   { StringT }
      | type '&' type                            { And $1 $3 }
      | type '->' type                           { Arr $1 $3 }
      | '{' recdsT '}'                           { mkRecdsT $2 }

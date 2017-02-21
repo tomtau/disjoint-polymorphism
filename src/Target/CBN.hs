@@ -8,7 +8,6 @@ module Target.CBN
 
 
 import           Common
-import           Control.Monad.Except
 import           Control.Monad.Reader
 import qualified Data.Map.Strict as M
 import           PrettyPrint
@@ -26,6 +25,7 @@ extendCtx (n, e, env) env' = M.insert n (CExp e env) env'
 
 data Value = VInt Int
            | VBool Bool
+           | VStr String
            | VPair ClosureExp ClosureExp
            | VUnit
            | VClosure (Bind UName UExpr) Env
@@ -35,6 +35,7 @@ instance Show Value where
   show (VBool n) = show n
   show (VPair (CExp e1 _) (CExp e2 _)) = "(" ++ show (pprint e1) ++ ", " ++ show (pprint e2) ++ ")"
   show VUnit = "()"
+  show (VStr s) = show s
   show _ = "Cannot show functions"
 
 type M = FreshMT (Reader Env)
@@ -74,6 +75,7 @@ eval (UP2 e) = do
   return v2
 eval (UIntV n) = return $ VInt n
 eval (UBoolV n) = return $ VBool n
+eval (UStrV n) = return $ VStr n
 eval UUnit = return VUnit
 eval (UPrimOp op e1 e2) = do
   (VInt v1) <- eval e1

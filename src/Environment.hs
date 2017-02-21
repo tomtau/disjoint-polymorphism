@@ -18,7 +18,6 @@ module Environment
 import           Control.Monad.Except
 import           Control.Monad.Reader
 import qualified Data.Map.Strict as M
-import           Data.Maybe (listToMaybe, catMaybes, isJust, fromJust)
 import           Source.Syntax
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 import           Unbound.LocallyNameless

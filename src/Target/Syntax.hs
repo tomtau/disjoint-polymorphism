@@ -79,6 +79,7 @@ data UExpr = UVar UName
            | UP2 UExpr
            | UIntV Int
            | UBoolV Bool
+           | UStrV String
            | UUnit
            | UPrimOp Operation UExpr UExpr
            | UIf UExpr UExpr UExpr

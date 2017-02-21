@@ -3,7 +3,6 @@
 module Source.Subtyping where
 
 import           Control.Monad.Except
-import           Environment
 import           PrettyPrint
 import           Source.Syntax
 import qualified Target.Syntax as T
@@ -40,18 +39,11 @@ A1 <: A2&A3   ~>  λx. (E1 x, E2 x)
   let co = T.elam "x" (T.UPair (T.eapp e1 (T.evar "x")) (T.eapp e2 (T.evar "x")))
   return co
 
-{-
-
-Int <: Int ~> λx. x
-
--}
 (<:) IntT IntT = return (T.elam "x" (T.evar "x"))
-{-
 
-Bool <: Bool ~> λx. x
-
--}
 (<:) BoolT BoolT = return (T.elam "x" (T.evar "x"))
+
+(<:) StringT StringT = return (T.elam "x" (T.evar "x"))
 
 {-
 
@@ -144,6 +136,7 @@ B1 <: B2 ~> E1    A2 <: A1 ~> E2
 ordinary :: Type -> Bool
 ordinary IntT = True
 ordinary BoolT = True
+ordinary StringT = True
 ordinary (Arr _ _) = True
 ordinary (TVar _) = True
 ordinary (DForall _) = True
