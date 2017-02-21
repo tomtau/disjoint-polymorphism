@@ -36,14 +36,14 @@ instance Show Value where
   show VUnit = "()"
   show _ = "Cannot show functions"
 
-type EvalMonad = FreshMT (Reader Env)
+type M = FreshMT (Reader Env)
 
 
 evaluate :: Env -> UExpr -> Value
 evaluate env e = runReader (runFreshMT (eval e)) env
 
 
-eval :: UExpr -> EvalMonad Value
+eval :: UExpr -> M Value
 eval (UVar x) = do
   Just (CExp e env) <- asks (M.lookup x)
   local (const env) $ eval e
