@@ -50,7 +50,7 @@ Evaluation result
 ## Examples
 
 ```
-$ less demo.txt
+$ less examples/fst.txt
 def fst A [B*A] (x : A&B) : A = x;
 
 def snd A [B*A] (x : A&B) : B = x;
@@ -59,11 +59,10 @@ snd @ int @ bool (1,,true)
 ```
 
 ```
-> :load demo.txt
+> :load examples/fst.txt
 Typing result
 : bool
 
 Evaluation result
 => True
 ```
-

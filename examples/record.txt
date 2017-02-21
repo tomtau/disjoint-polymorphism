@@ -1,0 +1,5 @@
+def remove A [B * {l : A}] (x : {l : A} & B) : B = x;
+
+def example : {l : int, r : string} = {l = 3, r = "hello"};
+
+remove @ int @ {r : string} example
