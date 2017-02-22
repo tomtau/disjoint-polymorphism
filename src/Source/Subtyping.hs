@@ -1,6 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE PatternGuards #-}
 
-module Source.Subtyping where
+module Source.Subtyping
+  ( (<<:)
+  ) where
 
 import           Control.Monad.Except
 import           PrettyPrint
@@ -8,6 +11,13 @@ import           Source.Syntax
 import qualified Target.Syntax as T
 import           Unbound.LocallyNameless
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
+import Environment
+
+
+
+(<<:) :: Type -> Type -> Either Doc T.UExpr
+s <<: t = runTcMonad emptyCtx (s <: t)
+
 
 ----------------------------
 -- A <: B ~> E
@@ -15,9 +25,7 @@ import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 -- note: target is untyped
 ----------------------------
 
-(<:)
-  :: (Fresh m, MonadError Doc m, MonadPlus m)
-  => Type -> Type -> m T.UExpr
+(<:) :: Type -> Type -> TcMonad T.UExpr
 
 {-
 
@@ -51,6 +59,16 @@ A1 <: A3 ~> E     A3 ordinary
 -------------------------------
 A1&A2 <: A3 ~> λx.[[A3]](E (proj1 x))
 
+-}
+(<:) (And a1 a2) a3
+  | ordinary a3
+  , Right e <- a1 <<: a3 = do
+    let c = T.eapp e (T.UP1 (T.evar "x"))
+    b <- coerce a3 c
+    return (T.elam "x" b)
+
+{-
+
 A2 <: A3 ~> E      A3 ordinary
 --------------------------------
 A1&A2 <: A3 ~> λx . [[A3]](E (proj2 x))
@@ -58,18 +76,11 @@ A1&A2 <: A3 ~> λx . [[A3]](E (proj2 x))
 
 -}
 (<:) (And a1 a2) a3
-  | ordinary a3 =
-    let left = do
-          e <- a1 <: a3
-          let c = T.eapp e (T.UP1 (T.evar "x"))
-          b <- coerce a3 c
-          return (T.elam "x" b)
-        right = do
-          e <- a2 <: a3
-          let c = T.eapp e (T.UP2 (T.evar "x"))
-          b <- coerce a3 c
-          return (T.elam "x" b)
-    in mplus left right
+  | ordinary a3
+  , Right e <- a2 <<: a3 = do
+    let c = T.eapp e (T.UP2 (T.evar "x"))
+    b <- coerce a3 c
+    return (T.elam "x" b)
 
 {-
 
@@ -126,7 +137,10 @@ B1 <: B2 ~> E1    A2 <: A1 ~> E2
       b1 <: b2
     Nothing -> throwError . text $ "Patterns have different binding variables"
 
-(<:) a b = throwError $ text "Invalid subtyping:" <+> pprint a <+> (text "and") <+> pprint b
+(<:) a b =
+  throwError $
+  text "Invalid subtyping:" <+>
+  squotes (pprint a) <+> (text "and") <+> squotes (pprint b)
 
 
 --------------
@@ -149,7 +163,7 @@ ordinary _ = False
 ---------------
 
 coerce
-  :: (Fresh m, MonadError Doc m)
+  :: Fresh m
   => Type -> T.UExpr -> m T.UExpr
 coerce a c = do
   isTopLike <- topLike a
@@ -158,7 +172,7 @@ coerce a c = do
     else return c
   where
     coerce'
-      :: (Fresh m, MonadError Doc m)
+      :: (Fresh m)
       => Type -> m T.UExpr
     coerce' TopT = return T.UUnit
     coerce' (Arr _ a2) = do
@@ -170,9 +184,9 @@ coerce a c = do
       return $ T.UPair a1' a2'
     coerce' (SRecT _ a) = coerce' a
     coerce' (DForall t) = do
-      ((_,  _), a) <- unbind t
+      ((_, _), a) <- unbind t
       coerce' a
-    coerce' t = throwError $ text "Cannot coerce" <+> pprint t
+    coerce' _ = error "Impossible happened in coercing!"
 
 ------------
 -- ⌉A⌈

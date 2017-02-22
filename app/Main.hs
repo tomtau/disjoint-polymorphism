@@ -51,15 +51,12 @@ exec source =
       env <- getCtx
       let res = runTcMonad (replCtx env) (tcModule abt)
       case res of
-        Right (typ, tar, tEnv) ->
-          if topType typ && null (moduleEntries abt)
-            then putMsg "Declaration added!"
-            else do
-              putMsg "Typing result"
-              ppMsg $ colon <+> blue (pprint typ)
-              let res = CBN.evaluate tEnv tar
-              putMsg "\nEvaluation result"
-              ppMsg $ text "=>" <+> blue (text (show res))
+        Right (typ, tar, tEnv) -> do
+          putMsg "Typing result"
+          ppMsg $ colon <+> blue (pprint typ)
+          let res = CBN.evaluate tEnv tar
+          putMsg "\nEvaluation result"
+          ppMsg $ text "=>" <+> blue (text (show res))
         Left err -> ppMsg err
 
 

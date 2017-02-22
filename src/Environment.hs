@@ -3,6 +3,7 @@
 module Environment
   ( lookupTy
   , lookupTyVar
+  , lookupTyVarMaybe
   , lookupTmDef
   -- , lookupTyDef
   , runTcMonad
@@ -86,6 +87,9 @@ lookupTyVar v = do
   case M.lookup v env of
     Nothing  -> throwError $ text "Not in scope:" <+> text (show v)
     Just res -> return res
+
+lookupTyVarMaybe :: Ctx -> TyName -> Maybe Type
+lookupTyVarMaybe ctx v = M.lookup v (tyCtx ctx)
 
 lookupTmDef
   :: (MonadReader Ctx m)

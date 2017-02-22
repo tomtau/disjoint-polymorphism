@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts, PatternGuards #-}
 
 module Source.Typing
   ( tcModule
@@ -144,7 +145,8 @@ infer inp@(TApp e a) = do
   case t of
     DForall t' -> do
       ((x, Embed b), c) <- unbind t'
-      disjoint a b
+      ctx <- ask
+      disjoint ctx a b
       return (subst x a c, e')
     _ ->
       throwError
@@ -166,7 +168,8 @@ infer inp@(TApp e a) = do
 infer (Merge e1 e2) = do
   (a, e1') <- infer e1
   (b, e2') <- infer e2
-  disjoint a b
+  ctx <- ask
+  disjoint ctx a b
   return (And a b, T.UPair e1' e2')
 
 {-
@@ -193,8 +196,13 @@ infer (Acc e l) = do
     SRecT l' a ->
       if l == l'
         then return (a, e')
-        else throwError $
-             text "labels not equal:" <+> text l <+> text "and" <+> text l'
+        else throwError
+               (hang 2 $
+                text "record projection failed in" <+>
+                squotes (pprint e) <> colon <$>
+                text "it has label" <+>
+                squotes (text l') <+>
+                text "which is not equal to" <+> squotes (text l))
     _ ->
       throwError
         (text "expect a record type for" <+>
@@ -317,11 +325,20 @@ A <: B ~> c
 Γ ⊢ e ⇐ B ~> c E
 
 -}
+
 check e b = do
   (a, e') <- infer e
-  c <- a <: b
-  wf b
-  return (T.UApp c e')
+  let res = a <<: b
+  case res of
+    Right c -> do
+      wf b
+      return (T.UApp c e')
+    Left err ->
+      throwError
+        (hang 2 $
+         text "subtyping failed" <> colon <$>
+         squotes (pprint e) <+> text "has type" <+> squotes (pprint a) <$>
+         text "which is not a subtype of" <+> squotes (pprint b))
 
 
 wf :: Type -> TcMonad ()
@@ -329,7 +346,11 @@ wf IntT = return ()
 wf BoolT = return ()
 wf StringT = return ()
 wf (Arr a b) = wf a >> wf b
-wf (And a b) = wf a >> wf b >> disjoint a b
+wf (And a b) = do
+  wf a
+  wf b
+  ctx <- ask
+  disjoint ctx a b
 wf (TVar x) = lookupTyVar x >> return ()
 wf (DForall t) = do
   ((x, Embed a), b) <- unbind t
@@ -338,56 +359,42 @@ wf (DForall t) = do
 wf (SRecT _ t) = wf t
 wf TopT = return ()
 
-disjoint :: Type -> Type -> TcMonad ()
-disjoint TopT _ = return ()
-disjoint _ TopT = return ()
-disjoint t@(TVar x) t'@(TVar y) = do
-  let l = do a <- lookupTyVar x
-             a <: t'
-             return ()
-  let r = do a <- lookupTyVar y
-             a <: t
-             return ()
-  mplus l r
-disjoint (TVar x) b = do
-  a <- lookupTyVar x
-  a <: b
-  return ()
-disjoint b (TVar x) = do
-  a <- lookupTyVar x
-  a <: b
-  return ()
-disjoint (DForall t) (DForall t') = do
-  ((x, Embed a1), b) <- unbind t
-  ((y, Embed a2), c) <- unbind t'
-  let c' = subst y (TVar x) c
-  local (extendTyVarCtx x (And a1 a2)) $ disjoint b c'
-disjoint (DForall _) _ = return ()
-disjoint _ (DForall _) = return ()
-disjoint (SRecT l a) (SRecT l' b) =
-  if l == l'
-    then disjoint a b
-    else return ()
-disjoint (SRecT _ _) _ = return ()
-disjoint _ (SRecT _ _) = return ()
-disjoint (Arr _ a2) (Arr _ b2) =
-  disjoint a2 b2
-disjoint (Arr _ _) _ = return ()
-disjoint _ (Arr _ _) = return ()
-disjoint (And a1 a2) b = do
-  disjoint a1 b
-  disjoint a2 b
-disjoint a (And b1 b2) = do
-  disjoint a b1
-  disjoint a b2
-disjoint IntT IntT = throwError $ text "int and int not disjoint"
-disjoint IntT _ = return ()
-disjoint _ IntT = return ()
-disjoint BoolT BoolT = throwError $ text "bool and bool not disjoint"
-disjoint BoolT _ = return ()
-disjoint _ BoolT = return ()
-disjoint StringT StringT = throwError $ text "string and string not disjoint"
 
+-- Careful, am I following strictly Fig.3?
+disjoint :: (Fresh m, MonadError Doc m) => Ctx -> Type -> Type -> m ()
+disjoint _ TopT _ = return ()
+disjoint _ _ TopT = return ()
+
+disjoint ctx (TVar x) b
+  | Just a <- lookupTyVarMaybe ctx x
+  , Right _ <- a <<: b = return ()
+disjoint ctx b (TVar x)
+  | Just a <- lookupTyVarMaybe ctx x
+  , Right _ <- a <<: b = return ()
+
+disjoint ctx (DForall t) (DForall t') = do
+  t <- unbind2 t t'
+  case t of
+    Just ((x, Embed a1), b, (y, Embed a2), c) ->
+      disjoint (extendTyVarCtx x (And a1 a2) ctx) b c
+    _ -> throwError $ text "Patterns have different binding variables"
+
+disjoint ctx (SRecT l a) (SRecT l' b) =
+  if l == l'
+    then disjoint ctx a b
+    else return ()
+
+disjoint ctx (Arr _ a2) (Arr _ b2) = disjoint ctx a2 b2
+disjoint ctx (And a1 a2) b = do
+  disjoint ctx a1 b
+  disjoint ctx a2 b
+disjoint ctx a (And b1 b2) = do
+  disjoint ctx a b1
+  disjoint ctx a b2
+disjoint _ IntT IntT = throwError $ text "int and int are not disjoint"
+disjoint _ BoolT BoolT = throwError $ text "bool and bool are not disjoint"
+disjoint _ StringT StringT = throwError $ text "string and string are not disjoint"
+disjoint _ _ _ = return ()
 
 -- transTyp :: Fresh m => Type -> m T.Type
 -- transTyp IntT = return T.IntT
