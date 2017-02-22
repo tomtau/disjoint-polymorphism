@@ -6,12 +6,12 @@ module Source.Subtyping
   ) where
 
 import           Control.Monad.Except
+import           Environment
 import           PrettyPrint
 import           Source.Syntax
 import qualified Target.Syntax as T
-import           Unbound.LocallyNameless
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
-import Environment
+import           Unbound.LocallyNameless
 
 
 
