@@ -189,24 +189,35 @@ infer (DRec l e) = do
 ----------------------
 Γ ⊢ e.l ⇒ A ~> E
 
+The above is what is shown in the paper. In the implementation, we'd like to
+avoid annotating a record before projection. The following is the modified rule:
+
+Γ ⊢ e ⇒ t ~> E
+t contains l with {l : A}
+t <: {l : A} ~> c
+-----------------------
+Γ ⊢ e.l ⇒ A ~> c E
+
 -}
 infer (Acc e l) = do
   (t, e') <- infer e
-  case t of
-    SRecT l' a ->
-      if l == l'
-        then return (a, e')
-        else throwError
-               (hang 2 $
-                text "record projection failed in" <+>
-                squotes (pprint e) <> colon <$>
-                text "it has label" <+>
-                squotes (text l') <+>
-                text "which is not equal to" <+> squotes (text l))
+  case findLabel l t of
+    Just t'@(SRecT _ a) -> do
+      case t <<: t' of
+        Left err ->
+          throwError
+            (hang 2 $
+             text "record projection failed in" <+> squotes (pprint e) <> colon <$>
+             text "it has type" <+>
+             squotes (pprint t) <+>
+             text "which is not a subtype of" <+> squotes (pprint t'))
+        Right c -> return (a, T.UApp c e')
     _ ->
       throwError
-        (text "expect a record type for" <+>
-         pprint e <+> text "but got" <+> pprint t)
+        (hang 2 $
+         text "expect a record type with label" <+>
+         squotes (text l) <+> text "for" <+> squotes (pprint e) <$>
+         text "but got" <+> squotes (pprint t))
 
 {-
 
@@ -395,6 +406,18 @@ disjoint _ IntT IntT = throwError $ text "int and int are not disjoint"
 disjoint _ BoolT BoolT = throwError $ text "bool and bool are not disjoint"
 disjoint _ StringT StringT = throwError $ text "string and string are not disjoint"
 disjoint _ _ _ = return ()
+
+
+findLabel :: Label -> Type -> Maybe Type
+findLabel l IntT = Nothing
+findLabel l BoolT = Nothing
+findLabel l StringT = Nothing
+findLabel l (Arr t1 t2) = Nothing
+findLabel l (And t1 t2) = mplus (findLabel l t1) (findLabel l t2)
+findLabel l (TVar _) = Nothing
+findLabel l (DForall{}) = Nothing
+findLabel l inp@(SRecT l' t) = if l == l' then Just inp else Nothing
+findLabel l TopT = Nothing
 
 -- transTyp :: Fresh m => Type -> m T.Type
 -- transTyp IntT = return T.IntT

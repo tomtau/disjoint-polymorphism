@@ -12,6 +12,6 @@ def dog (n : String) (s : String) : Dog = {name = n, male = s};
 
 def jim : Person & Loggable = extend Person Loggable (person "Jim" true) consoleLogger;
 
-(jim : {log : T -> Int}).log ()
+jim.log ()
 
 -- def fool : Dog & Person = extend Dog Person (dog "Pluto" "yes") (person "Jim" true);
