@@ -20,7 +20,7 @@ data Expr = Anno Expr Type
           | Var TmName
           | App Expr Expr
           | Lam (Bind TmName Expr)
-          | Let (Bind (TmName, Embed Type, Embed Expr) Expr)
+          | Let (Bind (TmName, Embed Type) (Expr, Expr))
             -- ^ let expression, possibly recursive
           | DLam (Bind (TyName, Embed Type) Expr)
           | TApp Expr Type
@@ -127,7 +127,7 @@ mkRecdsT [(l, e)] = SRecT l e
 mkRecdsT ((l, e) : r) = And (SRecT l e) (mkRecdsT r)
 
 elet :: String -> Type -> Expr -> Expr -> Expr
-elet s t e b = Let (bind (s2n s, embed t, embed e) b)
+elet s t e b = Let (bind (s2n s, embed t) (e, b))
 
 teleToBind :: [(String, Type)] -> Type -> Type
 teleToBind ts t = foldr (\(n, s) tt -> tforall n s tt) t ts

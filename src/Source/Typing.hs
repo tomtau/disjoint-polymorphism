@@ -271,7 +271,7 @@ Note: Recursive let binding
 
 -}
 infer (Let b) = do
-  ((x, Embed t, Embed e1), e2) <- unbind b
+  ((x, Embed t), (e1, e2)) <- unbind b
   e1' <- local (extendVarCtx x t) $ check e1 t
   (t', e2') <- local (extendVarCtx x t) $ infer e2
   return (t', T.ULet (bind (translate x) (e1', e2')))

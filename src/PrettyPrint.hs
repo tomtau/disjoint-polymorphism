@@ -113,7 +113,7 @@ instance Pretty S.Expr where
     return $ e' <> dot <> text l
   ppr S.Top = return $ text "T"
   ppr (S.Let b) = do
-    lunbind b $ \((x, Embed t, Embed e), body) -> do
+    lunbind b $ \((x, Embed t), (e, body)) -> do
       e' <- ppr e
       t' <- ppr t
       b' <- ppr body
