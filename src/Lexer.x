@@ -45,19 +45,19 @@ $hexdig     = [0-9A-Fa-f]
 
 tokens :-
 
-<0> $white+             { skip }
-<0> "--".*              { skip }
-<0> $paren              { mkT (const TSym) }
+<0> $white+                                    { skip }
+<0> "--".*                                     { skip }
+<0> $paren                                     { mkT (const TSym) }
 
-<0> true                { mkT (const (TBool True))}
-<0> false               { mkT (const (TBool False))}
-<0> @keyword            { mkT (const TKey) }
-<0> @compop             { mkT (const TSym) }
-<0> @op                 { mkT (const TSym) }
-<0> $digit+             { mkT (TInt . read) }
-<0> [A-Z] [$vchar]*                                      { mkT Tupperid }
-<0> \_ [$alpha \_] [$vchar]* | [a-z] [$vchar]*           { mkT Tlowerid }
-<0> \" @string* \"      { mkT (TStr . convChar . tail . init) }
+<0> true                                       { mkT (const (TBool True))}
+<0> false                                      { mkT (const (TBool False))}
+<0> @keyword                                   { mkT (const TKey) }
+<0> @compop                                    { mkT (const TSym) }
+<0> @op                                        { mkT (const TSym) }
+<0> $digit+                                    { mkT (TInt . read) }
+<0> [A-Z] [$vchar]*                            { mkT Tupperid }
+<0> \_ [$alpha \_] [$vchar]* | [a-z] [$vchar]* { mkT Tlowerid }
+<0> \" @string* \"                             { mkT (TStr . convChar . tail . init) }
 
 
 {
