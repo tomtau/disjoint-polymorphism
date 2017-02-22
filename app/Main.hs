@@ -52,7 +52,7 @@ exec source =
       let res = runTcMonad (replCtx env) (tcModule abt)
       case res of
         Right (typ, tar, tEnv) ->
-          if topType typ && not (null (moduleEntries abt))
+          if topType typ && null (moduleEntries abt)
             then putMsg "Declaration added!"
             else do
               putMsg "Typing result"

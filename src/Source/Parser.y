@@ -139,7 +139,6 @@ expr : lam id '.' expr   %prec LAM                { elam $2 $4 }
      | expr '<' expr                              { PrimOp (Logical Lt) $1 $3 }
      | expr '>' expr                              { PrimOp (Logical Gt) $1 $3 }
      | expr ',,' expr                             { Merge $1 $3 }
-     | expr '.' id                                { Acc $1 $3 }
      | if expr then expr else expr  %prec IF      { If $2 $4 $6 }
      | aexp                                       { $1 }
 
@@ -152,6 +151,7 @@ recd : id '=' expr          { ($1, $3) }
 aexp :: { Expr }
 aexp : aexp term                                { App $1 $2 }
      | aexp '@' type                            { TApp $1 $3 }
+     | aexp '.' id                                { Acc $1 $3 }
      | term                                     { $1 }
 
 term :: { Expr }

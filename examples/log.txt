@@ -1,0 +1,12 @@
+def extend S [U*S] (first : S) (second : U) : S&U = first ,, second;
+
+type Person = {name : string, male : bool};
+type Loggable = {log : T -> int};
+
+def person (n : string) (s : bool) : Person = {name = n, male = s};
+
+def consoleLogger : Loggable = {log = (\ x . 3) : T -> int};
+
+def jim : Person & Loggable = extend @ Person @ Loggable (person "Jim" true) consoleLogger;
+
+(jim : {log : T -> int}).log T

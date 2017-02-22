@@ -93,12 +93,3 @@ lookupTmDef
 lookupTmDef v = do
   env <- asks bndCtx
   return $ M.lookup v env
-
--- lookupTyDef
---   :: (MonadReader Ctx m)
---   => TyName -> m (Maybe Type)
--- lookupTyDef v = do
---   ctx <- asks ctx
---   return $ listToMaybe [fromJust d | TyDef v' t d <- ctx, v == v', isJust d]
-
-
