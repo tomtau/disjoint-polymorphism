@@ -35,7 +35,7 @@ Evaluation result
 
 ## Syntax of the source langauge
 
-* Primitive type: `Int`, `Bool`
+* Primitive type: `Int`, `Bool`, `String`
 * Top type/value: `() : T`
 * Type annotation: `2 : Int`
 * Lambda: `(\x . x+1) : Int -> Int`
@@ -44,8 +44,8 @@ Evaluation result
 * If: `if x == 0 then true else false`
 * Disjoint (universal) quantification: `forall A*Int. A -> A`
 * Type-level lambda: `/\A * Int . (\x . x) : A -> A`
-* Term declaration: `def id A (x : A) : A = x; id @ Int 3;`
-* Type declaration: `type Point = {isZero : Bool, axis : Int}; def point : Point = {isZero = true, axis = 3};`
+* Term declaration: `def id A (x : A) : A = x; id Int 3;`
+* Type declaration: `type Person = {name : String, male : Bool};`
 
 ## Examples
 
