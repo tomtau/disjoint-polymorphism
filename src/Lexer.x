@@ -18,19 +18,20 @@ import Numeric (readOct)
 
 $digit = 0-9
 $alpha = [a-zA-Z]
+$vchar = [$alpha $digit \_ \']
 $white = [\ \t\n\r]
 $paren = [\(\)\[\]\{\}]
 
 @keyword = let | in
-         | int | bool | string
+         | Int | Bool | String
          | if  | then | else
          | def | type | module
-         | defrec
+         | defrec | forall
 
-@compop = "==" | "/=" | \/\\ | \\\/ | "->" | ",,"
+@compop = "==" | "/=" | \/\\ | "->" | ",," | "()"
 
 @op = \\ | "/" | ":" | "," | "."
-    | "+" | "-" | "*" | "T" | "@"
+    | "+" | "-" | "*" | "T"
     | "&" | "=" | ">" | "<" | ";" | "[" | "]"
 
 $octdig     = [0-7]
@@ -54,7 +55,8 @@ tokens :-
 <0> @compop             { mkT (const TSym) }
 <0> @op                 { mkT (const TSym) }
 <0> $digit+             { mkT (TInt . read) }
-<0> @id                 { mkT TId }
+<0> [A-Z] [$vchar]*                                      { mkT Tupperid }
+<0> \_ [$alpha \_] [$vchar]* | [a-z] [$vchar]*           { mkT Tlowerid }
 <0> \" @string* \"      { mkT (TStr . convChar . tail . init) }
 
 
@@ -62,7 +64,8 @@ tokens :-
 
 data Token = T AlexPosn TokenClass String deriving (Show, Eq)
 
-data TokenClass = TId String
+data TokenClass = Tlowerid String
+                | Tupperid String
                 | TInt Int
                 | TBool Bool
                 | TStr String

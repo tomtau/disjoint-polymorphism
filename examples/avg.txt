@@ -1,4 +1,4 @@
-def avg [R * {x : int}&{y : int}] (r : {x : int}&{y : int}&R) : int
-  = (r : {x : int}).x + (r : {y : int}).y;
+def avg [R * {x : Int}&{y : Int}] (r : {x : Int}&{y : Int}&R) : Int
+  = (r : {x : Int}).x + (r : {y : Int}).y;
 
-avg @ int ({x = 3, y = 4},,4)
+avg Int ({x = 3, y = 4},,4)

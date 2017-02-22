@@ -27,7 +27,7 @@ The REPL prompt is `>`, type `:q` to quit or input any expression in the source 
 ```
 > 2
 Typing result
-: int
+: Int
 
 Evaluation result
 => 2
@@ -35,17 +35,17 @@ Evaluation result
 
 ## Syntax of the source langauge
 
-* Primitive type: `int`, `bool`
-* Top type/value: `T : T`
-* Type annotation: `2 : int`
-* Lambda: `(\x . x+1) : int->int`
-* Merge: `true ,, (\x.x) : int->int`
-* Intersection type: `bool & (int->int)`
+* Primitive type: `Int`, `Bool`
+* Top type/value: `() : T`
+* Type annotation: `2 : Int`
+* Lambda: `(\x . x+1) : Int -> Int`
+* Merge: `true ,, 3`
+* Intersection type: `Bool & (Int -> Int)`
 * If: `if x == 0 then true else false`
-* Disjoint (universal) quantification: `\/A*int. A -> A`
-* Type-level lambda: `/\A * int . (\x . x) : A -> A`
-* Term declaration: `def id A (x : A) : A = x; id @ int 3`
-* Type declaration: `type Point = {isZero : bool, axis : int}; def point : Point = {isZero = true, axis = 3};`
+* Disjoint (universal) quantification: `forall A*Int. A -> A`
+* Type-level lambda: `/\A * Int . (\x . x) : A -> A`
+* Term declaration: `def id A (x : A) : A = x; id @ Int 3;`
+* Type declaration: `type Point = {isZero : Bool, axis : Int}; def point : Point = {isZero = true, axis = 3};`
 
 ## Examples
 
@@ -55,14 +55,14 @@ def fst A [B*A] (x : A&B) : A = x;
 
 def snd A [B*A] (x : A&B) : B = x;
 
-snd @ int @ bool (1,,true)
+snd @ Int @ Bool (1,,true)
 ```
 
 ```
 > :load examples/fst.txt
 Typing result
-: bool
+: Bool
 
 Evaluation result
-=> True
+=> true
 ```

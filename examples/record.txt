@@ -1,5 +1,5 @@
 def remove A [B * {l : A}] (x : {l : A} & B) : B = x;
 
-def test : {l : int, r : string} = {l = 3, r = "hello"};
+def test : {l : Int, r : String} = {l = 3, r = "hello"};
 
-remove @ int @ {r : string} test
+remove Int {r : String} test

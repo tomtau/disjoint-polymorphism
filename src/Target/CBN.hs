@@ -32,7 +32,8 @@ data Value = VInt Int
 
 instance Show Value where
   show (VInt n) = show n
-  show (VBool n) = show n
+  show (VBool True) = "true"
+  show (VBool False) = "false"
   show (VPair (CExp e1 _) (CExp e2 _)) = "(" ++ show (pprint e1) ++ ", " ++ show (pprint e2) ++ ")"
   show VUnit = "()"
   show (VStr s) = show s

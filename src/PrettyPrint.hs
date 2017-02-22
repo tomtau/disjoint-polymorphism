@@ -41,9 +41,9 @@ instance Pretty S.Type where
     t1' <- ppr t1
     t2' <- ppr t2
     return $ parens (t1' <+> text "->" <+> t2')
-  ppr S.IntT = return $ text "int"
-  ppr S.BoolT = return $ text "bool"
-  ppr S.StringT = return $ text "string"
+  ppr S.IntT = return $ text "Int"
+  ppr S.BoolT = return $ text "Bool"
+  ppr S.StringT = return $ text "String"
   ppr (S.And t1 t2) = do
     t1' <- ppr t1
     t2' <- ppr t2
@@ -88,7 +88,8 @@ instance Pretty S.Expr where
         (parens $
          text "Λ" <> parens (text (show x) <> text "*" <> t') <+> dot <+> b')
   ppr (S.IntV n) = return . text . show $ n
-  ppr (S.BoolV b) = return . text . show $ b
+  ppr (S.BoolV True) = return (text "true")
+  ppr (S.BoolV False) = return (text "false")
   ppr (S.StrV b) = return . text $ b
   ppr (S.PrimOp op e1 e2) = do
     e1' <- ppr e1
@@ -159,7 +160,8 @@ instance Pretty T.Expr where
       b' <- ppr b
       return (parens $ text "Λ" <> text (show x) <+> dot <+> b')
   ppr (T.IntV n) = return . text . show $ n
-  ppr (T.BoolV b) = return . text . show $ b
+  ppr (T.BoolV True) = return (text "true")
+  ppr (T.BoolV False) = return (text "false")
   ppr (T.PrimOp op e1 e2) = do
     e1' <- ppr e1
     e2' <- ppr e2
@@ -181,10 +183,6 @@ instance Pretty T.Expr where
     e1' <- ppr e1
     e2' <- ppr e2
     return $ text "if" <+> p' <+> text "then" <+> e1' <+> text "else" <+> e2'
-  -- ppr (T.FixP b) =
-  --   lunbind b $ \(x, e) -> do
-  --     e' <- ppr e
-  --     return $ text "fix" <+> text (show x) <+> dot <+> e'
   ppr (T.Let b) = do
     lunbind b $ \(x, (e, body)) -> do
       e' <- ppr e
@@ -202,7 +200,8 @@ instance Pretty T.UExpr where
       b' <- ppr b
       return (parens $ text "λ" <> text (show x) <+> dot <+> b')
   ppr (T.UIntV n) = return . text . show $ n
-  ppr (T.UBoolV b) = return . text . show $ b
+  ppr (T.UBoolV True) = return (text "true")
+  ppr (T.UBoolV False) = return (text "false")
   ppr (T.UStrV b) = return . text $ b
   ppr (T.UPrimOp op e1 e2) = do
     e1' <- ppr e1
