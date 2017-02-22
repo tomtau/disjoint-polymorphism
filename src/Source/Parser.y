@@ -63,6 +63,7 @@ import Source.SrcLoc
     '=='        { T _ TSym "==" }
     '/='        { T _ TSym "/=" }
     ';'         { T _ TSym ";" }
+    '_'         { T _ TSym "_" }
 
     LOWER_IDENT { T _ (Tlowerid $$) _ }
     UPPER_IDENT { T _ (Tupperid $$) _ }
@@ -125,22 +126,23 @@ lamtele : '(' LOWER_IDENT ':' type ')' { ($2, $4) }
 
 expr :: { Expr }
 expr : lam LOWER_IDENT '.' expr   %prec LAM                { elam $2 $4 }
+     | lam '_' '.' expr   %prec LAM                        { elam "_" $4 }
      | blam UPPER_IDENT '*' type '.' expr %prec DLAM       { dlam $2 $4 $6 }
      | blam UPPER_IDENT '.' expr %prec DLAM                { dlam $2 TopT $4 }
-     | expr ':' type                              { Anno $1 $3 }
-     | '{' recds '}'                              { mkRecds $2 }
+     | expr ':' type                                       { Anno $1 $3 }
+     | '{' recds '}'                                       { mkRecds $2 }
      | let LOWER_IDENT ':' type '=' expr in expr %prec LET { elet $2 $4 $6 $8 }
-     | expr '+' expr                              { PrimOp (Arith Add) $1 $3 }
-     | expr '-' expr                              { PrimOp (Arith Sub) $1 $3 }
-     | expr '*' expr                              { PrimOp (Arith Mul) $1 $3 }
-     | expr '/' expr                              { PrimOp (Arith Div) $1 $3 }
-     | expr '==' expr                             { PrimOp (Logical Equ) $1 $3 }
-     | expr '/=' expr                             { PrimOp (Logical Neq) $1 $3 }
-     | expr '<' expr                              { PrimOp (Logical Lt) $1 $3 }
-     | expr '>' expr                              { PrimOp (Logical Gt) $1 $3 }
-     | expr ',,' expr                             { Merge $1 $3 }
-     | if expr then expr else expr  %prec IF      { If $2 $4 $6 }
-     | aexp                                       { $1 }
+     | expr '+' expr                                       { PrimOp (Arith Add) $1 $3 }
+     | expr '-' expr                                       { PrimOp (Arith Sub) $1 $3 }
+     | expr '*' expr                                       { PrimOp (Arith Mul) $1 $3 }
+     | expr '/' expr                                       { PrimOp (Arith Div) $1 $3 }
+     | expr '==' expr                                      { PrimOp (Logical Equ) $1 $3 }
+     | expr '/=' expr                                      { PrimOp (Logical Neq) $1 $3 }
+     | expr '<' expr                                       { PrimOp (Logical Lt) $1 $3 }
+     | expr '>' expr                                       { PrimOp (Logical Gt) $1 $3 }
+     | expr ',,' expr                                      { Merge $1 $3 }
+     | if expr then expr else expr  %prec IF               { If $2 $4 $6 }
+     | aexp                                                { $1 }
 
 recds :: { [(String, Expr)] }
 recds : recd                 { [$1] }

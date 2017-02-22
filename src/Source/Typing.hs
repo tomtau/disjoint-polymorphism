@@ -41,7 +41,10 @@ tcModule m = do
   targetDecls <- foldr tcE (return []) tmdecls
   -- Generate initial environment for execution
   let initEnv =
-        foldl (\env (n, e) -> TC.extendCtx (n, e, env) env) TC.emptyEnv targetDecls
+        foldl
+          (\env (n, e) -> TC.extendCtx (n, e, env) env)
+          TC.emptyEnv
+          targetDecls
   -- Check main expression
   (typ, transE) <- local (extendCtxs tmdecls) $ infer (substs substPairs mainE)
   return (typ, transE, initEnv)
