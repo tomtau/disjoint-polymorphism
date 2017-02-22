@@ -22,7 +22,10 @@ stack exec disjoint-intersection-exe
 
 ## REPL
 
-The REPL prompt is `>`, type `:q` to quit or input any expression in the source language to check its result.
+The REPL prompt is `>`:
+- type `:q` to quit or input any expression in the source language to check its
+result
+- type `:load` to load a file
 
 ```
 > 2
@@ -55,7 +58,7 @@ def fst A [B*A] (x : A&B) : A = x;
 
 def snd A [B*A] (x : A&B) : B = x;
 
-snd @ Int @ Bool (1,,true)
+snd Int Bool (1,,true)
 ```
 
 ```
