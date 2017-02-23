@@ -8,7 +8,7 @@ type Dog = {name : String, male : String};
 
 def person (n : String) (s : Bool) : Person = {name = n, male = s};
 
-def consoleLogger : Loggable = {log = (\ x . 3)};
+def consoleLogger : Loggable = {log = (\ _ . 3)};
 
 def dog (n : String) (s : String) : Dog = {name = n, male = s};
 

@@ -122,6 +122,7 @@ lteleidlst : {- empty -}  { [] }
 
 lamtele :: { (String, Type) }
 lamtele : '(' LOWER_IDENT ':' type ')' { ($2, $4) }
+        |  top                         { ("_", TopT) }
 
 
 expr :: { Expr }
