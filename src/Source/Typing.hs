@@ -325,10 +325,40 @@ check (DLam l) (DForall b) = do
       local (extendTyVarCtx x a) $ check e b
     Nothing -> throwError $ text "Patterns have different binding variables"
 
-check inp@(DLam _) t =
-  throwError $
-  text "expect a forall type" <+>
-  squotes (pprint inp) <+> text "but got" <+> squotes (pprint t)
+-- check inp@(DLam _) t =
+--   throwError $
+--   text "expect a forall type" <+>
+--   squotes (pprint inp) <+> text "but got" <+> squotes (pprint t)
+
+{-
+
+Γ ⊢ e1 ⇐ A ~> E1
+Γ ⊢ e2 ⇐ B ~> E2
+Γ ⊢ A∗B
+------------------------------
+Γ ⊢ e1,,e2 ⇐ A&B ~> (E1, E2)
+
+-}
+check (Merge e1 e2) (And a b) = do
+  e1' <- check e1 a
+  e2' <- check e2 b
+  ctx <- ask
+  disjoint ctx a b
+  return (T.UPair e1' e2')
+
+{-
+
+Γ ⊢ e ⇐ A ~> E
+----------------------
+Γ ⊢{l=e} ⇐ {l:A} ~> E
+
+-}
+
+check (DRec l e) (SRecT l' a) = do
+  when (l /= l') $
+    throwError (text "Labels not equal" <+> text l <+> text "and" <+> text l')
+  check e a
+
 
 {-
 

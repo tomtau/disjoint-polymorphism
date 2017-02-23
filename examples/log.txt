@@ -6,7 +6,7 @@ type Dog = {name : String, male : String};
 
 def person (n : String) (s : Bool) : Person = {name = n, male = s};
 
-def consoleLogger : Loggable = {log = (\ x . 3) : T -> Int};
+def consoleLogger : Loggable = {log = (\ x . 3)};
 
 def dog (n : String) (s : String) : Dog = {name = n, male = s};
 

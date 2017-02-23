@@ -1,25 +1,20 @@
 type Point = {x : T -> Int, y : T -> Int};
 
 def point (x : Int) (y : Int) (self : Point) : Point =
-  { x = (\_ . x) : T -> Int
-  , y = (\_ . y) : T -> Int
+  { x = (\_ . x)
+  , y = (\_ . y)
   };
-
 
 type Norm = {norm : T -> Int };
 
 def manhattanNorm (self : Point) : Norm =
-  { norm = (\_ . self.x() + self.y()) : T -> Int };
+  { norm = (\_ . self.x() + self.y()) };
 
 def skewedNorm (self: Point) : Norm = {
-  norm = (\_ . self.x() + self.y() * 2) : T -> Int };
+  norm = (\_ . self.x() + self.y() * 2) };
 
-def point1 : Point & Norm =
-  let self : Point & Norm = (point 3 4 self) ,, (manhattanNorm self)
-  in self;
+defrec point1 : Point & Norm = (point 3 4 point1) ,, (manhattanNorm point1);
 
-def point2 : Point & Norm =
-  let self : Point & Norm = (point 3 4 self) ,, (skewedNorm self)
-  in self;
+defrec point2 : Point & Norm = (point 3 4 point2) ,, (skewedNorm point2);
 
 point1.norm() + point2.norm()
