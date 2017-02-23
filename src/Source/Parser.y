@@ -94,48 +94,68 @@ prog :: { Module }
 prog : decllist expr_or_unit   { Module $1 $2 }
 
 traitdecl :: { Trait }
-traitdecl : trait UPPER_IDENT lteleidlst as UPPER_IDENT '{' LOWER_IDENT ':' type '=>' decllist '}'
+traitdecl : trait UPPER_IDENT params as UPPER_IDENT '{' LOWER_IDENT ':' type '=>' sdecllist '}'
                   { TraitDef $2 (Just $5) ($7, $9) (bind (map (\(n, b) -> (s2n n, embed b)) $3) $11)  }
-          | trait UPPER_IDENT lteleidlst '{' LOWER_IDENT ':' type '=>' decllist '}'
+          | trait UPPER_IDENT params '{' LOWER_IDENT ':' type '=>' sdecllist '}'
                   { TraitDef $2 Nothing ($5, $7) (bind (map (\(n, b) -> (s2n n, embed b)) $3) $9) }
 
-
 decllist :: { [Decl] }
-decllist : {- empty -}  { [] }
+decllist : {- empty -}       { [] }
          | decl ';' decllist { $1 : $3}
 
+decl :: { Decl }
+decl : sdecl     { SDecl $1 }
+     | traitdecl { TraitDecl $1 }
+
 expr_or_unit :: { Expr }
-expr_or_unit : expr { $1 }
+expr_or_unit : expr        { $1 }
              | {- empty -} { Top }
 
-decl :: { Decl }
-decl : def LOWER_IDENT teleidlst lteleidlst ':' type '=' expr
+
+sdecllist :: { [SimpleDecl] }
+sdecllist : {- empty -}         { [] }
+          | sdecl ';' sdecllist { $1 : $3 }
+
+
+sdecl :: { SimpleDecl }
+sdecl : def LOWER_IDENT teleidlst lteleidlst ':' type '=' expr
               { let (typ, trm) = teleToTmBind $3 $4 $6 $8
                 in TmDef $2 typ trm }
-     | typ UPPER_IDENT teleidlst '=' type     { TyDef $2 TopT (teleToBind $3 $5) }
-     | defrec LOWER_IDENT teleidlst lteleidlst ':' type '=' expr
+      | typ UPPER_IDENT teleidlst '=' type     { TyDef $2 TopT (teleToBind $3 $5) }
+      | defrec LOWER_IDENT teleidlst lteleidlst ':' type '=' expr
               { let (typ, trm) = teleToTmBind $3 $4 $6 $8
                 in TmDef $2 typ (elet $2 typ trm (evar $2))   }
 
 
 teleidlst :: { [(String, Type)] }
-teleidlst : {- empty -}  { [] }
+teleidlst : {- empty -}       { [] }
           | teleid teleidlst  { $1 : $2 }
 
 teleid :: { (String, Type) }
-teleid : tele { $1 }
+teleid : tele        { $1 }
        | UPPER_IDENT { ($1, TopT) }
 
 tele :: { (String, Type) }
 tele : '[' UPPER_IDENT '*' type ']'    { ($2, $4) }
 
 lteleidlst :: { [(String, Type)] }
-lteleidlst : {- empty -}  { [] }
+lteleidlst : {- empty -}         { [] }
            | lamtele lteleidlst  { $1 : $2 }
 
 lamtele :: { (String, Type) }
 lamtele : '(' LOWER_IDENT ':' type ')' { ($2, $4) }
         |  top                         { ("_", TopT) }
+
+params :: { [(String, Type)] }
+params : {- empty -}           { [] }
+       | '(' pairs ')'         { $2 }
+
+pairs :: { [(String, Type)] }
+pairs : pair    { [$1] }
+      | pair ',' pairs { $1:$3 }
+
+
+pair : LOWER_IDENT ':' type  { ($1, $3) }
 
 
 expr :: { Expr }

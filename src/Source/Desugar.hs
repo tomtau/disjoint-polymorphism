@@ -5,8 +5,16 @@ import Source.Syntax
 import Unbound.LocallyNameless
 
 
-desugar :: Fresh m => Trait -> m [Decl]
-desugar (TraitDef name a (self, st) parasBody) = do
+
+desugar :: (Fresh m) => [Decl] -> m [SimpleDecl]
+desugar ds = fmap concat $ mapM go ds
+  where
+    go :: Fresh m => Decl -> m [SimpleDecl]
+    go (SDecl decl) = return [decl]
+    go (TraitDecl trait) = desugarTrait trait
+
+desugarTrait :: Fresh m => Trait -> m [SimpleDecl]
+desugarTrait (TraitDef name a (self, st) parasBody) = do
   (params, tb) <- unbind parasBody
   let (bodyDecls, _) = resolveDecls tb
       declTypes = [(show n, t) | TmDef n t _ <- bodyDecls]
@@ -28,7 +36,7 @@ desugar (TraitDef name a (self, st) parasBody) = do
 
 
 -- Note: after parsing, earlier declarations appear first in the list
-resolveDecls :: [Decl] -> ([Decl], [(TyName, Type)])
+resolveDecls :: [SimpleDecl] -> ([SimpleDecl], [(TyName, Type)])
 resolveDecls decls =
   ( map
       (\(TmDef n p t) -> TmDef n (substs substPairs p) (substs substPairs t))

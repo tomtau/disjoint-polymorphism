@@ -25,27 +25,31 @@ tcModule :: Module -> TcMonad (Type, T.UExpr, TC.Env)
 tcModule m = do
   let decls = moduleEntries m
   let mainE = mainExpr m
-  -- Eliminate type dependencies
-  let (tmdecls, substPairs) = resolveDecls decls
-  -- Check term declarations and produce target declarations
+  -- Step 1: Desugar traits
+  sdecls <- desugar decls
+  -- Step 2: Eliminate type dependencies
+  let (tmdecls, substPairs) = resolveDecls sdecls
+  -- Step 3: Check term declarations and produce target declarations
   targetDecls <- foldr tcE (return []) tmdecls
-  -- Generate initial environment for execution
+  -- Step 4: Generate initial environment for execution
   let initEnv =
         foldl
           (\env (n, e) -> TC.extendCtx (n, e, env) env)
           TC.emptyEnv
           targetDecls
-  -- Check main expression
+  -- Step 5: Check main expression
   (typ, transE) <- local (extendCtxs tmdecls) $ infer (substs substPairs mainE)
   return (typ, transE, initEnv)
   where
-    tcE :: Decl -> TcMonad [(T.UName, T.UExpr)] -> TcMonad [(T.UName, T.UExpr)]
+    tcE :: SimpleDecl
+        -> TcMonad [(T.UName, T.UExpr)]
+        -> TcMonad [(T.UName, T.UExpr)]
     tcE d m = do
       transD <- tcTmDecl d
       fmap (transD :) $ local (extendCtx d) m
 
 -- Type check term declarations
-tcTmDecl :: Decl -> TcMonad (T.UName, T.UExpr)
+tcTmDecl :: SimpleDecl -> TcMonad (T.UName, T.UExpr)
 tcTmDecl (TmDef n typ term) = do
   oldDef <- lookupTmDef (s2n n)
   case oldDef of

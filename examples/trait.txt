@@ -1,0 +1,6 @@
+--> ()
+
+trait Point (x : Int, y: Int) { self : Point =>
+  def x () : Int = x;
+  def y () : Int = y;
+};

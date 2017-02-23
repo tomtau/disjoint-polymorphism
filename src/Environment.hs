@@ -61,12 +61,12 @@ extendVarCtx v t = ctxMap (M.insert v t) id id
 extendTyVarCtx :: TyName -> Type  -> Ctx -> Ctx
 extendTyVarCtx v t = ctxMap id (M.insert v t) id
 
-extendCtx :: Decl -> Ctx -> Ctx
+extendCtx :: SimpleDecl -> Ctx -> Ctx
 extendCtx (TmDef x t _) = extendVarCtx (s2n x) t
 extendCtx (TyDef x t _) = extendTyVarCtx (s2n x) t
 
 -- | Extend the context with a list of bindings
-extendCtxs :: [Decl] -> Ctx -> Ctx
+extendCtxs :: [SimpleDecl] -> Ctx -> Ctx
 extendCtxs ds ctx = foldr extendCtx ctx ds
 
 lookupTy
