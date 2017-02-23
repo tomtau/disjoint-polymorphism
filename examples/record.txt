@@ -1,3 +1,5 @@
+--> "hello"
+
 def remove A [B * {l : A}] (x : {l : A} & B) : B = x;
 
 def test : {l : Int, r : String} = {l = 3, r = "hello"};

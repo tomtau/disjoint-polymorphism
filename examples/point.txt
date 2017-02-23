@@ -1,3 +1,5 @@
+--> 18
+
 type Point = {x : T -> Int, y : T -> Int};
 
 def point (x : Int) (y : Int) (self : Point) : Point =

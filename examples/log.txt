@@ -1,3 +1,5 @@
+--> 3
+
 def extend S [U*S] (first : S) (second : U) : S&U = first ,, second;
 
 type Person = {name : String, male : Bool};
@@ -14,4 +16,5 @@ def jim : Person & Loggable = extend Person Loggable (person "Jim" true) console
 
 jim.log ()
 
+-- The following doesn't type check
 -- def fool : Dog & Person = extend Dog Person (dog "Pluto" "yes") (person "Jim" true);
