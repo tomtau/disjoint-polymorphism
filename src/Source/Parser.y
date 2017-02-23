@@ -23,6 +23,8 @@ import Source.SrcLoc
 
     def         { T _ TKey "def" }
     defrec      { T _ TKey "defrec" }
+    trait       { T _ TKey "trait" }
+    as          { T _ TKey "as" }
     forall      { T _ TKey "forall" }
     typ         { T _ TKey "type" }
     let         { T _ TKey "let" }
@@ -64,6 +66,7 @@ import Source.SrcLoc
     '/='        { T _ TSym "/=" }
     ';'         { T _ TSym ";" }
     '_'         { T _ TSym "_" }
+    '=>'        { T _ TSym "=>" }
 
     LOWER_IDENT { T _ (Tlowerid $$) _ }
     UPPER_IDENT { T _ (Tupperid $$) _ }
@@ -84,7 +87,17 @@ import Source.SrcLoc
 
 %%
 
+
+
+
+prog :: { Module }
 prog : decllist expr_or_unit   { Module $1 $2 }
+
+traitdecl :: { Trait }
+traitdecl : trait UPPER_IDENT lteleidlst as UPPER_IDENT '{' LOWER_IDENT ':' type '=>' decllist '}'
+                  { TraitDef $2 (Just $5) ($7, $9) (bind (map (\(n, b) -> (s2n n, embed b)) $3) $11)  }
+          | trait UPPER_IDENT lteleidlst '{' LOWER_IDENT ':' type '=>' decllist '}'
+                  { TraitDef $2 Nothing ($5, $7) (bind (map (\(n, b) -> (s2n n, embed b)) $3) $9) }
 
 
 decllist :: { [Decl] }
@@ -98,11 +111,11 @@ expr_or_unit : expr { $1 }
 decl :: { Decl }
 decl : def LOWER_IDENT teleidlst lteleidlst ':' type '=' expr
               { let (typ, trm) = teleToTmBind $3 $4 $6 $8
-                in TmDef (s2n $2) typ trm }
-     | typ UPPER_IDENT teleidlst '=' type     { TyDef (s2n $2) TopT (teleToBind $3 $5) }
+                in TmDef $2 typ trm }
+     | typ UPPER_IDENT teleidlst '=' type     { TyDef $2 TopT (teleToBind $3 $5) }
      | defrec LOWER_IDENT teleidlst lteleidlst ':' type '=' expr
               { let (typ, trm) = teleToTmBind $3 $4 $6 $8
-                in TmDef (s2n $2) typ (elet $2 typ trm (evar $2))   }
+                in TmDef $2 typ (elet $2 typ trm (evar $2))   }
 
 
 teleidlst :: { [(String, Type)] }

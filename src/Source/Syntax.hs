@@ -50,29 +50,29 @@ data Type = IntT
 data Module = Module
   { moduleEntries :: [Decl]
   , mainExpr :: Expr
-  }
+  } deriving (Show)
 
 -- | Declarations are the components of modules
-data Decl = TmDef TmName Type Expr
+data Decl = TmDef String Type Expr
           -- ^ A term variable with type annotation and possibly definition
-          | TyDef TyName Type Type
+          | TyDef String Type Type
           -- ^ A type variable with disjoint constraint and possibly definition
           deriving Show
 
 data Trait = TraitDef
-  { traitName :: String                    -- ^ Trait name
-  , traitParas :: [(String, Type)]         -- ^ Trait parameters
-  , typeAlias :: Maybe String              -- ^ Type alias
-  , selfType :: Type                       -- ^ Self type
-  , traitBody :: [Decl]                    -- ^ Trait body
+  { traitName :: String                                    -- ^ Trait name
+  , typeAlias :: Maybe String                              -- ^ Type alias
+  , selfType :: (String, Type)                             -- ^ Self type
+  , traitParasBody :: (Bind [(TmName, Embed Type)] [Decl]) -- ^ Trait parameters & body (parameters are bound in the body)
   } deriving (Show)
 
 
 -- Unbound library instances
-$(derive [''Expr, ''Type])
+$(derive [''Expr, ''Type, ''Decl])
 
 instance Alpha Type
 instance Alpha Expr
+instance Alpha Decl
 
 instance Subst Expr Type
 instance Subst Expr ArithOp

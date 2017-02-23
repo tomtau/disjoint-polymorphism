@@ -47,12 +47,12 @@ tcModule m = do
 -- Type check term declarations
 tcTmDecl :: Decl -> TcMonad (T.UName, T.UExpr)
 tcTmDecl (TmDef n typ term) = do
-  oldDef <- lookupTmDef n
+  oldDef <- lookupTmDef (s2n n)
   case oldDef of
     Nothing -> do
       trans <- check term typ
-      return (translate n, trans)
-    Just _ -> throwError $ text "Multiple definitions of" <+>  text (show n)
+      return (s2n n, trans)
+    Just _ -> throwError $ text "Multiple definitions of" <+> text n
 
 tcTmDecl _ = throwError $ text "Not implemented"
 

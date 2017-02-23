@@ -26,9 +26,9 @@ $paren = [\(\)\[\]\{\}]
          | Int | Bool | String
          | if  | then | else
          | def | type | module
-         | defrec | forall
+         | defrec | forall | trait | as
 
-@compop = "==" | "/=" | \/\\ | "->" | ",," | "()"
+@compop = "==" | "/=" | \/\\ | "->" | ",," | "()" | "=>"
 
 @op = \\ | "/" | ":" | "," | "."
     | "+" | "-" | "*" | "T"
