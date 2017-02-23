@@ -147,7 +147,7 @@ lamtele : '(' LOWER_IDENT ':' type ')' { ($2, $4) }
         |  top                         { ("_", TopT) }
 
 params :: { [(String, Type)] }
-params : {- empty -}           { [] }
+params : top                   { [("_", TopT)] }
        | '(' pairs ')'         { $2 }
 
 pairs :: { [(String, Type)] }

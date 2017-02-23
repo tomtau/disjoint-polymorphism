@@ -17,8 +17,8 @@ desugarTrait :: Fresh m => Trait -> m [SimpleDecl]
 desugarTrait trait = do
   (params, tb) <- unbind parasBody
   let (bodyDecls, _) = resolveDecls tb
-      declTypes = [(show n, t) | TmDef n t _ <- bodyDecls]
-      declDefs = [(show n, d) | TmDef n _ d <- bodyDecls]
+      declTypes = [(n, t) | TmDef n t _ <- bodyDecls]
+      declDefs = [(n, d) | TmDef n _ d <- bodyDecls]
       paramTypes = map (unembed . snd) params
       paramNames = map fst params
       traitType = TyDef aliasName TopT (mkRecdsT declTypes)
