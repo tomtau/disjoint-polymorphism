@@ -60,7 +60,7 @@ A1 <: A3 ~> E     A3 ordinary
 A1&A2 <: A3 ~> λx.[[A3]](E (proj1 x))
 
 -}
-(<:) (And a1 a2) a3
+(<:) (And a1 _) a3
   | ordinary a3
   , Right e <- a1 <<: a3 = do
     let c = T.eapp e (T.UP1 (T.evar "x"))
@@ -75,7 +75,7 @@ A1&A2 <: A3 ~> λx . [[A3]](E (proj2 x))
 
 
 -}
-(<:) (And a1 a2) a3
+(<:) (And _ a2) a3
   | ordinary a3
   , Right e <- a2 <<: a3 = do
     let c = T.eapp e (T.UP2 (T.evar "x"))

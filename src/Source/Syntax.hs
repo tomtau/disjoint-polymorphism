@@ -59,6 +59,13 @@ data Decl = TmDef TmName Type Expr
           -- ^ A type variable with disjoint constraint and possibly definition
           deriving Show
 
+data Trait = TraitDef
+  { traitName :: String                    -- ^ Trait name
+  , traitParas :: [(String, Type)]         -- ^ Trait parameters
+  , typeAlias :: Maybe String              -- ^ Type alias
+  , selfType :: Type                       -- ^ Self type
+  , traitBody :: [Decl]                    -- ^ Trait body
+  } deriving (Show)
 
 
 -- Unbound library instances

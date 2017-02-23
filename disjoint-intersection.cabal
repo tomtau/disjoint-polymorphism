@@ -24,6 +24,7 @@ library
                        Source.Syntax
                        Source.Subtyping
                        Source.Typing
+                       Source.Desugar
                        Source.SrcLoc
                        Target.Syntax
                        -- Target.Dynamics

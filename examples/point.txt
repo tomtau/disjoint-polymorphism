@@ -2,18 +2,18 @@
 
 type Point = {x : T -> Int, y : T -> Int};
 
-def point (x : Int) (y : Int) (self : Point) : Point =
+def point (x : Int) (y : Int) (this : Point) : Point =
   { x = \_ . x
   , y = \_ . y
   };
 
 type Norm = {norm : T -> Int };
 
-def manhattanNorm (self : Point) : Norm =
-  { norm = (\_ . self.x() + self.y()) };
+def manhattanNorm (this : Point) : Norm =
+  { norm = (\_ . this.x() + this.y()) };
 
-def skewedNorm (self: Point) : Norm = {
-  norm = (\_ . self.x() + self.y() * 2) };
+def skewedNorm (this: Point) : Norm = {
+  norm = (\_ . this.x() + this.y() * 2) };
 
 defrec point1 : Point & Norm = (point 3 4 point1) ,, (manhattanNorm point1);
 

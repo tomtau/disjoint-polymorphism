@@ -11,6 +11,7 @@ import           Control.Monad.Reader
 import           Environment
 import           Prelude hiding ((<$>))
 import           PrettyPrint
+import           Source.Desugar
 import           Source.Subtyping
 import           Source.Syntax
 import qualified Target.CBN as TC
@@ -25,18 +26,7 @@ tcModule m = do
   let decls = moduleEntries m
   let mainE = mainExpr m
   -- Eliminate type dependencies
-  -- Note: after parsing, earlier declarations appear first in the list
-  let tydecls =
-        foldr
-          (\(TyDef n p t) ds -> (TyDef n p (substs (toSubst ds) t)) : ds)
-          []
-          (reverse ([decl | decl@(TyDef _ _ _) <- decls]))
-  let substPairs = toSubst tydecls
-  -- Resolve type declarations
-  let tmdecls =
-        map
-          (\(TmDef n p t) -> TmDef n (substs substPairs p) (substs substPairs t))
-          [decl | decl@(TmDef _ _ _) <- decls]
+  let (tmdecls, substPairs) = resolveDecls decls
   -- Check term declarations and produce target declarations
   targetDecls <- foldr tcE (return []) tmdecls
   -- Generate initial environment for execution
@@ -49,7 +39,6 @@ tcModule m = do
   (typ, transE) <- local (extendCtxs tmdecls) $ infer (substs substPairs mainE)
   return (typ, transE, initEnv)
   where
-    toSubst ds = [(n, t) | TyDef n _ t <- ds]
     tcE :: Decl -> TcMonad [(T.UName, T.UExpr)] -> TcMonad [(T.UName, T.UExpr)]
     tcE d m = do
       transD <- tcTmDecl d
@@ -409,7 +398,7 @@ disjoint ctx b (TVar x)
 disjoint ctx (DForall t) (DForall t') = do
   t <- unbind2 t t'
   case t of
-    Just ((x, Embed a1), b, (y, Embed a2), c) ->
+    Just ((x, Embed a1), b, (_, Embed a2), c) ->
       disjoint (extendTyVarCtx x (And a1 a2) ctx) b c
     _ -> throwError $ text "Patterns have different binding variables"
 
