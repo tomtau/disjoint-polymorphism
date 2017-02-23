@@ -3,8 +3,8 @@
 type Point = {x : T -> Int, y : T -> Int};
 
 def point (x : Int) (y : Int) (self : Point) : Point =
-  { x = (\_ . x)
-  , y = (\_ . y)
+  { x = \_ . x
+  , y = \_ . y
   };
 
 type Norm = {norm : T -> Int };
