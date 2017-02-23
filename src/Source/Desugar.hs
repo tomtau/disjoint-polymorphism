@@ -14,14 +14,14 @@ desugar ds = fmap concat $ mapM go ds
     go (TraitDecl trait) = desugarTrait trait
 
 desugarTrait :: Fresh m => Trait -> m [SimpleDecl]
-desugarTrait (TraitDef name a (self, st) parasBody) = do
+desugarTrait trait = do
   (params, tb) <- unbind parasBody
   let (bodyDecls, _) = resolveDecls tb
       declTypes = [(show n, t) | TmDef n t _ <- bodyDecls]
       declDefs = [(show n, d) | TmDef n _ d <- bodyDecls]
       paramTypes = map (unembed . snd) params
       paramNames = map fst params
-      traitType = TyDef (maybe name id a) TopT (mkRecdsT declTypes)
+      traitType = TyDef aliasName TopT (mkRecdsT declTypes)
       traitDef =
         TmDef
           name
@@ -32,7 +32,11 @@ desugarTrait (TraitDef name a (self, st) parasBody) = do
              paramNames)
   return [traitType, traitDef]
   where
-    resType = (TVar (s2n (maybe name id a)))
+    resType = TVar (s2n aliasName)
+    parasBody = traitParasBody trait
+    name = traitName trait
+    aliasName = maybe name id (typeAlias trait)
+    (self, st) = selfType trait
 
 
 -- Note: after parsing, earlier declarations appear first in the list

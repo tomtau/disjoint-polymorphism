@@ -57,18 +57,20 @@ data Decl = SDecl SimpleDecl
           | TraitDecl Trait
           deriving Show
 
--- | Simple declarations declarations except for traits
+-- | Declarations other than traits
 data SimpleDecl = TmDef String Type Expr
-                  -- ^ A term variable with type annotation and possibly definition
                 | TyDef String Type Type
-                  -- ^ A type variable with disjoint constraint and possibly definition
                 deriving Show
 
 data Trait = TraitDef
-  { traitName :: String                                    -- ^ Trait name
-  , typeAlias :: Maybe String                              -- ^ Type alias
-  , selfType :: (String, Type)                             -- ^ Self type
-  , traitParasBody :: (Bind [(TmName, Embed Type)] [SimpleDecl]) -- ^ Trait parameters & body (parameters are bound in the body)
+  { traitName :: String
+    -- ^ Trait name
+  , typeAlias :: Maybe String
+    -- ^ Type alias
+  , selfType :: (String, Type)
+    -- ^ Self type
+  , traitParasBody :: (Bind [(TmName, Embed Type)] [SimpleDecl])
+    -- ^ Trait parameters & body (parameters are bound in the body)
   } deriving (Show)
 
 -- Unbound library instances
