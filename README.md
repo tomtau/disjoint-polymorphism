@@ -2,7 +2,10 @@
 
 [![wercker status](https://app.wercker.com/status/16b783eb6c0bc3585645ffba0be57999/s/master "wercker status")](https://app.wercker.com/project/byKey/16b783eb6c0bc3585645ffba0be57999)
 
-Implementation of [Disjoint Polymorphism](http://i.cs.hku.hk/~bruno/papers/ESOP2017.pdf).
+A prototype-based, statically typed language that supports dynamic composable
+traits, disjoint polymorphism, intersection types and a merge operator. For the
+underlying theory, please refer
+to [Disjoint Polymorphism](http://i.cs.hku.hk/~bruno/papers/ESOP2017.pdf).
 
 ## Build and Run
 
