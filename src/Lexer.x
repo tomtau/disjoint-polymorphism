@@ -27,7 +27,7 @@ $paren = [\(\)\[\]\{\}]
          | if  | then | else
          | def | type | module
          | defrec | forall | trait
-         | new
+         | new | Trait
 
 @compop = "==" | "/=" | \/\\ | "->" | ",," | "()" | "=>"
 

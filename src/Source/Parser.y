@@ -24,6 +24,7 @@ import Source.SrcLoc
     def         { T _ TKey "def" }
     defrec      { T _ TKey "defrec" }
     trait       { T _ TKey "trait" }
+    Trait       { T _ TKey "Trait" }
     new         { T _ TKey "new" }
     forall      { T _ TKey "forall" }
     typ         { T _ TKey "type" }
@@ -156,8 +157,14 @@ traitConstrs : traitConstr                      { [$1] }
 traitConstr :: { Expr }
 traitConstr : LOWER_IDENT args     { App (foldl App (evar $1) $2) (evar "self") }
 
+
+-- args can be
+--  (x, y, z)
+--  ()
+--  none
 args :: { [Expr] }
-args : top                { [Top] }
+args : {- empty -}        { [] }
+     | top                { [Top] }
      | '(' arglist ')'    { $2 }
 
 arglist :: { [Expr] }
@@ -217,6 +224,7 @@ type : int                                               { IntT }
      | forall UPPER_IDENT '*' type '.' type %prec FORALL { tforall $2 $4 $6 }
      | forall UPPER_IDENT '.' type %prec FORALL          { tforall $2 TopT $4 }
      | topT                                              { TopT }
+     | Trait '[' type ',' type ']'                       { Arr $3 $5 }
      | UPPER_IDENT                                       { tvar $1 }
 
 pairs :: { [(String, Type)] }
