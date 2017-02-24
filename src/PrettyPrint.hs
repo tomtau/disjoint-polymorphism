@@ -34,6 +34,7 @@ instance Pretty LogicalOp where
 instance Pretty Operation where
   ppr (Arith a) = ppr a
   ppr (Logical a) = ppr a
+  ppr Append = return $ text "++"
 
 
 instance Pretty S.Type where

@@ -79,22 +79,22 @@ eval (UBoolV n) = return $ VBool n
 eval (UStrV n) = return $ VStr n
 eval UUnit = return VUnit
 eval (UPrimOp op e1 e2) = do
-  (VInt v1) <- eval e1
-  (VInt v2) <- eval e2
+  v1 <- eval e1
+  v2 <- eval e2
   return $ evalOp op v1 v2
 eval (UIf e1 e2 e3) = do
   (VBool v) <- eval e1
   if v then eval e2 else eval e3
 
 
-evalOp :: Operation -> Int -> Int -> Value
-evalOp op x y =
-  case op of
-    (Arith Add) -> VInt $ x + y
-    (Arith Sub) -> VInt $ x - y
-    (Arith Mul) -> VInt $ x * y
-    (Arith Div) -> VInt $ x `div` y
-    (Logical Equ) -> VBool $ x == y
-    (Logical Neq) -> VBool $ x /= y
-    (Logical Lt) -> VBool $ x < y
-    (Logical Gt) -> VBool $ x > y
+evalOp :: Operation -> Value -> Value -> Value
+evalOp (Arith Add) (VInt x) (VInt y) = VInt $ x + y
+evalOp (Arith Sub) (VInt x) (VInt y) = VInt $ x - y
+evalOp (Arith Mul) (VInt x) (VInt y) = VInt $ x * y
+evalOp (Arith Div) (VInt x) (VInt y) = VInt $ x `div` y
+evalOp (Logical Equ) (VInt x) (VInt y) = VBool $ x == y
+evalOp (Logical Neq) (VInt x) (VInt y) = VBool $ x /= y
+evalOp (Logical Lt) (VInt x) (VInt y) = VBool $ x < y
+evalOp (Logical Gt) (VInt x) (VInt y) = VBool $ x > y
+evalOp Append (VStr x) (VStr y) = VStr $ x ++ y
+evalOp _ _ _ = error $ "Impossible happened in evalOp"

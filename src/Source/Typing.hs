@@ -230,6 +230,10 @@ infer (PrimOp op e1 e2) =
       e1' <- check e1 IntT
       e2' <- check e2 IntT
       return (BoolT, T.UPrimOp op e1' e2')
+    Append -> do
+      e1' <- check e1 StringT
+      e2' <- check e2 StringT
+      return (StringT, T.UPrimOp op e1' e2')
 
 infer inp@(If e1 e2 e3) = do
   e1' <- check e1 BoolT

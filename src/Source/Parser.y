@@ -68,6 +68,8 @@ import Source.SrcLoc
     ';'         { T _ TSym ";" }
     '_'         { T _ TSym "_" }
     '=>'        { T _ TSym "=>" }
+    '++'        { T _ TSym "++" }
+
 
     LOWER_IDENT { T _ (Tlowerid $$) _ }
     UPPER_IDENT { T _ (Tupperid $$) _ }
@@ -78,7 +80,7 @@ import Source.SrcLoc
 %nonassoc IF
 %nonassoc '==' '/='
 %nonassoc '<' '>'
-%left '+' '-'
+%left '+' '-' '++'
 %left '*' '/'
 %nonassoc ':'
 %left '.'
@@ -188,6 +190,7 @@ expr : lam LOWER_IDENT '->' expr   %prec LAM               { elam $2 $4 }
      | expr '/=' expr                                      { PrimOp (Logical Neq) $1 $3 }
      | expr '<' expr                                       { PrimOp (Logical Lt) $1 $3 }
      | expr '>' expr                                       { PrimOp (Logical Gt) $1 $3 }
+     | expr '++' expr                                      { PrimOp Append $1 $3 }
      | expr ',,' expr                                      { Merge $1 $3 }
      | if expr then expr else expr  %prec IF               { If $2 $4 $6 }
      | new '[' type ']' traitConstrs                       { transNew $3 $5 }

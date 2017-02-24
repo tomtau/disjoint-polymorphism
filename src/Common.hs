@@ -13,6 +13,7 @@ import           Unbound.LocallyNameless
 
 data Operation = Arith ArithOp
                | Logical LogicalOp
+               | Append
                deriving (Eq, Show)
 
 
