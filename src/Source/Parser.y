@@ -77,7 +77,6 @@ import Source.SrcLoc
 %nonassoc IF
 %nonassoc '==' '/='
 %nonassoc '<' '>'
-%left '@'
 %left '+' '-'
 %left '*' '/'
 %nonassoc ':'
@@ -148,9 +147,27 @@ params :: { [(String, Type)] }
 params : top                   { [("_", TopT)] }
        | '(' pairs ')'         { $2 }
 
+
+traitConstrs :: { [Expr] }
+traitConstrs : traitConstr                      { [$1] }
+             | traitConstr '&' traitConstrs     { $1:$3 }
+
+
+traitConstr :: { Expr }
+traitConstr : LOWER_IDENT args     { App (foldl App (evar $1) $2) (evar "self") }
+
+args :: { [Expr] }
+args : top                { [Top] }
+     | '(' arglist ')'    { $2 }
+
+arglist :: { [Expr] }
+arglist : expr                 { [$1] }
+        | expr ',' arglist       { $1:$3 }
+
+
 expr :: { Expr }
-expr : lam LOWER_IDENT '->' expr   %prec LAM                { elam $2 $4 }
-     | lam '_' '->' expr   %prec LAM                        { elam "_" $4 }
+expr : lam LOWER_IDENT '->' expr   %prec LAM               { elam $2 $4 }
+     | lam '_' '->' expr   %prec LAM                       { elam "_" $4 }
      | blam UPPER_IDENT '*' type '.' expr %prec DLAM       { dlam $2 $4 $6 }
      | blam UPPER_IDENT '.' expr %prec DLAM                { dlam $2 TopT $4 }
      | expr ':' type                                       { Anno $1 $3 }
@@ -166,6 +183,7 @@ expr : lam LOWER_IDENT '->' expr   %prec LAM                { elam $2 $4 }
      | expr '>' expr                                       { PrimOp (Logical Gt) $1 $3 }
      | expr ',,' expr                                      { Merge $1 $3 }
      | if expr then expr else expr  %prec IF               { If $2 $4 $6 }
+     | new '[' type ']' traitConstrs                       { transNew $3 $5 }
      | aexp                                                { $1 }
 
 recds :: { [(String, Expr)] }

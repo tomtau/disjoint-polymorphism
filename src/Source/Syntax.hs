@@ -143,6 +143,8 @@ elet s t e b = Let (bind (s2n s, embed t) (e, b))
 teleToBind :: [(String, Type)] -> Type -> Type
 teleToBind ts t = foldr (\(n, s) tt -> tforall n s tt) t ts
 
+transNew :: Type -> [Expr] -> Expr
+transNew t es = elet "self" t (foldl1 Merge es) (evar "self")
 
 
 {-

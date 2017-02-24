@@ -1,10 +1,10 @@
---> ()
+--> 7
 
 type Point = { x : T -> Int, y : T -> Int };
 
 trait point(x : Int, y: Int) { self : Point =>
-  def x () : Int = x;
-  def y () : Int = y;
+  def x() : Int = x;
+  def y() : Int = y;
 };
 
 type Norm = { norm : T -> Int };
@@ -16,3 +16,5 @@ trait euclideanNorm()  { self : Point =>
 trait manhattanNorm() { self : Point =>
   def norm () : Int = self.x() + 2 * self.y();
 };
+
+(new[Point & Norm] point(3,4) & euclideanNorm()).norm()
