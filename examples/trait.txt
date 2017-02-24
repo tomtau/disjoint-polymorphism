@@ -1,14 +1,18 @@
 --> ()
 
-trait Point(x : Int, y: Int) { self : Point =>
+type Point = { x : T -> Int, y : T -> Int };
+
+trait point(x : Int, y: Int) { self : Point =>
   def x () : Int = x;
   def y () : Int = y;
 };
 
-trait EuclideanNorm() as Norm { self : Point =>
+type Norm = { norm : T -> Int };
+
+trait euclideanNorm()  { self : Point =>
   def norm () : Int = self.x() + self.y();
 };
 
-trait ManhattanNorm() { self : Point =>
+trait manhattanNorm() { self : Point =>
   def norm () : Int = self.x() + 2 * self.y();
 };

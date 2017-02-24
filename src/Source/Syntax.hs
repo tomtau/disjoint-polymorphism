@@ -65,8 +65,6 @@ data SimpleDecl = TmDef String Type Expr
 data Trait = TraitDef
   { traitName :: String
     -- ^ Trait name
-  , typeAlias :: Maybe String
-    -- ^ Type alias
   , selfType :: (String, Type)
     -- ^ Self type
   , traitParasBody :: (Bind [(TmName, Embed Type)] [SimpleDecl])
@@ -74,13 +72,11 @@ data Trait = TraitDef
   } deriving (Show)
 
 -- Unbound library instances
-$(derive [''Expr, ''Type, ''Decl, ''SimpleDecl, ''Trait])
+$(derive [''Expr, ''Type, ''SimpleDecl])
 
 instance Alpha Type
 instance Alpha Expr
 instance Alpha SimpleDecl
-instance Alpha Decl
-instance Alpha Trait
 
 instance Subst Expr Type
 instance Subst Expr ArithOp

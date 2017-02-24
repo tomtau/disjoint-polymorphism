@@ -7,13 +7,13 @@ import Unbound.LocallyNameless
 
 
 desugar :: (Fresh m) => [Decl] -> m [SimpleDecl]
-desugar ds = fmap concat $ mapM go ds
+desugar ds = mapM go ds
   where
-    go :: Fresh m => Decl -> m [SimpleDecl]
-    go (SDecl decl) = return [decl]
+    go :: Fresh m => Decl -> m SimpleDecl
+    go (SDecl decl) = return decl
     go (TraitDecl trait) = desugarTrait trait
 
-desugarTrait :: Fresh m => Trait -> m [SimpleDecl]
+desugarTrait :: Fresh m => Trait -> m SimpleDecl
 desugarTrait trait = do
   (params, tb) <- unbind parasBody
   let (bodyDecls, _) = resolveDecls tb
@@ -21,21 +21,19 @@ desugarTrait trait = do
       declDefs = [(n, d) | TmDef n _ d <- bodyDecls]
       paramTypes = map (unembed . snd) params
       paramNames = map fst params
-      traitType = TyDef aliasName TopT (mkRecdsT declTypes)
+      traitType = mkRecdsT declTypes
       traitDef =
         TmDef
           name
-          (foldr Arr (Arr st resType) paramTypes)
+          (foldr Arr (Arr st traitType) paramTypes)
           (foldr
              (\n b -> Lam (bind n b))
              (Lam (bind (s2n self) (mkRecds declDefs)))
              paramNames)
-  return [traitType, traitDef]
+  return traitDef
   where
-    resType = TVar (s2n aliasName)
     parasBody = traitParasBody trait
     name = traitName trait
-    aliasName = maybe name id (typeAlias trait)
     (self, st) = selfType trait
 
 
