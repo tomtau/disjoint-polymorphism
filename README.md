@@ -1,6 +1,6 @@
 # Disjoint Polymorphism
 
-[![wercker status](https://app.wercker.com/status/16b783eb6c0bc3585645ffba0be57999/s/master "wercker status")](https://app.wercker.com/project/byKey/16b783eb6c0bc3585645ffba0be57999)
+[![wercker status](https://app.wercker.com/status/f8efc6b9552b883a408799e75a4b87f3/s/master "wercker status")](https://app.wercker.com/project/byKey/f8efc6b9552b883a408799e75a4b87f3)
 
 A prototype-based, statically typed language that supports dynamic composable
 traits, disjoint polymorphism, intersection types and a merge operator. For the
