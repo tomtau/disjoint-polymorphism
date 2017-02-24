@@ -24,7 +24,7 @@ import Source.SrcLoc
     def         { T _ TKey "def" }
     defrec      { T _ TKey "defrec" }
     trait       { T _ TKey "trait" }
-    as          { T _ TKey "as" }
+    new         { T _ TKey "new" }
     forall      { T _ TKey "forall" }
     typ         { T _ TKey "type" }
     let         { T _ TKey "let" }
@@ -148,14 +148,6 @@ params :: { [(String, Type)] }
 params : top                   { [("_", TopT)] }
        | '(' pairs ')'         { $2 }
 
-pairs :: { [(String, Type)] }
-pairs : pair    { [$1] }
-      | pair ',' pairs { $1:$3 }
-
-
-pair : LOWER_IDENT ':' type  { ($1, $3) }
-
-
 expr :: { Expr }
 expr : lam LOWER_IDENT '->' expr   %prec LAM                { elam $2 $4 }
      | lam '_' '->' expr   %prec LAM                        { elam "_" $4 }
@@ -202,18 +194,22 @@ type : int                                               { IntT }
      | string                                            { StringT }
      | type '&' type                                     { And $1 $3 }
      | type '->' type                                    { Arr $1 $3 }
-     | '{' recdsT '}'                                    { mkRecdsT $2 }
+     | '{' pairs '}'                                    { mkRecdsT $2 }
      | '(' type ')'                                      { $2 }
      | forall UPPER_IDENT '*' type '.' type %prec FORALL { tforall $2 $4 $6 }
      | forall UPPER_IDENT '.' type %prec FORALL          { tforall $2 TopT $4 }
      | topT                                              { TopT }
      | UPPER_IDENT                                       { tvar $1 }
 
-recdsT :: { [(String, Type)] }
-recdsT : recdT                 { [$1] }
-      | recdT ',' recdsT       { $1 : $3 }
+pairs :: { [(String, Type)] }
+pairs : pair    { [$1] }
+      | pair ',' pairs { $1:$3 }
 
-recdT : LOWER_IDENT ':' type          { ($1, $3) }
+
+pair : LOWER_IDENT ':' type  { ($1, $3) }
+
+
+
 
 {
 
