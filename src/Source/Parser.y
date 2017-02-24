@@ -159,8 +159,8 @@ pair : LOWER_IDENT ':' type  { ($1, $3) }
 
 
 expr :: { Expr }
-expr : lam LOWER_IDENT '.' expr   %prec LAM                { elam $2 $4 }
-     | lam '_' '.' expr   %prec LAM                        { elam "_" $4 }
+expr : lam LOWER_IDENT '->' expr   %prec LAM                { elam $2 $4 }
+     | lam '_' '->' expr   %prec LAM                        { elam "_" $4 }
      | blam UPPER_IDENT '*' type '.' expr %prec DLAM       { dlam $2 $4 $6 }
      | blam UPPER_IDENT '.' expr %prec DLAM                { dlam $2 TopT $4 }
      | expr ':' type                                       { Anno $1 $3 }
