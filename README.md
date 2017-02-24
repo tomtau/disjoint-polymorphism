@@ -43,12 +43,12 @@ Evaluation result
 * Primitive type: `Int`, `Bool`, `String`
 * Top type/value: `() : T`
 * Type annotation: `2 : Int`
-* Lambda: `(\x -> x+1) : Int -> Int`
 * Merge: `true ,, 3`
 * Intersection type: `Bool & (Int -> Int)`
 * If: `if x == 0 then true else false`
+* λ term: `(\x -> x+1) : Int -> Int`
+* Λ term: `/\A * Int . (\x -> x) : A -> A`
 * Disjoint (universal) quantification: `forall A*Int. A -> A`
-* Type-level lambda: `/\A * Int . (\x -> x) : A -> A`
 * Term declaration: `def id A (x : A) : A = x; id Int 3;`
 * Type declaration: `type Person = {name : String, male : Bool};`
 
