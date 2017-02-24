@@ -1,22 +1,20 @@
 --> 18
 
-type Point = {x : T -> Int, y : T -> Int};
+type Point = { x : T -> Int, y : T -> Int };
 
-def point (x : Int) (y : Int) (this : Point) : Point =
-  { x = \_ -> x
-  , y = \_ -> y
-  };
+trait point(x : Int, y: Int) { self : Point =>
+  def x() : Int = x;
+  def y() : Int = y;
+};
 
-type Norm = {norm : T -> Int };
+type Norm = { norm : T -> Int };
 
-def manhattanNorm (this : Point) : Norm =
-  { norm = (\_ -> this.x() + this.y()) };
+trait euclideanNorm()  { self : Point =>
+  def norm () : Int = self.x() + self.y();
+};
 
-def skewedNorm (this: Point) : Norm = {
-  norm = (\_ -> this.x() + this.y() * 2) };
+trait manhattanNorm() { self : Point =>
+  def norm () : Int = self.x() + 2 * self.y();
+};
 
-defrec point1 : Point & Norm = (point 3 4 point1) ,, (manhattanNorm point1);
-
-defrec point2 : Point & Norm = (point 3 4 point2) ,, (skewedNorm point2);
-
-point1.norm() + point2.norm()
+(new[Point & Norm] point(3,4) & euclideanNorm()).norm() + (new[Point & Norm] point(3,4) & manhattanNorm()).norm()
