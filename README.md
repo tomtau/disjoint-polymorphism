@@ -54,20 +54,4 @@ Evaluation result
 
 ## Examples
 
-```
-$ less examples/fst.txt
-def fst A [B*A] (x : A&B) : A = x;
-
-def snd A [B*A] (x : A&B) : B = x;
-
-snd Int Bool (1,,true)
-```
-
-```
-> :load examples/fst.txt
-Typing result
-: Bool
-
-Evaluation result
-=> true
-```
+See [examples/](./examples/)
