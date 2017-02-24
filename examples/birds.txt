@@ -1,0 +1,27 @@
+--> "I am apigeon, I can swim"
+
+type Swimming = { swim : T -> String };
+
+trait swimming(species : String) { self : Swimming =>
+  def swim() : String = "I am a" ++ species ++ ", I can swim";
+};
+
+type Bird = {  fly : T -> String };
+
+trait pigeon() {  self : Swimming =>
+  def fly() : String = "I'm a good flyer";
+};
+
+trait hawk() {  self : Swimming  =>
+  def fly() : String = "I'm an excellent flyer";
+};
+
+trait frigatebird() { self : Bird =>
+  def fly () : String = "I'm an excellent flyer";
+};
+
+def aPigeon : Swimming & Bird = new[Swimming & Bird] swimming("pigeon") & pigeon();
+
+def aFrigatabird : Bird = new[Bird] frigatebird();
+
+aPigeon.swim()
