@@ -1,6 +1,6 @@
 # Disjoint Polymorphism
 
-[![wercker status](https://app.wercker.com/status/f429569dbd99df93c3b8e4a39d56fd3f/s/master "wercker status")](https://app.wercker.com/project/byKey/f429569dbd99df93c3b8e4a39d56fd3f)
+[![wercker status](https://app.wercker.com/status/16b783eb6c0bc3585645ffba0be57999/s/master "wercker status")](https://app.wercker.com/project/byKey/16b783eb6c0bc3585645ffba0be57999)
 
 Implementation of [Disjoint Polymorphism](http://i.cs.hku.hk/~bruno/papers/ESOP2017.pdf).
 
