@@ -9,7 +9,6 @@ module Environment
   , TcMonad
   , extendVarCtx
   , extendTyVarCtx
-  -- , extendCtx
   , extendCtxs
   , Ctx(..)
   , emptyCtx

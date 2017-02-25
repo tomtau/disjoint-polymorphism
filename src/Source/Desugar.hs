@@ -1,7 +1,11 @@
 {-# LANGUAGE ViewPatterns #-}
 
 
-module Source.Desugar where
+module Source.Desugar
+  ( desugar
+  , resolveDecls
+  , normalizeDecl
+  ) where
 
 import Source.Syntax
 import Unbound.LocallyNameless
