@@ -119,12 +119,13 @@ sdecllist : {- empty -}         { [] }
 
 sdecl :: { SimpleDecl }
 sdecl : def LOWER_IDENT teleidlst lteleidlst ':' type '=' expr
-              { let (typ, trm) = teleToTmBind $3 $4 $6 $8
-                in TmDef $2 typ trm }
-      | typ UPPER_IDENT teleidlst '=' type     { TyDef $2 TopT (teleToBind $3 $5) }
+              { TmDef $2 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) (Just $6) $8 }
+      | def LOWER_IDENT teleidlst lteleidlst '=' expr
+              { TmDef $2 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) Nothing $6 }
+      | typ UPPER_IDENT teleidlst '=' type     { TyDef $2 (teleToBind $3 $5) }
       | defrec LOWER_IDENT teleidlst lteleidlst ':' type '=' expr
               { let (typ, trm) = teleToTmBind $3 $4 $6 $8
-                in TmDef $2 typ (elet $2 typ trm (evar $2))   }
+                in TmDef $2 [] [] (Just typ) (elet $2 typ trm (evar $2))   }
 
 
 teleidlst :: { [(String, Type)] }

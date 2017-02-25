@@ -2,14 +2,15 @@
 type Comment = { content : T -> String };
 
 trait comment(content : String) { self : Comment =>
-  def content() : String = content;
+  def content() = content;
 };
 
 type Up = { upvotes : T -> Int };
 
 trait up(upvotes : Int) { self : Up =>
-  def upvotes() : Int = upvotes;
+  def upvotes() = upvotes;
 };
 
-let test : Comment & Up = new[Comment & Up] comment("Have fun!") & up(4)
-in test.content()
+def test = new[Comment & Up] comment("Have fun!") & up(4);
+
+test.content()

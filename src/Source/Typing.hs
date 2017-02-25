@@ -27,10 +27,10 @@ tcModule m = do
   let mainE = mainExpr m
   -- Step 1: Desugar traits
   sdecls <- desugar decls
-  -- Step 2: Eliminate type dependencies
+  -- Step 2: Eliminate type dependencies, tmdecls has no type declarations
   let (tmdecls, substPairs) = resolveDecls sdecls
   -- Step 3: Check term declarations and produce target declarations
-  targetDecls <- foldr tcE (return []) tmdecls
+  (env, targetDecls) <- foldr tcE (return ([], [])) tmdecls
   -- Step 4: Generate initial environment for execution
   let initEnv =
         foldl
@@ -38,28 +38,32 @@ tcModule m = do
           TC.emptyEnv
           targetDecls
   -- Step 5: Check main expression
-  (typ, transE) <- local (extendCtxs tmdecls) $ infer (substs substPairs mainE)
+  -- (FIXME: Inefficient, can I move this to tcE?)
+  (typ, transE) <- local (extendCtxs env) $ infer (substs substPairs mainE)
   return (typ, transE, initEnv)
   where
-    tcE :: SimpleDecl
-        -> TcMonad [(T.UName, T.UExpr)]
-        -> TcMonad [(T.UName, T.UExpr)]
+    tcE
+      :: SimpleDecl
+      -> TcMonad ([(TmName, Type)], [(T.UName, T.UExpr)])
+      -> TcMonad ([(TmName, Type)], [(T.UName, T.UExpr)])
     tcE d m = do
-      transD <- tcTmDecl d
-      fmap (transD :) $ local (extendCtx d) m
+      (dbind, transD) <- tcTmDecl d
+      fmap (\(as, bs) -> (dbind : as, transD : bs)) $
+        local ((uncurry extendVarCtx) dbind) m
 
 -- Type check term declarations
-tcTmDecl :: SimpleDecl -> TcMonad (T.UName, T.UExpr)
-tcTmDecl (TmDef n typ term) = do
+-- Note that type declarations are gone by now
+tcTmDecl :: SimpleDecl -> TcMonad ((TmName, Type), (T.UName, T.UExpr))
+tcTmDecl decl = do
   oldDef <- lookupTmDef (s2n n)
   case oldDef of
     Nothing -> do
-      trans <- check term typ
-      return (s2n n, trans)
+      (typ, trans) <- infer term
+      return ((s2n n, typ), (s2n n, trans))
     Just _ -> throwError $ text "Multiple definitions of" <+> text n
-
-tcTmDecl _ = throwError $ text "Not implemented"
-
+  where
+    -- term as been annotated, so we can infer
+    (n, term) = normalizeDecl decl
 
 ---------------------------
 -- Γ ⊢ e ⇒ A ~> E
@@ -262,6 +266,15 @@ infer (Let b) = do
   e1' <- local (extendVarCtx x t) $ check e1 t
   (t', e2') <- local (extendVarCtx x t) $ infer e2
   return (t', T.ULet (bind (translate x) (e1', e2')))
+
+
+
+infer (LamA t) = do
+  ((x, Embed a), e) <- unbind t
+  wf a
+  (b, e') <- local (extendVarCtx x a) $ infer e
+  return (Arr a b, T.ULam (bind (translate x) e'))
+
 
 infer a = throwError $ text "Infer not implemented:" <+> pprint a
 

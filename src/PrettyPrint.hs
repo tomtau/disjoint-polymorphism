@@ -81,6 +81,11 @@ instance Pretty S.Expr where
     lunbind bnd $ \(x, b) -> do
       b' <- ppr b
       return (parens $ text "λ" <> text (show x) <+> dot <+> b')
+  ppr (S.LamA bnd) =
+    lunbind bnd $ \((x, Embed t), b) -> do
+      b' <- ppr b
+      t' <- ppr t
+      return (parens $ text "λ" <> text (show x) <> colon <> t' <+> dot <+> b')
   ppr (S.DLam bnd) =
     lunbind bnd $ \((x, Embed t), b) -> do
       b' <- ppr b

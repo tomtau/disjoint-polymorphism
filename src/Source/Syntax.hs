@@ -33,6 +33,8 @@ data Expr = Anno Expr Type
           | PrimOp Operation Expr Expr
           | If Expr Expr Expr
           | Top
+          | LamA (Bind (TmName, Embed Type) Expr)
+          -- ^ Not exposed to users, for internal use
   deriving Show
 
 type Label = String
@@ -58,9 +60,14 @@ data Decl = SDecl SimpleDecl
           deriving Show
 
 -- | Declarations other than traits
-data SimpleDecl = TmDef String Type Expr
-                | TyDef String Type Type
-                deriving Show
+data SimpleDecl
+  = TmDef { defName :: String
+          , defTyParams :: [(TyName, Type)]
+          , defParams :: [(TmName, Type)]
+          , retType :: Maybe Type
+          , defBody :: Expr}
+  | TyDef String Type
+  deriving (Show)
 
 data Trait = TraitDef
   { traitName :: String
@@ -91,6 +98,7 @@ instance Subst Type Expr
 instance Subst Type Operation
 instance Subst Type LogicalOp
 instance Subst Type ArithOp
+instance Subst Type SimpleDecl
 
 instance Subst Type Type where
   isvar (TVar v) = Just (SubstName v)

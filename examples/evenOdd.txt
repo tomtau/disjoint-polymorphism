@@ -7,11 +7,11 @@ type EvenOdd = {
 };
 
 trait even() { self : EvenOdd =>
-  def even(n : Int) : Bool = if n == 0 then true else self.odd(n - 1);
+  def even(n : Int)  = if n == 0 then true else self.odd(n - 1);
 };
 
 trait odd() { self : EvenOdd =>
-  def odd(n : Int) : Bool = if n == 0 then false else self.even(n - 1);
+  def odd(n : Int)  = if n == 0 then false else self.even(n - 1);
 };
 
 (new[EvenOdd] even() & odd()).even(42)

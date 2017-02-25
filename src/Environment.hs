@@ -5,12 +5,11 @@ module Environment
   , lookupTyVar
   , lookupTyVarMaybe
   , lookupTmDef
-  -- , lookupTyDef
   , runTcMonad
   , TcMonad
   , extendVarCtx
   , extendTyVarCtx
-  , extendCtx
+  -- , extendCtx
   , extendCtxs
   , Ctx(..)
   , emptyCtx
@@ -61,13 +60,9 @@ extendVarCtx v t = ctxMap (M.insert v t) id id
 extendTyVarCtx :: TyName -> Type  -> Ctx -> Ctx
 extendTyVarCtx v t = ctxMap id (M.insert v t) id
 
-extendCtx :: SimpleDecl -> Ctx -> Ctx
-extendCtx (TmDef x t _) = extendVarCtx (s2n x) t
-extendCtx (TyDef x t _) = extendTyVarCtx (s2n x) t
-
 -- | Extend the context with a list of bindings
-extendCtxs :: [SimpleDecl] -> Ctx -> Ctx
-extendCtxs ds ctx = foldr extendCtx ctx ds
+extendCtxs :: [(TmName, Type)] -> Ctx -> Ctx
+extendCtxs tms ctx = foldr (uncurry extendVarCtx) ctx tms
 
 lookupTy
   :: (MonadReader Ctx m, MonadError Doc m)

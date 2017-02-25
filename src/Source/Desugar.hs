@@ -1,3 +1,5 @@
+{-# LANGUAGE ViewPatterns #-}
+
 
 module Source.Desugar where
 
@@ -17,38 +19,54 @@ desugarTrait :: Fresh m => Trait -> m SimpleDecl
 desugarTrait trait = do
   (params, tb) <- unbind parasBody
   let (bodyDecls, _) = resolveDecls tb
-      declTypes = [(n, t) | TmDef n t _ <- bodyDecls]
-      declDefs = [(n, d) | TmDef n _ d <- bodyDecls]
-      paramTypes = map (unembed . snd) params
-      paramNames = map fst params
-      traitType = mkRecdsT declTypes
-      traitDef =
-        TmDef
-          name
-          (foldr Arr (Arr st traitType) paramTypes)
-          (foldr
-             (\n b -> Lam (bind n b))
-             (Lam (bind (s2n self) (mkRecds declDefs)))
-             paramNames)
-  return traitDef
+  return
+    (TmDef
+       name
+       [] -- traits have no type variables
+       ((map (\(a, b) -> (a, unembed b)) params) ++ [(s2n self, st)])
+       Nothing
+       (mkRecds (map normalizeDecl bodyDecls)))
   where
     parasBody = traitParasBody trait
     name = traitName trait
     (self, st) = selfType trait
 
 
--- Note: after parsing, earlier declarations appear first in the list
+
+
+-- After parsing, earlier declarations appear first in the list
+-- Substitute away all type declarations
 resolveDecls :: [SimpleDecl] -> ([SimpleDecl], [(TyName, Type)])
 resolveDecls decls =
-  ( map
-      (\(TmDef n p t) -> TmDef n (substs substPairs p) (substs substPairs t))
-      [decl | decl@(TmDef _ _ _) <- decls]
-  , substPairs)
+  (map (substs substPairs) [decl | decl@(TmDef {}) <- decls], substPairs)
   where
-    toSubst ds = [((s2n n), t) | TyDef n _ t <- ds]
     tydecls =
-      foldr
-        (\(TyDef n p t) ds -> (TyDef n p (substs (toSubst ds) t)) : ds)
+      foldl
+        (\ds t -> (substs (toSubst ds) t) : ds)
         []
-        (reverse ([decl | decl@(TyDef _ _ _) <- decls]))
+        ([decl | decl@(TyDef {}) <- decls])
     substPairs = toSubst tydecls
+    toSubst ds = [((s2n n), t) | TyDef n t <- ds]
+
+{-
+
+Translate
+
+Tmdef n [(A, T1), (B, T2)] [(x, A), (y, B)] C e
+
+to
+
+(n, /\ A*T1. B*T2. \x.\y. (e : C), [T1, T2])
+
+-}
+
+normalizeDecl :: SimpleDecl -> (String, Expr)
+normalizeDecl decl = (defName decl, body)
+  where
+    body =
+      foldr (\(n, s) tm -> DLam (bind (n, Embed s) tm)) fun (defTyParams decl)
+    fun =
+      foldr
+        (\(n, t) tm -> LamA (bind (n, Embed t) tm))
+        (maybe (defBody decl) (Anno (defBody decl)) (retType decl))
+        (defParams decl)
