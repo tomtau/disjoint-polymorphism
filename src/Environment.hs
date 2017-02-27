@@ -6,6 +6,7 @@ module Environment
   , lookupTVarConstraintMaybe
   , lookupTVarSynMaybe
   , lookupTmDef
+  , lookupTVarKindMaybe
   , runTcMonad
   , TcMonad
   , M
@@ -14,6 +15,7 @@ module Environment
   , extendVarCtx
   , extendTVarCtx
   , extendVarCtxs
+  , extendConstrainedTVarCtx
   , addTypeSynonym
   , addTypeSynonyms
   , Ctx(..)
@@ -45,8 +47,9 @@ data TypeValue
 
 type VarCtx = M.Map TmName Type
 type BndCtx = M.Map TmName Expr
-type TyCtx = M.Map TyName (Type -- disjointness Constraint
-                           , TypeValue)
+type TyCtx = M.Map TyName (Kind
+                          , Type -- ^ disjointness Constraint
+                          , TypeValue)
 
 -- | Environment manipulation and accessing functions
 data Ctx = Ctx
@@ -77,17 +80,20 @@ ctxMap f1 f2 f3 ctx =
 extendVarCtx :: TmName -> Type -> Ctx -> Ctx
 extendVarCtx v t = ctxMap (M.insert v t) id id
 
-extendTVarCtx :: TyName -> Type  -> Ctx -> Ctx
-extendTVarCtx v t = ctxMap id (M.insert v (t, TerminalType)) id
+extendTVarCtx :: TyName -> Kind -> Ctx -> Ctx
+extendTVarCtx v k = ctxMap id (M.insert v (k, TopT, TerminalType)) id
+
+extendConstrainedTVarCtx :: TyName -> Type -> Ctx -> Ctx
+extendConstrainedTVarCtx v t = ctxMap id (M.insert v (Star, t, TerminalType)) id
 
 extendVarCtxs :: [(TmName, Type)] -> Ctx -> Ctx
 extendVarCtxs = flip $ foldr (uncurry extendVarCtx)
 
-addTypeSynonym :: TyName -> Type -> Ctx -> Ctx
-addTypeSynonym tvar t = ctxMap id (M.insert tvar (TopT, NonTerminalType t)) id
+addTypeSynonym :: TyName -> Type -> Kind -> Ctx -> Ctx
+addTypeSynonym v t k = ctxMap id (M.insert v (k, t, NonTerminalType t)) id
 
-addTypeSynonyms :: [(TyName, Type)] -> Ctx -> Ctx
-addTypeSynonyms = flip $ foldr (uncurry addTypeSynonym)
+addTypeSynonyms :: [(TyName, Type, Kind)] -> Ctx -> Ctx
+addTypeSynonyms = flip $ foldr (\(v, t, k) ctx -> addTypeSynonym v t k ctx)
 
 lookupVarTy
   :: (MonadReader Ctx m, MonadError Doc m)
@@ -105,18 +111,21 @@ lookupTVarConstraint v = do
   env <- asks tyCtx
   case M.lookup v env of
     Nothing  -> throwError $ text "Not in scope:" <+> text (show v)
-    Just (c, _) -> return c
+    Just (_, c, _) -> return c
+
+lookupTVarKindMaybe :: Ctx -> TyName -> Maybe Kind
+lookupTVarKindMaybe ctx v =  fmap (\(k, _, _) -> k) $ M.lookup v (tyCtx ctx)
 
 lookupTVarConstraintMaybe :: Ctx -> TyName -> Maybe Type
-lookupTVarConstraintMaybe ctx v = fmap fst $ M.lookup v (tyCtx ctx)
+lookupTVarConstraintMaybe ctx v =
+  fmap (\(_, t, _) -> t) $ M.lookup v (tyCtx ctx)
 
 lookupTVarSynMaybe :: Ctx -> TyName -> Maybe Type
 lookupTVarSynMaybe ctx v =
-  case fmap snd $ M.lookup v (tyCtx ctx) of
+  case fmap (\(_, _, t) -> t) $ M.lookup v (tyCtx ctx) of
     Nothing -> Nothing
     Just TerminalType -> Nothing
     Just (NonTerminalType t) -> Just t
-
 
 lookupTmDef
   :: (MonadReader Ctx m)

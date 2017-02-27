@@ -90,7 +90,18 @@ data Type = IntT
           | DForall (Bind (TyName, Embed Type) Type)
           | SRecT Label Type
           | TopT
+          -- Type synonyms
+          | OpAbs (Bind TyName Type)
+          -- ^ Type-level abstraction: "type T A = t" becomes "type T = \A. t",
+          -- and "\A. t" is the abstraction.
+          | OpApp Type Type
+          -- ^ Type-level application: t1 t2
+
   deriving Show
+
+-- Kinds k := * | k -> k
+data Kind = Star | KArrow Kind Kind deriving (Eq, Show)
+
 
 -- Unbound library instances
 $(derive [''Expr, ''Type, ''SimpleDecl, ''TmBind, ''TypeBind])

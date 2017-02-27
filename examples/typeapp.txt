@@ -1,0 +1,7 @@
+--> 3
+
+type IdType [B] = B -> B;
+
+def id : IdType [Int] = \x -> x;
+
+id 3

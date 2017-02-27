@@ -14,7 +14,7 @@ import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 import           Unbound.LocallyNameless
 import Source.Desugar
 
-
+-- | Subtyping (<:) is defined only between types of kind *.
 subtype :: Ctx -> Type -> Type -> Either Doc T.UExpr
 subtype d s t =
   runExcept $ runFreshMT (subtypeS d (expandType d s) (expandType d t))
@@ -26,6 +26,7 @@ subtype d s t =
 -- note: target is untyped
 ----------------------------
 
+-- | Subtyping of two *expanded* types.
 subtypeS :: Ctx -> Type -> Type -> (FreshMT (Except Doc)) T.UExpr
 
 {-

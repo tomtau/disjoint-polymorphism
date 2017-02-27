@@ -61,6 +61,11 @@ instance Pretty S.Type where
     t' <- ppr t
     return (braces $ (text l) <+> colon <+> t')
   ppr S.TopT = return $ text "T"
+  ppr (S.OpAbs {}) = return $ text "Type-level abstraction"
+  ppr (S.OpApp a b) = do
+    a' <- ppr a
+    b' <- ppr b
+    return $ parens (a' <+> brackets b')
 
 
 instance Pretty S.Expr where

@@ -135,7 +135,7 @@ recbind :: { TmBind }
 
 
 typebind :: { TypeBind }
-  : UPPER_IDENT '=' type     { TypeBind $1 [] $3 }
+  : UPPER_IDENT  typaram_list '=' type     { TypeBind $1 $2 $4 }
 
 traitConstrs :: { [Expr] }
   : traitConstr                      { [$1] }
@@ -188,8 +188,15 @@ intertype :: { Type }
   | ftype                    { $1 }
 
 ftype :: { Type }
-  -- : ftype type_list  { foldl OpApp (OpApp $1 (head $2)) (tail $2) }
-  : atype            { $1 }
+  : ftype type_list  { foldl OpApp (OpApp $1 (head $2)) (tail $2) }
+  | atype            { $1 }
+
+type_list :: { [Type] }
+  : '[' comma_types1 ']'     { $2 }
+
+comma_types1 :: { [Type] }
+  : type                   { [$1]  }
+  | type ',' comma_types1  { $1:$3 }
 
 atype :: { Type }
   : UPPER_IDENT                   { tvar $1 }
@@ -213,6 +220,29 @@ record_type_fields_rev :: { [(Label, Type)] }
 
 record_type_field :: { (Label, Type) }
   : label ':' type                                { ($1, $3) }
+
+
+{-------------------------------------------------------------------------------
+        Type parameters
+-------------------------------------------------------------------------------}
+
+typaram :: { TyName }
+  : UPPER_IDENT                    { s2n $1 }
+
+typarams :: { [TyName] }
+  : {- empty -}                    { []    }
+  | typaram typarams               { $1:$2 }
+
+typarams1 :: { [TyName] }
+  : typaram typarams               { $1:$2 }
+
+typaram_list :: { [TyName] }
+  : '[' comma_typarams1 ']'        { $2 }
+  | {- empty -}                    { [] }
+
+comma_typarams1 :: { [TyName] }
+  : typaram                        { [$1]  }
+  | typaram ',' comma_typarams1    { $1:$3 }
 
 
 {-------------------------------------------------------------------------------

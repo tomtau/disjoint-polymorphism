@@ -29,7 +29,7 @@ tcModule m = do
   sdecls <- desugar decls
   -- Step 2: Check module
   targetDecls <- foldr tcM (return ([])) (sdecls ++ [mainDef])
-  -- Step 4: Generate initial environment for execution
+  -- Step 3: Generate initial environment for execution
   let (mainType, mainTarget) = last targetDecls
   let declsTarget = map snd . init $ targetDecls
   let initEnv =
@@ -47,8 +47,8 @@ tcModule m = do
       (dbind, transD) <- tcTmDecl decl
       fmap (((snd dbind, transD) :)) $ localCtx ((uncurry extendVarCtx) dbind) m
     tcM (TypeDecl tdecl) m = do
-      (n, tdef) <- tcTyDecl tdecl
-      localCtx (addTypeSynonym n tdef) m
+      (n, tdef, k) <- tcTyDecl tdecl
+      localCtx (addTypeSynonym n tdef k) m
 
 -- Type check declarations
 tcTmDecl :: TmBind -> TcMonad ((TmName, Type), (T.UName, T.UExpr))
@@ -56,15 +56,81 @@ tcTmDecl decl = do
   oldDef <- lookupTmDef (s2n n)
   case oldDef of
     Nothing -> do
-      (typ, trans) <- infer term
+      ctx <- askCtx
+      let expandedTerm = expandTypeForTerm ctx term
+      (typ, trans) <- infer expandedTerm
       return ((s2n n, typ), (s2n n, trans))
     Just _ -> throwError $ text "Multiple definitions of" <+> text n
   where
     (n, term) = normalizeTmDecl decl -- term has been annotated, so we can infer
 
--- TODO: When adding kinds, should do more
-tcTyDecl :: TypeBind -> TcMonad (TyName, Type)
-tcTyDecl (TypeBind n _ rhs) = return (s2n n, rhs)
+tcTyDecl :: TypeBind -> TcMonad (TyName, Type, Kind)
+tcTyDecl (TypeBind n params rhs) = do
+  return (s2n n, pullRight params rhs, Star)
+
+-- | Kinding.
+kind :: Fresh m => Ctx -> Type -> m (Maybe Kind)
+kind d (TVar a) = return $ lookupTVarKindMaybe d a
+kind _ IntT = return $ Just Star
+kind _ BoolT = return $ Just Star
+kind _ StringT = return $ Just Star
+kind _ TopT = return $ Just Star
+kind d (Arr t1 t2) = justStarIffAllHaveKindStar d [t1, t2]
+kind d (And t1 t2) = justStarIffAllHaveKindStar d [t1, t2]
+kind d (DForall b) = do
+  ((a, _), t) <- unbind b
+  kind (extendTVarCtx a Star d) t
+kind d (SRecT l t) = kind d t
+
+{-
+    Δ,x::* ⊢ t :: k
+    -------------------- (K-Abs) Restriction compared to F_omega: x can only have kind *
+    Δ ⊢ λx. t :: * => k
+-}
+kind d (OpAbs b) = do
+  (x, t) <- unbind b
+  maybe_k <- kind (extendTVarCtx x Star d) t
+  case maybe_k of
+    Nothing -> return Nothing
+    Just k  -> return $ Just (KArrow Star k)
+
+{-
+    Δ ⊢ t1 :: k11 => k12  Δ ⊢ t2 :: k11
+    ------------------------------------ (K-App)
+    Δ ⊢ t1 t2 :: k12
+-}
+kind d (OpApp t1 t2) = do
+  maybe_k1 <- kind d t1
+  maybe_k2 <- kind d t2
+  case (maybe_k1, maybe_k2) of
+    (Just (KArrow k11 k12), Just k2)
+      | k2 == k11 -> return (Just k12)
+    _ -> return Nothing
+
+
+
+justStarIffAllHaveKindStar :: Fresh m => Ctx -> [Type] -> m (Maybe Kind)
+justStarIffAllHaveKindStar d ts = do
+  ps <- mapM (hasKindStar d) ts
+  if and ps
+    then return $ Just Star
+    else return Nothing
+
+hasKindStar :: Fresh m => Ctx -> Type -> m Bool
+hasKindStar d t = do
+  k <- kind d t
+  return (k == Just Star)
+
+
+
+-- | "Pull" the type params at the LHS of the equal sign to the right.
+-- A (high-level) example:
+--   A B t  ->  \A. \B. t
+pullRight :: [TyName] -> Type -> Type
+pullRight params t = foldr (\n t' -> OpAbs (bind n t')) t params
+
+
+
 
 
 ---------------------------
@@ -107,8 +173,7 @@ infer (Var x) = do
 
 -}
 infer (Anno e a) = do
-  ctx <- askCtx
-  e' <- check e (expandType ctx a)
+  e' <- check e (a)
   return (a, e')
 
 {-
@@ -143,12 +208,12 @@ infer inp@(App e1 e2) = do
 
 -}
 infer inp@(TApp e a) = do
-  (t, e') <- infer e
   wf a
+  (t, e') <- infer e
+  ctx <- askCtx
   case t of
     DForall t' -> do
       ((x, Embed b), c) <- unbind t'
-      ctx <- askCtx
       disjoint ctx a b
       return (subst x a c, e')
     _ ->
@@ -203,8 +268,7 @@ t • l = A ~> c
 -}
 infer (Acc e l) = do
   (t, e') <- infer e
-  ctx <- askCtx
-  case select (expandType ctx t) l of
+  case select t l of
     Just (a, c) -> return (a, T.UApp c e')
     _ ->
       throwError
@@ -225,7 +289,7 @@ a fresh
 infer (DLam t) = do
   ((x, Embed a), e) <- unbind t
   wf a
-  (b, e') <- localCtx (extendTVarCtx x a) $ infer e
+  (b, e') <- localCtx (extendConstrainedTVarCtx x a) $ infer e
   return (DForall (bind (x, embed a) b), e')
 
 infer (PrimOp op e1 e2) =
@@ -305,10 +369,10 @@ check (Lam l) (Arr a b) = do
   e' <- localCtx (extendVarCtx x a) $ check e b
   return (T.ULam (bind (translate x) e'))
 
-check inp@(Lam _) t =
-  throwError $
-  text "expect an arrow type for " <+>
-  squotes (pprint inp) <+> text "but got" <+> squotes (pprint t)
+-- check inp@(Lam _) t =
+--   throwError $
+--   text "expect an arrow type for " <+>
+--   squotes (pprint inp) <+> text "but got" <+> squotes (pprint t)
 
 
 {-
@@ -326,7 +390,7 @@ check (DLam l) (DForall b) = do
   case t of
     Just ((x, Embed a), e, _, b) -> do
       wf a
-      localCtx (extendTVarCtx x a) $ check e b
+      localCtx (extendConstrainedTVarCtx x a) $ check e b
     Nothing -> throwError $ text "Patterns have different binding variables"
 
 -- check inp@(DLam _) t =
@@ -375,12 +439,12 @@ A <: B ~> c
 -}
 
 check e b = do
+  wf b
   (a, e') <- infer e
   ctx <- askCtx
   let res = subtype ctx a b
   case res of
     Right c -> do
-      wf b
       return (T.UApp c e')
     Left err ->
       throwError
@@ -390,24 +454,35 @@ check e b = do
          text "which is not a subtype of" <+> squotes (pprint b))
 
 
+-- | Check that a type is well-formed: disjoint and has kind *.
 wf :: Type -> TcMonad ()
-wf IntT = return ()
-wf BoolT = return ()
-wf StringT = return ()
-wf (Arr a b) = wf a >> wf b
-wf (And a b) = do
-  wf a
-  wf b
+wf t = do
+  ctx <- askCtx
+  maybe_kind <- kind ctx t
+  case maybe_kind of
+    Nothing -> throwError $ squotes (pprint t) <+> text "is not well-kinded"
+    Just Star -> wf' t
+    Just k ->
+      throwError $ squotes (pprint t) <+> text "has kind" <+> text (show k)
+
+wf' :: Type -> TcMonad ()
+wf' IntT = return ()
+wf' BoolT = return ()
+wf' StringT = return ()
+wf' (Arr a b) = wf' a >> wf' b
+wf' (And a b) = do
+  wf' a
+  wf' b
   ctx <- askCtx
   disjoint ctx a b
-wf (TVar x) = lookupTVarConstraint x >> return ()
-wf (DForall t) = do
+wf' (TVar x) = lookupTVarConstraint x >> return ()
+wf' (DForall t) = do
   ((x, Embed a), b) <- unbind t
-  wf a
-  localCtx (extendTVarCtx x a) $ wf b
-wf (SRecT _ t) = wf t
-wf TopT = return ()
-
+  wf' a
+  localCtx (extendConstrainedTVarCtx x a) $ wf' b
+wf' (SRecT _ t) = wf' t
+wf' TopT = return ()
+wf' t = throwError $ text "type" <+> pprint t <+> text "is not well-formed"
 
 -- Careful, am I following strictly Fig.3?
 disjoint :: (Fresh m, MonadError Doc m) => Ctx -> Type -> Type -> m ()
@@ -425,7 +500,7 @@ disjoint ctx (DForall t) (DForall t') = do
   t <- unbind2 t t'
   case t of
     Just ((x, Embed a1), b, (_, Embed a2), c) ->
-      disjoint (extendTVarCtx x (And a1 a2) ctx) b c
+      disjoint (extendConstrainedTVarCtx x (And a1 a2) ctx) b c
     _ -> throwError $ text "Patterns have different binding variables"
 
 disjoint ctx (SRecT l a) (SRecT l' b) =
