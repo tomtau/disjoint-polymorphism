@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternGuards #-}
 
 module Source.Subtyping
-  ( (<<:)
+  ( subtype
   ) where
 
 import           Control.Monad.Except
@@ -12,11 +12,12 @@ import           Source.Syntax
 import qualified Target.Syntax as T
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 import           Unbound.LocallyNameless
+import Source.Desugar
 
 
-
-(<<:) :: Type -> Type -> Either Doc T.UExpr
-s <<: t = runTcMonad emptyCtx (s <: t)
+subtype :: Ctx -> Type -> Type -> Either Doc T.UExpr
+subtype d s t =
+  runExcept $ runFreshMT (subtypeS d (expandType d s) (expandType d t))
 
 
 ----------------------------
@@ -25,14 +26,14 @@ s <<: t = runTcMonad emptyCtx (s <: t)
 -- note: target is untyped
 ----------------------------
 
-(<:) :: Type -> Type -> TcMonad T.UExpr
+subtypeS :: Ctx -> Type -> Type -> (FreshMT (Except Doc)) T.UExpr
 
 {-
 
 A <: ⊤  ~> λx.()
 
 -}
-(<:) _ TopT = return (T.elam "x" T.UUnit)
+subtypeS _ _ TopT = return (T.elam "x" T.UUnit)
 
 {-
 
@@ -41,17 +42,17 @@ A1 <: A2 ~> E1       A1 <: A3 ~> E2
 A1 <: A2&A3   ~>  λx. (E1 x, E2 x)
 
 -}
-(<:) a1 (And a2 a3) = do
-  e1 <- a1 <: a2
-  e2 <- a1 <: a3
+subtypeS d a1 (And a2 a3) = do
+  e1 <- subtypeS d a1 a2
+  e2 <- subtypeS d a1 a3
   let co = T.elam "x" (T.UPair (T.eapp e1 (T.evar "x")) (T.eapp e2 (T.evar "x")))
   return co
 
-(<:) IntT IntT = return (T.elam "x" (T.evar "x"))
+subtypeS _ IntT IntT = return (T.elam "x" (T.evar "x"))
 
-(<:) BoolT BoolT = return (T.elam "x" (T.evar "x"))
+subtypeS _ BoolT BoolT = return (T.elam "x" (T.evar "x"))
 
-(<:) StringT StringT = return (T.elam "x" (T.evar "x"))
+subtypeS _ StringT StringT = return (T.elam "x" (T.evar "x"))
 
 {-
 
@@ -60,9 +61,9 @@ A1 <: A3 ~> E     A3 ordinary
 A1&A2 <: A3 ~> λx.[[A3]](E (proj1 x))
 
 -}
-(<:) (And a1 _) a3
+subtypeS d (And a1 _) a3
   | ordinary a3
-  , Right e <- a1 <<: a3 = do
+  , Right e <- subtype d a1 a3 = do
     let c = T.eapp e (T.UP1 (T.evar "x"))
     b <- coerce a3 c
     return (T.elam "x" b)
@@ -75,9 +76,9 @@ A1&A2 <: A3 ~> λx . [[A3]](E (proj2 x))
 
 
 -}
-(<:) (And _ a2) a3
+subtypeS d (And _ a2) a3
   | ordinary a3
-  , Right e <- a2 <<: a3 = do
+  , Right e <- subtype d a2 a3 = do
     let c = T.eapp e (T.UP2 (T.evar "x"))
     b <- coerce a3 c
     return (T.elam "x" b)
@@ -89,8 +90,8 @@ A <: B ~> E
 {l:A} <: {l : B}
 
 -}
-(<:) (SRecT l1 a) (SRecT l2 b) = do
-  e <- a <: b
+subtypeS d (SRecT l1 a) (SRecT l2 b) = do
+  e <- subtypeS d a b
   if (l1 /= l2)
     then throwError $
          text "labels not equal:" <+> text l1 <+> text "and" <+> text l2
@@ -102,7 +103,7 @@ A <: B ~> E
 a <: a ~> λx.x
 
 -}
-(<:) (TVar a) (TVar b) = do
+subtypeS _ (TVar a) (TVar b) = do
   if a /= b
     then throwError $
          text "variables not equal:" <+>
@@ -116,9 +117,9 @@ B1 <: A1 ~> E1         A2 <: B2 ~> E2
 A1 -> A2 <: B1 -> B2   ~> λf . λ x . E2 (f (E1 x))
 
 -}
-(<:) (Arr a1 a2) (Arr b1 b2) = do
-  e1 <- b1 <: a1
-  e2 <- a2 <: b2
+subtypeS d (Arr a1 a2) (Arr b1 b2) = do
+  e1 <- subtypeS d b1 a1
+  e2 <- subtypeS d a2 b2
   let body = T.eapp e2 (T.eapp (T.evar "f") (T.eapp e1 (T.evar "x")))
   return $ T.elam "f" (T.elam "x" body)
 
@@ -129,15 +130,15 @@ B1 <: B2 ~> E1    A2 <: A1 ~> E2
 ∀(a*A1).B1 <: ∀(a*A2).B2   ~> λf. Λa . E1 (f a)
 
 -}
-(<:) (DForall t1) (DForall t2) = do
+subtypeS d (DForall t1) (DForall t2) = do
   t <- unbind2 t1 t2
   case t of
     Just ((_, Embed a1), b1, (_, Embed a2), b2) -> do
-      a2 <: a1
-      b1 <: b2
+      subtypeS d a2 a1
+      subtypeS d b1 b2
     Nothing -> throwError . text $ "Patterns have different binding variables"
 
-(<:) a b =
+subtypeS _ a b =
   throwError $
   text "Invalid subtyping:" <+>
   squotes (pprint a) <+> (text "and") <+> squotes (pprint b)

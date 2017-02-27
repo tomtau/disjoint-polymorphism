@@ -24,12 +24,8 @@ data Decl = SDecl SimpleDecl
 
 -- | Declarations other than traits
 data SimpleDecl
-  = TmDef { defName :: String
-          , defTyParams :: [(TyName, Type)]
-          , defParams :: [(TmName, Type)]
-          , retType :: Maybe Type
-          , defBody :: Expr}
-  | TyDef String Type
+  = DefDecl TmBind
+  | TypeDecl TypeBind
   deriving (Show)
 
 data Trait = TraitDef
@@ -41,6 +37,22 @@ data Trait = TraitDef
     -- ^ Trait parameters & body (parameters are bound in the body)
   } deriving (Show)
 
+
+-- f [A1,...,An](x1: t1, ..., xn: tn): t = e
+data TmBind  = TmBind
+  { bindName     :: String            -- f
+  , bindTyParams :: [(TyName, Type)]  -- A1, ..., An
+  , bindParams   :: [(TmName, Type)]  -- x1: t1, ..., xn: tn
+  , bindRhs      :: Expr              -- e
+  , bindRhsTyAscription :: Maybe Type -- t
+  } deriving (Show)
+
+-- type T[A1, ..., An] = t
+data TypeBind = TypeBind
+  { typeBindName   :: String   -- T
+  , typeBindParams :: [TyName] -- A1, ..., An
+  , typeBindRhs    :: Type     -- t
+  } deriving (Show)
 
 -- Unbound library
 type TmName = Name Expr
@@ -81,11 +93,13 @@ data Type = IntT
   deriving Show
 
 -- Unbound library instances
-$(derive [''Expr, ''Type, ''SimpleDecl])
+$(derive [''Expr, ''Type, ''SimpleDecl, ''TmBind, ''TypeBind])
 
 instance Alpha Type
 instance Alpha Expr
 instance Alpha SimpleDecl
+instance Alpha TmBind
+instance Alpha TypeBind
 
 instance Subst Expr Type
 instance Subst Expr ArithOp
@@ -101,6 +115,8 @@ instance Subst Type Operation
 instance Subst Type LogicalOp
 instance Subst Type ArithOp
 instance Subst Type SimpleDecl
+instance Subst Type TmBind
+instance Subst Type TypeBind
 
 instance Subst Type Type where
   isvar (TVar v) = Just (SubstName v)

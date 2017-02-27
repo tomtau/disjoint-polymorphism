@@ -90,7 +90,7 @@ reset _ = do
 debug :: [String] -> Repl ()
 debug _ = do
   ReplState ctx <- getCtx
-  putMsg . show $ ctx
+  putMsg "Not implemented!"
 
 
 -- Prefix tab completer

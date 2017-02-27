@@ -116,15 +116,26 @@ sdecllist :: { [SimpleDecl] }
 
 
 sdecl :: { SimpleDecl }
-  : def LOWER_IDENT ctyparam_list param_list ':' type '=' expr
-  { TmDef $2 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) (Just $6) $8 }
-  | def LOWER_IDENT ctyparam_list param_list '=' expr
-  { TmDef $2 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) Nothing $6 }
-  | typ UPPER_IDENT '=' type     { TyDef $2 $4 }
-  | defrec LOWER_IDENT ctyparam_list param_list ':' type '=' expr
-              { let (typ, trm) = teleToTmBind $3 $4 $6 $8
-                in TmDef $2 [] [] (Just typ) (elet $2 typ trm (evar $2))   }
+  : def bind                  { DefDecl $2 }
+  | typ typebind              { TypeDecl $2 }
+  | defrec recbind            { DefDecl $2 }
 
+
+bind :: { TmBind }
+  : LOWER_IDENT ctyparam_list param_list ':' type '=' expr
+  { TmBind $1 (map (\(n, b) -> (s2n n, b)) $2) (map (\(n, b) -> (s2n n, b)) $3) $7 (Just $5) }
+  | LOWER_IDENT ctyparam_list param_list '=' expr
+  { TmBind $1 (map (\(n, b) -> (s2n n, b)) $2) (map (\(n, b) -> (s2n n, b)) $3) $5 Nothing }
+
+recbind :: { TmBind }
+  : LOWER_IDENT ctyparam_list param_list ':' type '=' expr
+  { let (typ, trm) = teleToTmBind $2 $3 $5 $7
+    in TmBind $1 [] [] (elet $1 typ trm (evar $1)) (Just typ)
+  }
+
+
+typebind :: { TypeBind }
+  : UPPER_IDENT '=' type     { TypeBind $1 [] $3 }
 
 traitConstrs :: { [Expr] }
   : traitConstr                      { [$1] }
