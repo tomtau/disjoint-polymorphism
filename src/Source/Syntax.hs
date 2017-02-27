@@ -11,6 +11,37 @@ module Source.Syntax where
 import Common
 import Unbound.LocallyNameless
 
+-- | Modules
+data Module = Module
+  { moduleEntries :: [Decl]
+  , mainExpr :: Expr
+  } deriving (Show)
+
+-- | Declarations are the components of modules
+data Decl = SDecl SimpleDecl
+          | TraitDecl Trait
+          deriving Show
+
+-- | Declarations other than traits
+data SimpleDecl
+  = TmDef { defName :: String
+          , defTyParams :: [(TyName, Type)]
+          , defParams :: [(TmName, Type)]
+          , retType :: Maybe Type
+          , defBody :: Expr}
+  | TyDef String Type
+  deriving (Show)
+
+data Trait = TraitDef
+  { traitName :: String
+    -- ^ Trait name
+  , selfType :: (String, Type)
+    -- ^ Self type
+  , traitParasBody :: (Bind [(TmName, Embed Type)] [SimpleDecl])
+    -- ^ Trait parameters & body (parameters are bound in the body)
+  } deriving (Show)
+
+
 -- Unbound library
 type TmName = Name Expr
 type TyName = Name Type
@@ -48,35 +79,6 @@ data Type = IntT
           | SRecT Label Type
           | TopT
   deriving Show
-
-data Module = Module
-  { moduleEntries :: [Decl]
-  , mainExpr :: Expr
-  } deriving (Show)
-
--- | Declarations are the components of modules
-data Decl = SDecl SimpleDecl
-          | TraitDecl Trait
-          deriving Show
-
--- | Declarations other than traits
-data SimpleDecl
-  = TmDef { defName :: String
-          , defTyParams :: [(TyName, Type)]
-          , defParams :: [(TmName, Type)]
-          , retType :: Maybe Type
-          , defBody :: Expr}
-  | TyDef String Type
-  deriving (Show)
-
-data Trait = TraitDef
-  { traitName :: String
-    -- ^ Trait name
-  , selfType :: (String, Type)
-    -- ^ Self type
-  , traitParasBody :: (Bind [(TmName, Embed Type)] [SimpleDecl])
-    -- ^ Trait parameters & body (parameters are bound in the body)
-  } deriving (Show)
 
 -- Unbound library instances
 $(derive [''Expr, ''Type, ''SimpleDecl])
@@ -123,11 +125,11 @@ ebind n = bind (s2n n)
 elam :: String -> Expr -> Expr
 elam b e = Lam (ebind b e)
 
-dlam :: String -> Type -> Expr -> Expr
-dlam s t b = DLam (bind (s2n s, embed t) b)
+dlam :: (String, Type) -> Expr -> Expr
+dlam (s, t) b = DLam (bind (s2n s, embed t) b)
 
-tforall :: String -> Type -> Type -> Type
-tforall s t b = DForall (bind (s2n s, embed t) b)
+tforall :: (String,  Type) -> Type -> Type
+tforall (s, t) b = DForall (bind (s2n s, embed t) b)
 
 eapp :: Expr -> Expr -> Expr
 eapp = App
@@ -149,7 +151,7 @@ elet :: String -> Type -> Expr -> Expr -> Expr
 elet s t e b = Let (bind (s2n s, embed t) (e, b))
 
 teleToBind :: [(String, Type)] -> Type -> Type
-teleToBind ts t = foldr (\(n, s) tt -> tforall n s tt) t ts
+teleToBind ts t = foldr (\t tt -> tforall t tt) t ts
 
 transNew :: Type -> [Expr] -> Expr
 transNew t es = elet "self" t (foldl1 Merge es) (evar "self")
@@ -178,7 +180,7 @@ teleToTmBind :: [(String, Type)]
              -> (Type, Expr)
 teleToTmBind tys tms res e =
   let arr = foldr (\(_, t) tt -> Arr t tt) res tms
-      tbind = foldr (\(n, s) tt -> tforall n s tt) arr tys
+      tbind = foldr (\t tt -> tforall t tt) arr tys
       fun = foldr (\(n, _) tm -> elam n tm) e tms
-      bfun = foldr (\(n, s) tm -> dlam n s tm) fun tys
+      bfun = foldr (\t tm -> dlam t tm) fun tys
   in (tbind, bfun)

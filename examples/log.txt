@@ -1,6 +1,6 @@
 --> 3
 
-def extend S [U*S] (first : S) (second : U) : S&U = first ,, second;
+def extend [S,U*S] (first : S) (second : U) : S&U = first ,, second;
 
 type Person = {name : String, male : Bool};
 type Loggable = {log : T -> Int};
@@ -8,7 +8,7 @@ type Dog = {name : String, male : String};
 
 def person (n : String) (s : Bool)  = {name = n, male = s};
 
-def consoleLogger : Loggable = {log = (\ _ -> 3)};
+def consoleLogger : Loggable = {log = \ _ -> 3};
 
 def dog (n : String) (s : String)  = {name = n, male = s};
 

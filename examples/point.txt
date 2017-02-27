@@ -19,4 +19,4 @@ trait manhattanNorm() { self : Point =>
 
 def makePoint (norm : Trait[Point, Norm]) = new[Point & Norm] point(3,4) & norm;
 
-makePoint(euclideanNorm()).norm() + makePoint(manhattanNorm()).norm()
+(makePoint(euclideanNorm())).norm() + (makePoint(manhattanNorm())).norm()

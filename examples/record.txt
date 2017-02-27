@@ -1,6 +1,6 @@
 --> "hello"
 
-def remove A [B * {l : A}] (x : {l : A} & B) : B = x;
+def remove [A, B * {l : A}] (x : {l : A} & B) : B = x;
 
 def test = {l = 3, r = "hello"};
 

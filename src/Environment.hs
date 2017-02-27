@@ -7,6 +7,7 @@ module Environment
   , lookupTmDef
   , runTcMonad
   , TcMonad
+  , M
   , extendVarCtx
   , extendTyVarCtx
   , extendCtxs
@@ -22,7 +23,9 @@ import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 import           Unbound.LocallyNameless
 
 
-type TcMonad = FreshMT (ReaderT Ctx (Except Doc))
+type M a = FreshMT (ReaderT a (Except Doc))
+
+type TcMonad = M Ctx
 
 runTcMonad :: Ctx -> TcMonad a -> Either Doc a
 runTcMonad env m = runExcept $ runReaderT (runFreshMT m) env
