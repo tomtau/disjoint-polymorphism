@@ -183,8 +183,9 @@ monotype :: { Type }
   : intertype '->' monotype  { Arr $1 $3 }
   | intertype                { $1 }
 
+-- & is left associative
 intertype :: { Type }
-  : ftype '&' intertype      { And $1 $3 }
+  : intertype '&' ftype      { And $1 $3 }
   | ftype                    { $1 }
 
 ftype :: { Type }
