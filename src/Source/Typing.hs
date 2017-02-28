@@ -56,9 +56,7 @@ tcTmDecl decl = do
   oldDef <- lookupTmDef (s2n n)
   case oldDef of
     Nothing -> do
-      ctx <- askCtx
-      let expandedTerm = expandTypeForTerm ctx term
-      (typ, trans) <- infer expandedTerm
+      (typ, trans) <- infer term
       return ((s2n n, typ), (s2n n, trans))
     Just _ -> throwError $ text "Multiple definitions of" <+> text n
   where
@@ -173,7 +171,8 @@ infer (Var x) = do
 
 -}
 infer (Anno e a) = do
-  e' <- check e (a)
+  c <- askCtx
+  e' <- check e (expandType c a)
   return (a, e')
 
 {-
@@ -186,7 +185,8 @@ infer (Anno e a) = do
 -}
 infer inp@(App e1 e2) = do
   (arr, e1') <- infer e1
-  case arr of
+  c <- askCtx
+  case (expandType c arr) of
     Arr a1 a2 -> do
       e2' <- check e2 a1
       return (a2, T.UApp e1' e2')
@@ -211,7 +211,7 @@ infer inp@(TApp e a) = do
   wf a
   (t, e') <- infer e
   ctx <- askCtx
-  case t of
+  case (expandType ctx t) of
     DForall t' -> do
       ((x, Embed b), c) <- unbind t'
       disjoint ctx a b
@@ -268,7 +268,8 @@ t • l = A ~> c
 -}
 infer (Acc e l) = do
   (t, e') <- infer e
-  case select t l of
+  c <- askCtx
+  case select (expandType c t) l of
     Just (a, c) -> return (a, T.UApp c e')
     _ ->
       throwError
@@ -463,7 +464,12 @@ wf t = do
     Nothing -> throwError $ squotes (pprint t) <+> text "is not well-kinded"
     Just Star -> wf' t
     Just k ->
-      throwError $ squotes (pprint t) <+> text "has kind" <+> text (show k)
+      throwError
+        (hang 2 $
+         text "expect type" <+>
+         squotes (pprint t) <+> text "has kind star" <$>
+         text "but got" <+> squotes (pprint k))
+
 
 wf' :: Type -> TcMonad ()
 wf' IntT = return ()

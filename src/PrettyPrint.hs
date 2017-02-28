@@ -37,6 +37,13 @@ instance Pretty Operation where
   ppr Append = return $ text "++"
 
 
+instance Pretty S.Kind where
+  ppr S.Star = return $ text "star"
+  ppr (S.KArrow k1 k2) = do
+    k1' <- ppr k1
+    k2' <- ppr k2
+    return $ k1' <+> text "->" <+> k2'
+
 instance Pretty S.Type where
   ppr (S.Arr t1 t2) = do
     t1' <- ppr t1
@@ -49,7 +56,7 @@ instance Pretty S.Type where
     t1' <- ppr t1
     t2' <- ppr t2
     return $ parens (t1' <+> text "&" <+> t2')
-  ppr (S.TVar x) = return . text . show $ x
+  ppr (S.TVar x) = return . text . name2String $ x
   ppr (S.DForall t) =
     lunbind t $ \((x, Embed a), t) -> do
       a' <- ppr a
@@ -61,7 +68,10 @@ instance Pretty S.Type where
     t' <- ppr t
     return (braces $ (text l) <+> colon <+> t')
   ppr S.TopT = return $ text "T"
-  ppr (S.OpAbs {}) = return $ text "Type-level abstraction"
+  ppr (S.OpAbs b) =
+    lunbind b $ \(x, t) -> do
+      t' <- ppr t
+      return $ parens (text "Lam" <+> text (name2String x) <+> dot <+> t')
   ppr (S.OpApp a b) = do
     a' <- ppr a
     b' <- ppr b
@@ -73,7 +83,7 @@ instance Pretty S.Expr where
     e' <- ppr e
     t' <- ppr t
     return $ e' <+> colon <+> t'
-  ppr (S.Var x) = return . text . show $ x
+  ppr (S.Var x) = return . text . name2String $ x
   ppr (S.App f a) = do
     f' <- ppr f
     a' <- ppr a
@@ -138,7 +148,7 @@ instance Pretty T.Type where
     t1' <- ppr t1
     t2' <- ppr t2
     return $ parens (t1' <+> text "->" <+> t2')
-  ppr (T.TVar x) = return . text . show $ x
+  ppr (T.TVar x) = return . text . name2String $ x
   ppr (T.Forall t) =
     lunbind t $ \(x, b) -> do
       b' <- ppr b
@@ -153,7 +163,7 @@ instance Pretty T.Type where
 
 
 instance Pretty T.Expr where
-  ppr (T.Var x) = return . text . show $ x
+  ppr (T.Var x) = return . text . name2String $ x
   ppr (T.App f a) = do
     f' <- ppr f
     a' <- ppr a
@@ -201,7 +211,7 @@ instance Pretty T.Expr where
       return $ text "let" <+> text (show x) <+> text "=" <+> e' <+> text "in" <+> b'
 
 instance Pretty T.UExpr where
-  ppr (T.UVar x) = return . text . show $ x
+  ppr (T.UVar x) = return . text . name2String $ x
   ppr (T.UApp f a) = do
     f' <- ppr f
     a' <- ppr a

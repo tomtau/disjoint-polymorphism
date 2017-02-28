@@ -1,0 +1,7 @@
+--> 3
+
+type AType = forall A . A -> A;
+
+def aid : AType = /\ A . (\x -> x) : A -> A;
+
+aid Int 3
