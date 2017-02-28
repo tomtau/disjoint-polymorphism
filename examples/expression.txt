@@ -1,0 +1,40 @@
+--> "7 + 2 = 9"
+
+type IEval = {eval : Int};
+
+type ExpAlg[E] = {
+  lit : Int -> E,
+  add : E -> E -> E
+};
+
+def evalAlg : ExpAlg[IEval] = {
+  lit = \x -> {eval = x},
+  add = \x y -> {eval = x.eval + y.eval}
+};
+
+type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E };
+
+def subEvalAlg : SubExpAlg[IEval] = evalAlg ,, {
+  sub = \x y -> { eval = x.eval - y.eval }
+};
+
+type IPrint = { print : String };
+
+def printAlg : SubExpAlg[IPrint] = {
+  lit = \x -> { print = x.toString },
+  add = \x y -> { print = x.print ++ " + " ++ y.print },
+  sub = \x y -> { print = x.print ++ " - " ++ y.print }
+};
+
+def e1 [E] (f : ExpAlg[E]) = f.add (f.lit 7) (f.lit 2);
+
+def combine [A,B] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A & B] = {
+  lit = \x -> f.lit x ,, g.lit x,
+  add = \x y -> f.add x y ,, g.add x y
+};
+
+def newAlg = combine IEval IPrint subEvalAlg printAlg;
+
+def o = e1 (IEval & IPrint) newAlg;
+
+o.print ++ " = " ++ o.eval.toString
