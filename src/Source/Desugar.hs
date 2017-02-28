@@ -64,7 +64,7 @@ Tmdef n [(A, T1), (B, T2)] [(x, A), (y, B)] C e
 
 to
 
-(n, /\ A*T1. B*T2. \x.\y. (e : C), [T1, T2])
+(n, /\ A*T1. B*T2. \x : A .\y : B . (e : C), [T1, T2])
 
 -}
 

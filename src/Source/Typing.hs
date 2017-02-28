@@ -78,7 +78,7 @@ kind d (And t1 t2) = justStarIffAllHaveKindStar d [t1, t2]
 kind d (DForall b) = do
   ((a, _), t) <- unbind b
   kind (extendTVarCtx a Star d) t
-kind d (SRecT l t) = kind d t
+kind d (SRecT l t) = justStarIffAllHaveKindStar d [t]
 
 {-
     Δ,x::* ⊢ t :: k
@@ -455,14 +455,15 @@ check e b = do
          text "which is not a subtype of" <+> squotes (pprint b))
 
 
--- | Check that a type is well-formed: disjoint and has kind *.
+-- | Check that a (expanded) type is well-formed: disjoint and has kind *.
 wf :: Type -> TcMonad ()
 wf t = do
   ctx <- askCtx
-  maybe_kind <- kind ctx t
+  let t' = expandType ctx t
+  maybe_kind <- kind ctx t'
   case maybe_kind of
     Nothing -> throwError $ squotes (pprint t) <+> text "is not well-kinded"
-    Just Star -> wf' t
+    Just Star -> wf' t'
     Just k ->
       throwError
         (hang 2 $
