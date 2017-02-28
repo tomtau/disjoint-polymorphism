@@ -166,13 +166,12 @@ etapp = TApp
 
 mkRecds :: [(Label, Expr)] -> Expr
 mkRecds [] = Top
-mkRecds [(l, e)] = DRec l e
-mkRecds ((l, e) : r) = Merge (DRec l e) (mkRecds r)
+mkRecds ((l, e):r) = foldl (\t (l', e') -> Merge t (DRec l' e')) (DRec l e) r
 
 mkRecdsT :: [(Label, Type)] -> Type
 mkRecdsT [] = TopT
 mkRecdsT [(l, e)] = SRecT l e
-mkRecdsT ((l, e) : r) = And (SRecT l e) (mkRecdsT r)
+mkRecdsT ((l, e):r) = foldl (\t (l', e') -> And t (SRecT l' e')) (SRecT l e) r
 
 elet :: String -> Type -> Expr -> Expr -> Expr
 elet s t e b = Let (bind (s2n s, embed t) (e, b))
