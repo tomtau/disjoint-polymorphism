@@ -63,7 +63,7 @@ instance Pretty S.Type where
       t' <- ppr t
       return
         (parens $
-         text "∀" <> parens (text (show x) <> text "*" <> a') <+> dot <+> t')
+         text "∀" <> parens (text (name2String x) <> text "*" <> a') <+> dot <+> t')
   ppr (S.SRecT l t) = do
     t' <- ppr t
     return (braces $ (text l) <+> colon <+> t')
@@ -95,23 +95,23 @@ instance Pretty S.Expr where
   ppr (S.Lam bnd) =
     lunbind bnd $ \(x, b) -> do
       b' <- ppr b
-      return (parens $ text "λ" <> text (show x) <+> dot <+> b')
+      return (parens $ text "λ" <> text (name2String x) <+> dot <+> b')
   ppr (S.LamA bnd) =
     lunbind bnd $ \((x, Embed t), b) -> do
       b' <- ppr b
       t' <- ppr t
-      return (parens $ text "λ" <> text (show x) <> colon <> t' <+> dot <+> b')
+      return (parens $ text "λ" <> text (name2String x) <> colon <> t' <+> dot <+> b')
   ppr (S.DLam bnd) =
     lunbind bnd $ \((x, Embed t), b) -> do
       b' <- ppr b
       t' <- ppr t
       return
         (parens $
-         text "Λ" <> parens (text (show x) <> text "*" <> t') <+> dot <+> b')
+         text "Λ" <> parens (text (name2String x) <> text "*" <> t') <+> dot <+> b')
   ppr (S.IntV n) = return . text . show $ n
   ppr (S.BoolV True) = return (text "true")
   ppr (S.BoolV False) = return (text "false")
-  ppr (S.StrV b) = return . text $ b
+  ppr (S.StrV b) = return . text $ show b
   ppr (S.PrimOp op e1 e2) = do
     e1' <- ppr e1
     e2' <- ppr e2
@@ -140,7 +140,7 @@ instance Pretty S.Expr where
       b' <- ppr body
       return $
         text "let" <+>
-        text (show x) <+> colon <+> t' <+> text "=" <+> e' <+> text "in" <+> b'
+        text (name2String x) <+> colon <+> t' <+> text "=" <+> e' <+> text "in" <+> b'
 
 
 instance Pretty T.Type where
@@ -152,7 +152,7 @@ instance Pretty T.Type where
   ppr (T.Forall t) =
     lunbind t $ \(x, b) -> do
       b' <- ppr b
-      return $ parens (text "∀" <> (text (show x)) <> dot <> b')
+      return $ parens (text "∀" <> (text (name2String x)) <> dot <> b')
   ppr T.IntT = return $ text "int"
   ppr T.BoolT = return $ text "bool"
   ppr (T.Prod t1 t2) = do
@@ -175,11 +175,11 @@ instance Pretty T.Expr where
   ppr (T.Lam bnd) =
     lunbind bnd $ \(x, b) -> do
       b' <- ppr b
-      return (parens $ text "λ" <> text (show x) <+> dot <+> b')
+      return (parens $ text "λ" <> text (name2String x) <+> dot <+> b')
   ppr (T.BLam bnd) =
     lunbind bnd $ \(x, b) -> do
       b' <- ppr b
-      return (parens $ text "Λ" <> text (show x) <+> dot <+> b')
+      return (parens $ text "Λ" <> text (name2String x) <+> dot <+> b')
   ppr (T.IntV n) = return . text . show $ n
   ppr (T.BoolV True) = return (text "true")
   ppr (T.BoolV False) = return (text "false")
@@ -208,7 +208,7 @@ instance Pretty T.Expr where
     lunbind b $ \(x, (e, body)) -> do
       e' <- ppr e
       b' <- ppr body
-      return $ text "let" <+> text (show x) <+> text "=" <+> e' <+> text "in" <+> b'
+      return $ text "let" <+> text (name2String x) <+> text "=" <+> e' <+> text "in" <+> b'
 
 instance Pretty T.UExpr where
   ppr (T.UVar x) = return . text . name2String $ x
@@ -219,11 +219,11 @@ instance Pretty T.UExpr where
   ppr (T.ULam bnd) =
     lunbind bnd $ \(x, b) -> do
       b' <- ppr b
-      return (parens $ text "λ" <> text (show x) <+> dot <+> b')
+      return (parens $ text "λ" <> text (name2String x) <+> dot <+> b')
   ppr (T.UIntV n) = return . text . show $ n
   ppr (T.UBoolV True) = return (text "true")
   ppr (T.UBoolV False) = return (text "false")
-  ppr (T.UStrV b) = return . text $ b
+  ppr (T.UStrV b) = return . text $ show b
   ppr (T.UPrimOp op e1 e2) = do
     e1' <- ppr e1
     e2' <- ppr e2
@@ -249,7 +249,7 @@ instance Pretty T.UExpr where
     lunbind b $ \(x, (e, body)) -> do
       e' <- ppr e
       b' <- ppr body
-      return $ text "let" <+> text (show x) <+> text "=" <+> e' <+> text "in" <+> b'
+      return $ text "let" <+> text (name2String x) <+> text "=" <+> e' <+> text "in" <+> b'
 
 
 pprint :: Pretty a => a -> Doc
