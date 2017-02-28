@@ -1,0 +1,52 @@
+--> "7 - 2"
+
+type IEval = {eval : Int};
+
+type ExpAlg[E] = {
+  lit : Int -> E,
+  add : E -> E -> E
+};
+
+def evalAlg : ExpAlg[IEval] = {
+  lit = \x -> {eval = x},
+  add = \x y -> {eval = x.eval + y.eval}
+};
+
+type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E };
+
+def subEvalAlg : SubExpAlg[IEval] = evalAlg ,, {
+  sub = \x y -> { eval = x.eval - y.eval }
+};
+
+type IPrint = { print : String };
+
+def printAlg : SubExpAlg[IPrint] = {
+  lit = \x -> { print = x.toString },
+  add = \x y -> { print = x.print ++ " + " ++ y.print },
+  sub = \x y -> { print = x.print ++ " - " ++ y.print }
+};
+
+
+type Exp = {
+  accept : forall E . ExpAlg[E] -> E
+};
+
+type SubExp = {
+  accept: forall E. SubExpAlg[E] -> E
+};
+
+def lit (n : Int) : Exp = {
+  accept = /\ E . \ f -> f.lit n
+};
+
+def add (e1 : Exp) (e2 : Exp) : Exp = {
+  accept = /\ E . \f -> f.add (e1.accept E f) (e2.accept E f)
+};
+
+def sub (e1 : SubExp) (e2 : SubExp) : SubExp = {
+  accept = /\ E . \ f -> f.sub (e1.accept E f) (e2.accept E f)
+};
+
+def e1 = sub (lit 7) (lit 2);
+
+e1.accept IPrint printAlg
