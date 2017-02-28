@@ -27,7 +27,6 @@ data Expr = Var TmName
           | Unit
           | PrimOp Operation Expr Expr
           | If Expr Expr Expr
-          -- | FixP (Bind TmName Expr)
   deriving Show
 
 
@@ -83,6 +82,7 @@ data UExpr = UVar UName
            | UUnit
            | UPrimOp Operation UExpr UExpr
            | UIf UExpr UExpr UExpr
+           | UToString UExpr
            deriving Show
 
 instance Alpha UExpr

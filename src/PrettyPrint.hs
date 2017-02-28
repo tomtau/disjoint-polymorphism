@@ -250,6 +250,9 @@ instance Pretty T.UExpr where
       e' <- ppr e
       b' <- ppr body
       return $ text "let" <+> text (name2String x) <+> text "=" <+> e' <+> text "in" <+> b'
+  ppr (T.UToString e) = do
+    e' <- ppr e
+    return $ e' <> dot <> text "toString"
 
 
 pprint :: Pretty a => a -> Doc

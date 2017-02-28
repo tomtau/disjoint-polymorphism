@@ -266,17 +266,22 @@ t • l = A ~> c
 Γ ⊢ e.l ⇒ A ~> c E
 
 -}
-infer (Acc e l) = do
-  (t, e') <- infer e
-  c <- askCtx
-  case select (expandType c t) l of
-    Just (a, c) -> return (a, T.UApp c e')
-    _ ->
-      throwError
-        (hang 2 $
-         text "expect a record type with label" <+>
-         squotes (text l) <+> text "for" <+> squotes (pprint e) <$>
-         text "but got" <+> squotes (pprint t))
+infer (Acc e l) =
+  if l == "toString" -- ad-hoc extension to "toString" method
+    then do
+      (_, e') <- infer e
+      return (StringT, T.UToString e')
+    else do
+      (t, e') <- infer e
+      c <- askCtx
+      case select (expandType c t) l of
+        Just (a, c) -> return (a, T.UApp c e')
+        _ ->
+          throwError
+            (hang 2 $
+             text "expect a record type with label" <+>
+             squotes (text l) <+> text "for" <+> squotes (pprint e) <$>
+             text "but got" <+> squotes (pprint t))
 
 {-
 

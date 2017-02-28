@@ -85,7 +85,9 @@ eval (UPrimOp op e1 e2) = do
 eval (UIf e1 e2 e3) = do
   (VBool v) <- eval e1
   if v then eval e2 else eval e3
-
+eval (UToString e) = do
+  v <- eval e
+  return $ VStr (show v)
 
 evalOp :: Operation -> Value -> Value -> Value
 evalOp (Arith Add) (VInt x) (VInt y) = VInt $ x + y
