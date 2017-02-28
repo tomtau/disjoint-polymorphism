@@ -16,13 +16,13 @@ This project can be built with `cabal` or `stack`.
 cabal sandbox init
 cabal install --only-dependencies
 cabal build
-cabal exec disjoint-intersection-exe
+cabal exec disjoint-polymorphism-exe
 ```
 
 * stack
 ```
 stack build
-stack exec disjoint-intersection-exe
+stack exec disjoint-polymorphism-exe
 ```
 
 ## REPL
