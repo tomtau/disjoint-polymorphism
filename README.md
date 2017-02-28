@@ -50,9 +50,9 @@ Evaluation result
 * Intersection type: `Bool & (Int -> Int)`
 * If: `if x == 0 then true else false`
 * λ term: `(\x -> x+1) : Int -> Int`
-* Λ term: `/\A * Int . (\x -> x) : A -> A`
-* Disjoint (universal) quantification: `forall A*Int. A -> A`
-* Term declaration: `def id A (x : A) : A = x; id Int 3;`
+* Λ term: `/\ (A * Int) . (\x -> x) : A -> A`
+* Disjoint (universal) quantification: `forall (A*Int) . A -> A`
+* Term declaration: `def id [A] (x : A) = x;`
 * Type declaration: `type Person = {name : String, male : Bool};`
 
 ## Examples
