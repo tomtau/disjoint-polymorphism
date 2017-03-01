@@ -31,7 +31,7 @@ type Exp = {
   accept : forall E . ExpAlg[E] -> E
 };
 
-type SubExp = {
+type ExtendedExp = {
   accept: forall E. SubExpAlg[E] -> E
 };
 
@@ -43,7 +43,7 @@ def add (e1 : Exp) (e2 : Exp) : Exp = {
   accept = /\ E . \f -> f.add (e1.accept E f) (e2.accept E f)
 };
 
-def sub (e1 : SubExp) (e2 : SubExp) : SubExp = {
+def sub (e1 : ExtendedExp) (e2 : ExtendedExp) : ExtendedExp = {
   accept = /\ E . \ f -> f.sub (e1.accept E f) (e2.accept E f)
 };
 
