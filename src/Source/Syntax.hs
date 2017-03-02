@@ -44,7 +44,7 @@ data Trait = TraitDef
 data TmBind  = TmBind
   { bindName     :: String            -- f
   , bindTyParams :: [(TyName, Type)]  -- A1, ..., An
-  , bindParams   :: [(TmName, Type)]  -- x1: t1, ..., xn: tn
+  , bindParams   :: [(TmName, Maybe Type)]  -- x1: t1, ..., xn: tn
   , bindRhs      :: Expr              -- e
   , bindRhsTyAscription :: Maybe Type -- t
   } deriving (Show)
@@ -202,12 +202,14 @@ and
 -}
 
 teleToTmBind :: [(String, Type)]
-             -> [(String, Type)]
+             -> [(String, Maybe Type)]
              -> Type
              -> Expr
              -> (Type, Expr)
+-- Ideally for defrec, users should annotate all arguments, but here we assume T
+-- if not annotated
 teleToTmBind tys tms res e =
-  let arr = foldr (\(_, t) tt -> Arr t tt) res tms
+  let arr = foldr (\(_, t) tt -> Arr (maybe TopT id t) tt) res tms
       tbind = foldr (\t tt -> tforall t tt) arr tys
       fun = foldr (\(n, _) tm -> elam n tm) e tms
       bfun = foldr (\t tm -> dlam t tm) fun tys

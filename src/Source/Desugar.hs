@@ -31,7 +31,7 @@ desugarTrait trait =
      TmBind
        name
        typarams
-       ((map (\(a, b) -> (a, b)) params) ++ [(s2n self, st)])
+       ((map (\(a, b) -> (a, Just b)) params) ++ [(s2n self, Just st)])
        (mkRecds (map normalizeTmDecl tb'))
        (retType trait))
   where
@@ -76,7 +76,10 @@ normalizeTmDecl decl = (bindName decl, body)
       foldr (\(n, s) tm -> DLam (bind (n, Embed s) tm)) fun (bindTyParams decl)
     fun =
       foldr
-        (\(n, t) tm -> LamA (bind (n, Embed t) tm))
+        (\(n, t) tm ->
+           case t of
+             Just t' -> LamA (bind (n, Embed t') tm)
+             Nothing -> Lam (bind n tm))
         (maybe (bindRhs decl) (Anno (bindRhs decl)) (bindRhsTyAscription decl))
         (bindParams decl)
 

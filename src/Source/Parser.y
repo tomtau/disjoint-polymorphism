@@ -339,23 +339,24 @@ record_construct_field :: { (Label, Expr) }
   : label '=' expr                                          { ($1, $3) }
 
 
--- Parse "(x : Int) (y : Int)" or "()" or nothing at all
-param_list :: { [(String, Type)] }
+-- Parse "(x : Int) (y : Int)  z" or "()" or nothing at all
+param_list :: { [(String, Maybe Type)] }
   : params                    { $1 }
-  | top                       { [("_", TopT)] }
+  | top                       { [("_", Just TopT)] }
 
-param_list1 :: { [(String, Type)] }
+param_list1 :: { [(String, Maybe Type)] }
   : params1                   { $1 }
 
-param :: { (String, Type) }
-  : '(' LOWER_IDENT ':' type ')'    { ($2, $4) }
-  | '(' '_' ':' type ')'            { ("_", $4) }
+param :: { (String, Maybe Type) }
+  : '(' LOWER_IDENT ':' type ')'    { ($2, Just $4) }
+  | '(' '_' ':' type ')'            { ("_", Just $4) }
+  | LOWER_IDENT                     { ($1, Nothing) }
 
-params :: { [(String, Type)] }
+params :: { [(String, Maybe Type)] }
   : {- empty -}  { []    }
   | param params { $1:$2 }
 
-params1 :: { [(String, Type)] }
+params1 :: { [(String, Maybe Type)] }
   : param params { $1:$2 }
 
 

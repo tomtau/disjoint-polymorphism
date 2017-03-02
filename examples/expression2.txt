@@ -7,9 +7,9 @@ type ExpAlg[E] = {
   add : E -> E -> E
 }
 
-trait evalAlg { self =>
-  def lit (x : Int) = {eval = x}
-  def add (x : IEval) (y : IEval) = { eval = x.eval + y.eval }
+trait evalAlg : ExpAlg[IEval] { self =>
+  def lit x  = {eval = x}
+  def add x y = { eval = x.eval + y.eval }
 }
 
 type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E }
@@ -20,17 +20,17 @@ trait subEvalAlg { self =>
 
 type IPrint = { print : String }
 
-trait printAlg { self =>
-  def lit (x : Int) = {print = x.toString}
-  def add (x : IPrint) (y : IPrint) = { print = x.print ++ " + " ++ y.print }
-  def sub (x : IPrint) (y : IPrint) = { print = x.print ++ " - " ++ y.print }
+trait printAlg : SubExpAlg[IPrint] { self =>
+  def lit x = {print = x.toString}
+  def add x y = { print = x.print ++ " + " ++ y.print }
+  def sub x y = { print = x.print ++ " - " ++ y.print }
 }
 
 def e1 E (f : ExpAlg[E]) = f.add (f.lit 7) (f.lit 2)
 
-trait combine A B (f : Trait[T, ExpAlg[A]], g : Trait[T, ExpAlg[B]])  { self =>
-  def lit (x : Int) = (f()).lit x ,, (g()).lit x
-  def add (x : A&B) (y : A&B) = (f()).add x y ,, (g()).add x y
+trait combine A B (f : Trait[T, ExpAlg[A]], g : Trait[T, ExpAlg[B]]) : ExpAlg[A&B] { self =>
+  def lit x = (f()).lit x ,, (g()).lit x
+  def add x y = (f()).add x y ,, (g()).add x y
 }
 
 
