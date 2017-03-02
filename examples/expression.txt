@@ -26,9 +26,9 @@ def printAlg : SubExpAlg[IPrint] = {
   sub = \x y -> { print = x.print ++ " - " ++ y.print }
 };
 
-def e1 [E] (f : ExpAlg[E]) = f.add (f.lit 7) (f.lit 2);
+def e1 E (f : ExpAlg[E]) = f.add (f.lit 7) (f.lit 2);
 
-def combine [A,B] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A & B] = {
+def combine A B (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A & B] = {
   lit = \x -> f.lit x ,, g.lit x,
   add = \x y -> f.add x y ,, g.add x y
 };

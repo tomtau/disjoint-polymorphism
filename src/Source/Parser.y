@@ -129,10 +129,8 @@ sdecl :: { SimpleDecl }
 
 
 bind :: { TmBind }
-  : LOWER_IDENT ctyparam_list param_list ':' type '=' expr
-  { TmBind $1 (map (\(n, b) -> (s2n n, b)) $2) (map (\(n, b) -> (s2n n, b)) $3) $7 (Just $5) }
-  | LOWER_IDENT ctyparam_list param_list '=' expr
-  { TmBind $1 (map (\(n, b) -> (s2n n, b)) $2) (map (\(n, b) -> (s2n n, b)) $3) $5 Nothing }
+  : LOWER_IDENT ctyparam_list param_list ret_type '=' expr
+  { TmBind $1 (map (\(n, b) -> (s2n n, b)) $2) (map (\(n, b) -> (s2n n, b)) $3) $6 $4 }
 
 recbind :: { TmBind }
   : LOWER_IDENT ctyparam_list param_list ':' type '=' expr
@@ -259,16 +257,15 @@ comma_typarams1 :: { [TyName] }
 
 ctyparam :: { (String, Type) }
   : UPPER_IDENT              { ($1, TopT) }
-  | UPPER_IDENT '*' type     { ($1, $3) }
-  | '(' ctyparam ')'         { $2 }
+  | '[' UPPER_IDENT '*' type ']'     { ($2, $4) }
 
-comma_ctyparams1 :: { [(String, Type)] }
-  : ctyparam                       { [$1]  }
-  | ctyparam ',' comma_ctyparams1  { $1:$3 }
+ctyparam_list1 :: { [(String, Type)] }
+  : ctyparam                 { [$1]  }
+  | ctyparam ctyparam_list1  { $1:$2 }
 
 ctyparam_list :: { [(String, Type)] }
-  : '[' comma_ctyparams1 ']'       { $2 }
-  | {- empty -}                    { [] }
+  : ctyparam_list1        { $1 }
+  | {- empty -}           { [] }
 
 paren_ctyparam :: { (String, Type) }
   : UPPER_IDENT                     { ($1, TopT) }
