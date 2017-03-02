@@ -1,20 +1,20 @@
 --> 3
 
-def extend S [U*S] (first : S) (second : U) : S&U = first ,, second;
+def extend S [U*S] (first : S) (second : U) : S&U = first ,, second
 
-type Person = {name : String, male : Bool};
-type Loggable = {log : T -> Int};
-type Dog = {name : String, male : String};
+type Person = {name : String, male : Bool}
+type Loggable = {log : T -> Int}
+type Dog = {name : String, male : String}
 
-def person (n : String) (s : Bool)  = {name = n, male = s};
+def person (n : String) (s : Bool)  = {name = n, male = s}
 
-def consoleLogger : Loggable = {log = \ _ -> 3};
+def consoleLogger : Loggable = {log = \ _ -> 3}
 
-def dog (n : String) (s : String)  = {name = n, male = s};
+def dog (n : String) (s : String)  = {name = n, male = s}
 
-def jim : Person & Loggable = extend Person Loggable (person "Jim" true) consoleLogger;
+def jim : Person & Loggable = extend Person Loggable (person "Jim" true) consoleLogger
 
-jim.log ()
+main = jim.log ()
 
 -- The following doesn't type check
 -- def fool : Dog & Person = extend Dog Person (dog "Pluto" "yes") (person "Jim" true);

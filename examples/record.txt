@@ -1,7 +1,7 @@
 --> "hello"
 
-def remove A [B * {l : A}] (x : {l : A} & B) : B = x;
+def remove A [B * {l : A}] (x : {l : A} & B) : B = x
 
-def test = {l = 3, r = "hello"};
+def test = {l = 3, r = "hello"}
 
-remove Int {r : String} test
+main = remove Int {r : String} test

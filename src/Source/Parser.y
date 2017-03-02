@@ -26,6 +26,7 @@ import Source.SrcLoc
     trait       { T _ TKey "trait" }
     Trait       { T _ TKey "Trait" }
     new         { T _ TKey "new" }
+    main        { T _ TKey "main" }
     forall      { T _ TKey "forall" }
     typ         { T _ TKey "type" }
     let         { T _ TKey "let" }
@@ -91,7 +92,9 @@ import Source.SrcLoc
 ------------------------------------------------------------------------
 
 prog :: { Module }
-  : decllist expr_or_unit   { Module $1 $2 }
+  : decllist main_or_unit   { Module $1 $2 }
+  -- Only for REPL
+  | expr                     { Module [] (DefDecl (TmBind "main" [] [] $1 Nothing)) }
 
 traitdecl :: { Trait }
   : trait LOWER_IDENT trait_params_list ret_type '{' LOWER_IDENT ':' type '=>' sdecllist '}'
@@ -106,21 +109,24 @@ ret_type :: { Maybe Type }
 
 decllist :: { [Decl] }
   : {- empty -}       { [] }
-  | decl ';' decllist { $1 : $3}
+  | decl decllist     { $1 : $2}
 
 decl :: { Decl }
   : sdecl     { SDecl $1 }
   | traitdecl { TraitDecl $1 }
 
-expr_or_unit :: { Expr }
-  : expr        { $1 }
-  | {- empty -} { Top }
+main_or_unit :: { SimpleDecl }
+  : {- empty -}              { DefDecl (TmBind "main" [] [] Top Nothing) }
+  | main '=' expr            { DefDecl (TmBind "main" [] [] $3 Nothing) }
 
 
 sdecllist :: { [SimpleDecl] }
   : {- empty -}         { [] }
-  | sdecl ';' sdecllist { $1 : $3 }
+  | sdecllist1          { $1 }
 
+sdecllist1 :: { [SimpleDecl] }
+  : sdecl         { [$1] }
+  | sdecl  sdecllist1 { $1 : $2 }
 
 sdecl :: { SimpleDecl }
   : def bind                  { DefDecl $2 }

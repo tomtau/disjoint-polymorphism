@@ -1,16 +1,17 @@
 --> "Have fun!"
-type Comment = { content : T -> String };
+
+type Comment = { content : T -> String }
 
 trait comment(content : String) { self : Comment =>
-  def content() = content;
-};
+  def content() = content
+}
 
-type Up = { upvotes : T -> Int };
+type Up = { upvotes : T -> Int }
 
 trait up(upvotes : Int) { self : Up =>
-  def upvotes() = upvotes;
-};
+  def upvotes() = upvotes
+}
 
-def test = new[Comment & Up] comment("Have fun!") & up(4);
+def test = new[Comment & Up] comment("Have fun!") & up(4)
 
-test.content()
+main = test.content()

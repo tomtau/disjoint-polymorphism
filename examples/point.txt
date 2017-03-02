@@ -1,22 +1,22 @@
 --> 18
 
-type Point = { x : T -> Int, y : T -> Int };
+type Point = { x : T -> Int, y : T -> Int }
 
 trait point(x : Int, y: Int) { self : Point =>
-  def x() = x;
-  def y() = y;
-};
+  def x() = x
+  def y() = y
+}
 
-type Norm = { norm : T -> Int };
+type Norm = { norm : T -> Int }
 
 trait euclideanNorm()  { self : Point =>
-  def norm ()  = self.x() + self.y();
-};
+  def norm ()  = self.x() + self.y()
+}
 
 trait manhattanNorm() { self : Point =>
-  def norm () = self.x() + 2 * self.y();
-};
+  def norm () = self.x() + 2 * self.y()
+}
 
-def makePoint (norm : Trait[Point, Norm]) = new[Point & Norm] point(3,4) & norm;
+def makePoint (norm : Trait[Point, Norm]) = new[Point & Norm] point(3,4) & norm
 
-(makePoint(euclideanNorm())).norm() + (makePoint(manhattanNorm())).norm()
+main = (makePoint(euclideanNorm())).norm() + (makePoint(manhattanNorm())).norm()

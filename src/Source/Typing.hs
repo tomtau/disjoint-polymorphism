@@ -24,11 +24,10 @@ tcModule :: Module -> TcMonad (Type, T.UExpr, TC.Env)
 tcModule m = do
   let decls = moduleEntries m
   let mainE = mainExpr m
-  let mainDef = DefDecl (TmBind "Main" [] [] mainE Nothing)
   -- Step 1: Desugar traits
   sdecls <- desugar decls
   -- Step 2: Check module
-  targetDecls <- foldr tcM (return ([])) (sdecls ++ [mainDef])
+  targetDecls <- foldr tcM (return ([])) (sdecls ++ [mainE])
   -- Step 3: Generate initial environment for execution
   let (mainType, mainTarget) = last targetDecls
   let declsTarget = map snd . init $ targetDecls

@@ -1,42 +1,42 @@
 --> "7 + 2 = 9"
 
-type IEval = {eval : Int};
+type IEval = {eval : Int}
 
 type ExpAlg[E] = {
   lit : Int -> E,
   add : E -> E -> E
-};
+}
 
 trait evalAlg { self =>
-  def lit (x : Int) = {eval = x};
-  def add (x : IEval) (y : IEval) = { eval = x.eval + y.eval };
-};
+  def lit (x : Int) = {eval = x}
+  def add (x : IEval) (y : IEval) = { eval = x.eval + y.eval }
+}
 
-type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E };
+type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E }
 
 trait subEvalAlg { self =>
-  def sub (x : IEval) (y : IEval) = { eval = x.eval - y.eval };
-};
+  def sub (x : IEval) (y : IEval) = { eval = x.eval - y.eval }
+}
 
-type IPrint = { print : String };
+type IPrint = { print : String }
 
 trait printAlg { self =>
-  def lit (x : Int) = {print = x.toString};
-  def add (x : IPrint) (y : IPrint) = { print = x.print ++ " + " ++ y.print };
-  def sub (x : IPrint) (y : IPrint) = { print = x.print ++ " - " ++ y.print };
-};
+  def lit (x : Int) = {print = x.toString}
+  def add (x : IPrint) (y : IPrint) = { print = x.print ++ " + " ++ y.print }
+  def sub (x : IPrint) (y : IPrint) = { print = x.print ++ " - " ++ y.print }
+}
 
 
-def e1 E (f : ExpAlg[E]) = f.add (f.lit 7) (f.lit 2);
+def e1 E (f : ExpAlg[E]) = f.add (f.lit 7) (f.lit 2)
 
 def combine A B (f : Trait[T, ExpAlg[A]]) (g : Trait[T, ExpAlg[B]]) :
   T -> ExpAlg[A & B] = \_ -> {
     lit = \x -> (f()).lit x ,, (g()).lit x,
     add = \x y -> (f()).add x y ,, (g()).add x y
-};
+}
 
-def newAlg = combine IEval IPrint (evalAlg ,, subEvalAlg) printAlg;
+def newAlg = combine IEval IPrint (evalAlg ,, subEvalAlg) printAlg
 
-def o = e1 (IEval & IPrint) (new[ExpAlg[IEval & IPrint]] newAlg);
+def o = e1 (IEval & IPrint) (new[ExpAlg[IEval & IPrint]] newAlg)
 
-o.print ++ " = " ++ o.eval.toString
+main = o.print ++ " = " ++ o.eval.toString

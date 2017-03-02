@@ -14,7 +14,7 @@ import Unbound.LocallyNameless
 -- | Modules
 data Module = Module
   { moduleEntries :: [Decl]
-  , mainExpr :: Expr
+  , mainExpr :: SimpleDecl
   } deriving (Show)
 
 -- | Declarations are the components of modules
