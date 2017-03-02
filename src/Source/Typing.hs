@@ -495,7 +495,13 @@ wf' (SRecT _ t) = wf' t
 wf' TopT = return ()
 wf' t = throwError $ text "type" <+> pprint t <+> text "is not well-formed"
 
--- Careful, am I following strictly Fig.3?
+-------------------------------------------------------------------------
+-- WARN: This is the most critical component!!!
+--
+-- Anything new added in the types, we should double check how it
+-- affects the disjointess relation
+-------------------------------------------------------------------------
+
 disjoint :: (Fresh m, MonadError Doc m) => Ctx -> Type -> Type -> m ()
 disjoint _ TopT _ = return ()
 disjoint _ _ TopT = return ()
@@ -506,7 +512,6 @@ disjoint ctx (TVar x) b
 disjoint ctx b (TVar x)
   | Just a <- lookupTVarConstraintMaybe ctx x
   , Right _ <- subtype ctx a b = return ()
-
 disjoint ctx (TVar x) (TVar y) =
   throwError $
   text "Type variables:" <+>
