@@ -26,14 +26,13 @@ trait printAlg { self =>
   def sub (x : IPrint) (y : IPrint) = { print = x.print ++ " - " ++ y.print }
 }
 
-
 def e1 E (f : ExpAlg[E]) = f.add (f.lit 7) (f.lit 2)
 
-def combine A B (f : Trait[T, ExpAlg[A]]) (g : Trait[T, ExpAlg[B]]) :
-  T -> ExpAlg[A & B] = \_ -> {
-    lit = \x -> (f()).lit x ,, (g()).lit x,
-    add = \x y -> (f()).add x y ,, (g()).add x y
+trait combine A B (f : Trait[T, ExpAlg[A]], g : Trait[T, ExpAlg[B]])  { self =>
+  def lit (x : Int) = (f()).lit x ,, (g()).lit x
+  def add (x : A&B) (y : A&B) = (f()).add x y ,, (g()).add x y
 }
+
 
 def newAlg = combine IEval IPrint (evalAlg ,, subEvalAlg) printAlg
 

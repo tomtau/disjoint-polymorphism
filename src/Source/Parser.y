@@ -348,7 +348,8 @@ param_list1 :: { [(String, Type)] }
   : params1                   { $1 }
 
 param :: { (String, Type) }
-  : '(' LOWER_IDENT ':' type ')' { ($2, $4) }
+  : '(' LOWER_IDENT ':' type ')'    { ($2, $4) }
+  | '(' '_' ':' type ')'            { ("_", $4) }
 
 params :: { [(String, Type)] }
   : {- empty -}  { []    }
