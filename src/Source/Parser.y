@@ -94,8 +94,15 @@ prog :: { Module }
   : decllist expr_or_unit   { Module $1 $2 }
 
 traitdecl :: { Trait }
-  : trait LOWER_IDENT trait_params_list '{' LOWER_IDENT ':' type '=>' sdecllist '}'
-  { TraitDef $2 ($5, $7) (bind (map (\(n, b) -> (s2n n, embed b)) $3) $9) }
+  : trait LOWER_IDENT trait_params_list ret_type '{' LOWER_IDENT ':' type '=>' sdecllist '}'
+  { TraitDef $2 ($6, $8) $4 (bind (map (\(n, b) -> (s2n n, embed b)) $3) $10) }
+  | trait LOWER_IDENT trait_params_list ret_type '{' LOWER_IDENT '=>' sdecllist '}'
+  { TraitDef $2 ($6, TopT) $4 (bind (map (\(n, b) -> (s2n n, embed b)) $3) $8) }
+
+ret_type :: { Maybe Type }
+  : {- empty -}     { Nothing }
+  | ':' type        { Just $2 }
+
 
 decllist :: { [Decl] }
   : {- empty -}       { [] }

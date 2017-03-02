@@ -34,7 +34,7 @@ desugarTrait trait = do
        [] -- traits have no type variables
        ((map (\(a, b) -> (a, unembed b)) params) ++ [(s2n self, st)])
        (mkRecds (map normalizeTmDecl tb'))
-       Nothing)
+       (retType trait))
   where
     parasBody = traitParasBody trait
     name = traitName trait

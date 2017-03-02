@@ -7,20 +7,20 @@ type ExpAlg[E] = {
   add : E -> E -> E
 };
 
-trait evalAlg { self : T =>
+trait evalAlg { self =>
   def lit (x : Int) = {eval = x};
   def add (x : IEval) (y : IEval) = { eval = x.eval + y.eval };
 };
 
 type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E };
 
-trait subEvalAlg { self : T =>
+trait subEvalAlg { self =>
   def sub (x : IEval) (y : IEval) = { eval = x.eval - y.eval };
 };
 
 type IPrint = { print : String };
 
-trait printAlg { self : T =>
+trait printAlg { self =>
   def lit (x : Int) = {print = x.toString};
   def add (x : IPrint) (y : IPrint) = { print = x.print ++ " + " ++ y.print };
   def sub (x : IPrint) (y : IPrint) = { print = x.print ++ " - " ++ y.print };
