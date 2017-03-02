@@ -12,6 +12,6 @@ trait up(upvotes : Int) { self : Up =>
   def upvotes() = upvotes
 }
 
-def test = new[Comment & Up] comment("Have fun!") & up(4)
+val test = new[Comment & Up] comment("Have fun!") & up(4)
 
 main = test.content()

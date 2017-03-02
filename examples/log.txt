@@ -8,11 +8,11 @@ type Dog = {name : String, male : String}
 
 def person (n : String) (s : Bool)  = {name = n, male = s}
 
-def consoleLogger : Loggable = {log = \ _ -> 3}
+val consoleLogger : Loggable = {log = \ _ -> 3}
 
 def dog (n : String) (s : String)  = {name = n, male = s}
 
-def jim : Person & Loggable = extend Person Loggable (person "Jim" true) consoleLogger
+val jim : Person & Loggable = extend Person Loggable (person "Jim" true) consoleLogger
 
 main = jim.log ()
 

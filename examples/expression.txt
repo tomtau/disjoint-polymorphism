@@ -35,6 +35,6 @@ def combine A [B * A] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A & B] = {
 
 def newAlg = combine IEval IPrint subEvalAlg printAlg
 
-def o = e1 (IEval & IPrint) newAlg
+val o = e1 (IEval & IPrint) newAlg
 
 main = o.print ++ " = " ++ o.eval.toString

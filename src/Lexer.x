@@ -28,6 +28,7 @@ $paren = [\(\)\[\]\{\}]
          | def | type | module
          | defrec | forall | trait
          | new | Trait | main
+         | inherits | val
 
 @compop = "==" | "/=" | \/\\ | "->" | ",," | "()" | "=>" | "++"
 

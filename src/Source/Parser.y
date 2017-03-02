@@ -24,7 +24,9 @@ import Source.SrcLoc
     def         { T _ TKey "def" }
     defrec      { T _ TKey "defrec" }
     trait       { T _ TKey "trait" }
+    val         { T _ TKey "val" }
     Trait       { T _ TKey "Trait" }
+    inherits    { T _ TKey "inherits" }
     new         { T _ TKey "new" }
     main        { T _ TKey "main" }
     forall      { T _ TKey "forall" }
@@ -130,6 +132,7 @@ sdecllist1 :: { [SimpleDecl] }
 
 sdecl :: { SimpleDecl }
   : def bind                  { DefDecl $2 }
+  | val bind                  { DefDecl $2 }
   | typ typebind              { TypeDecl $2 }
   | defrec recbind            { DefDecl $2 }
 
@@ -222,7 +225,6 @@ atype :: { Type }
 
 -- record types
 record_type :: { Type }
-  -- TODO: desugaring might be too early. But the benefit is avoid a traversal of the type structure later.
   : '{' record_type_fields_rev '}'      { mkRecdsT (reverse $2) }
 
 -- Happy is more efficient at parsing left-recursive rules!

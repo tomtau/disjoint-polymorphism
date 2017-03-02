@@ -20,8 +20,8 @@ trait frigatebird() { self : Bird =>
   def fly () = "I'm an excellent flyer"
 }
 
-def aPigeon = new[Swimming & Bird] swimming("pigeon") & pigeon()
+val aPigeon = new[Swimming & Bird] swimming("pigeon") & pigeon()
 
-def aFrigatabird = new[Bird] frigatebird()
+val aFrigatabird = new[Bird] frigatebird()
 
 main = aPigeon.swim()

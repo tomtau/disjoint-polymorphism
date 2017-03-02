@@ -34,8 +34,8 @@ trait combine A [B * A] (f : Trait[T, ExpAlg[A]], g : Trait[T, ExpAlg[B]]) : Exp
 }
 
 
-def newAlg = combine IEval IPrint (evalAlg ,, subEvalAlg) printAlg
+val newAlg = combine IEval IPrint (evalAlg ,, subEvalAlg) printAlg
 
-def o = e1 (IEval & IPrint) (new[ExpAlg[IEval & IPrint]] newAlg)
+val o = e1 (IEval & IPrint) (new[ExpAlg[IEval & IPrint]] newAlg)
 
 main = o.print ++ " = " ++ o.eval.toString
