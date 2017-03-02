@@ -14,29 +14,30 @@ import Source.Syntax
 import Unbound.LocallyNameless
 
 
-desugar :: (Fresh m) => [Decl] -> m [SimpleDecl]
-desugar ds = mapM go ds
+desugar :: [Decl] -> [SimpleDecl]
+desugar = map go
   where
-    go :: Fresh m => Decl -> m SimpleDecl
-    go (SDecl decl) = return decl
+    go :: Decl -> SimpleDecl
+    go (SDecl decl) = decl
     go (TraitDecl trait) = desugarTrait trait
 
 
 -- We substitute away all type declarations in traits
-desugarTrait :: Fresh m => Trait -> m SimpleDecl
-desugarTrait trait = do
-  (params, tb) <- unbind parasBody
+desugarTrait :: Trait -> SimpleDecl
+desugarTrait trait =
   let tb' = resolveDecls tb
-  return
+  in
     (DefDecl $
      TmBind
        name
-       [] -- traits have no type variables
-       ((map (\(a, b) -> (a, unembed b)) params) ++ [(s2n self, st)])
+       typarams
+       ((map (\(a, b) -> (a, b)) params) ++ [(s2n self, st)])
        (mkRecds (map normalizeTmDecl tb'))
        (retType trait))
   where
-    parasBody = traitParasBody trait
+    typarams = traitTyParams trait
+    params = traitParams trait
+    tb = traitBody trait
     name = traitName trait
     (self, st) = selfType trait
 

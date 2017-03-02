@@ -34,8 +34,9 @@ data Trait = TraitDef
   , selfType :: (String, Type)
     -- ^ Self type
   , retType :: Maybe Type
-  , traitParasBody :: (Bind [(TmName, Embed Type)] [SimpleDecl])
-    -- ^ Trait parameters & body (parameters are bound in the body)
+  , traitTyParams :: [(TyName, Type)]
+  , traitParams :: [(TmName, Type)]
+  , traitBody :: [SimpleDecl]
   } deriving (Show)
 
 

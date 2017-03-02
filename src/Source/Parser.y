@@ -97,10 +97,10 @@ prog :: { Module }
   | expr                     { Module [] (DefDecl (TmBind "main" [] [] $1 Nothing)) }
 
 traitdecl :: { Trait }
-  : trait LOWER_IDENT trait_params_list ret_type '{' LOWER_IDENT ':' type '=>' sdecllist '}'
-  { TraitDef $2 ($6, $8) $4 (bind (map (\(n, b) -> (s2n n, embed b)) $3) $10) }
-  | trait LOWER_IDENT trait_params_list ret_type '{' LOWER_IDENT '=>' sdecllist '}'
-  { TraitDef $2 ($6, TopT) $4 (bind (map (\(n, b) -> (s2n n, embed b)) $3) $8) }
+  : trait LOWER_IDENT ctyparam_list trait_params_list ret_type '{' LOWER_IDENT ':' type '=>' sdecllist '}'
+  { TraitDef $2 ($7, $9) $5 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) $11}
+  | trait LOWER_IDENT ctyparam_list trait_params_list ret_type '{' LOWER_IDENT '=>' sdecllist '}'
+  { TraitDef $2 ($7, TopT) $5 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) $9}
 
 ret_type :: { Maybe Type }
   : {- empty -}     { Nothing }

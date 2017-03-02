@@ -25,7 +25,7 @@ tcModule m = do
   let decls = moduleEntries m
   let mainE = mainExpr m
   -- Step 1: Desugar traits
-  sdecls <- desugar decls
+  let sdecls = desugar decls
   -- Step 2: Check module
   targetDecls <- foldr tcM (return ([])) (sdecls ++ [mainE])
   -- Step 3: Generate initial environment for execution
