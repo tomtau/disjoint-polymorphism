@@ -33,6 +33,7 @@ data Trait = TraitDef
     -- ^ Trait name
   , selfType :: (String, Type)
     -- ^ Self type
+  , traitSuper :: Maybe [Expr]
   , retType :: Maybe Type
   , traitTyParams :: [(TyName, Type)]
   , traitParams :: [(TmName, Type)]

@@ -22,24 +22,28 @@ desugar = map go
     go (TraitDecl trait) = desugarTrait trait
 
 
--- We substitute away all type declarations in traits
+-- Desugar inherits:
+-- trait a (x : A, y : B) inherits b & c {self : C => ...}
+-- def a (x : A) (y : B) (self : C) = b(self) ,, c(self) ,, {...}
 desugarTrait :: Trait -> SimpleDecl
 desugarTrait trait =
-  let tb' = resolveDecls tb
-  in
-    (DefDecl $
-     TmBind
-       name
-       typarams
-       ((map (\(a, b) -> (a, Just b)) params) ++ [(s2n self, Just st)])
-       (mkRecds (map normalizeTmDecl tb'))
-       (retType trait))
+  (DefDecl $
+   TmBind
+     name
+     typarams
+     ((map (\(a, b) -> (a, Just b)) params) ++ [(s2n self, Just st)])
+     (maybe body (\b -> foldl1 Merge (b ++ [body])) supers)
+     (retType trait))
   where
     typarams = traitTyParams trait
     params = traitParams trait
     tb = traitBody trait
     name = traitName trait
     (self, st) = selfType trait
+    supers = traitSuper trait
+    tb' = resolveDecls tb -- We substitute away all type declarations in traits
+    body = mkRecds (map normalizeTmDecl tb')
+
 
 
 

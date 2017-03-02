@@ -14,7 +14,7 @@ trait evalAlg : ExpAlg[IEval] { self =>
 
 type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E }
 
-trait subEvalAlg { self =>
+trait subEvalAlg inherits evalAlg : SubExpAlg[IEval] { self =>
   def sub (x : IEval) (y : IEval) = { eval = x.eval - y.eval }
 }
 
@@ -34,7 +34,7 @@ trait combine A [B * A] (f : Trait[T, ExpAlg[A]], g : Trait[T, ExpAlg[B]]) : Exp
 }
 
 
-val newAlg = combine IEval IPrint (evalAlg ,, subEvalAlg) printAlg
+val newAlg = combine IEval IPrint subEvalAlg printAlg
 
 val o = e1 (IEval & IPrint) (new[ExpAlg[IEval & IPrint]] newAlg)
 
