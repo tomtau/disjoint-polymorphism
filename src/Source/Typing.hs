@@ -213,7 +213,7 @@ infer inp@(TApp e a) = do
   case (expandType ctx t) of
     DForall t' -> do
       ((x, Embed b), c) <- unbind t'
-      disjoint ctx a b
+      disjoint ctx (expandType ctx a) (expandType ctx b)
       return (subst x a c, e')
     _ ->
       throwError
@@ -236,7 +236,7 @@ infer (Merge e1 e2) = do
   (a, e1') <- infer e1
   (b, e2') <- infer e2
   ctx <- askCtx
-  disjoint ctx a b
+  disjoint ctx (expandType ctx a) (expandType ctx b)
   return (And a b, T.UPair e1' e2')
 
 {-
@@ -416,7 +416,7 @@ check (Merge e1 e2) (And a b) = do
   e1' <- check e1 a
   e2' <- check e2 b
   ctx <- askCtx
-  disjoint ctx a b
+  disjoint ctx (expandType ctx a) (expandType ctx b)
   return (T.UPair e1' e2')
 
 {-
@@ -506,6 +506,12 @@ disjoint ctx (TVar x) b
 disjoint ctx b (TVar x)
   | Just a <- lookupTVarConstraintMaybe ctx x
   , Right _ <- subtype ctx a b = return ()
+
+disjoint ctx (TVar x) (TVar y) =
+  throwError $
+  text "Type variables:" <+>
+  text (name2String x) <+>
+  text "and" <+> text (name2String y) <+> text "are not disjoint"
 
 disjoint ctx (DForall t) (DForall t') = do
   t <- unbind2 t t'
