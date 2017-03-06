@@ -22,7 +22,6 @@ trait addP (e1 : IPrint, e2 : IPrint) inherits add(e1,e2) : IPrint { self : IPri
   def print = "(" ++ e1.print ++ " + " ++ e2.print ++ ")"
 }
 
-
 trait sub (e1 : IEval, e2 : IEval) { self : IEval =>
   def eval : Int = e1.eval - e2.eval
 }

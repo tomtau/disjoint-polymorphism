@@ -79,6 +79,7 @@
 \newcommand{\mynotes}[3]{{\color{#2} {\sc #1}: #3}}
 \newcommand\bruno[1]{\mynotes{bruno}{red}{#1}}
 \newcommand\jeremy[1]{\mynotes{jeremy}{blue}{#1}}
+\newcommand\name{{\bf SEDEL}\xspace}
 
 \makeatletter\if@ACM@journal\makeatother
 %% Journal information (used by PACMPL format)
@@ -124,14 +125,14 @@
 \begin{document}
 
 %% Title information
-\title[Short Title]{Full Title}         %% [Short Title] is optional;
+\title[Short Title]{\name: Safe and Expressive Delegation-Based Programming}         %% [Short Title] is optional;
                                         %% when present, will be used in
                                         %% header instead of Full Title.
-\titlenote{with title note}             %% \titlenote is optional;
+%%\titlenote{with title note}             %% \titlenote is optional;
                                         %% can be repeated if necessary;
                                         %% contents suppressed with 'anonymous'
-\subtitle{Subtitle}                     %% \subtitle is optional
-\subtitlenote{with subtitle note}       %% \subtitlenote is optional;
+%%\subtitle{Subtitle}                     %% \subtitle is optional
+%%\subtitlenote{with subtitle note}       %% \subtitlenote is optional;
                                         %% can be repeated if necessary;
                                         %% contents suppressed with 'anonymous'
 
@@ -206,7 +207,21 @@
 %% Note: \begin{abstract}...\end{abstract} environment must come
 %% before \maketitle command
 \begin{abstract}
-Text of abstract \ldots.
+This paper presents \name: a new delegation based object-oriented
+programming language. Unlike most previous designs for delegation
+(and also prototype) based languages, \name is statically typed and
+has an expressive polymorphic type system. 
+The design of \name and its type systems has two primary goals: 
+guaranteeing important \emph{safety} properties; and 
+ensuring a high-degree of programming \emph{flexibility}.
+In terms of safety \name's type system provides, not only the usual 
+type-safety property, but also coherence. The coherence property
+ensures that the semantics of \name is unambiguous. In particular 
+this property is useful to ensure that programs using 
+multiple inheritance remain free of ambiguities. 
+In terms of flexibility, the polymorphic type system provides 
+an expressive form of polymorphism and intersection types that 
+can type-check various delegation-based programs and patterns. 
 \end{abstract}
 
 
@@ -250,13 +265,15 @@ Text of abstract \ldots.
 
 \input{sections/overview.tex}
 
+\input{sections/sedel.tex}
+
+\input{sections/applications.tex}
+
 \input{sections/desugar.tex}
 
 \input{sections/related.tex}
 
 \input{sections/conclusion.tex}
-
-
 
 %% Acknowledgments
 \begin{acks}                            %% acks environment is optional
