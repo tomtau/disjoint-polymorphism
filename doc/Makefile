@@ -4,7 +4,8 @@ SCRIPT = script
 
 all: $(MAIN).pdf
 
-$(MAIN).pdf: $(wildcard ../examples/*.txt) $(MAIN).tex paper.bib
+$(MAIN).pdf: $(wildcard ../examples/*.txt)  $(wildcard sections/*.tex) $(MAIN).tex paper.bib
+	@ruby $(SCRIPT).rb
 	@latexmk -pdf $(@:.pdf=.tex)
 
 appendix:

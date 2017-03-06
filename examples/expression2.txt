@@ -1,5 +1,8 @@
 --> "7 + 2 = 9"
 
+
+--BEGIN_EG_TRAIT
+
 type IEval = {eval : Int}
 
 type ExpAlg[E] = {
@@ -11,6 +14,8 @@ trait evalAlg : ExpAlg[IEval] { self =>
   def lit x  = {eval = x}
   def add x y = { eval = x.eval + y.eval }
 }
+
+--END_EG_TRAIT
 
 type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E }
 
@@ -32,6 +37,7 @@ trait combine A [B * A] (f : Trait[T, ExpAlg[A]], g : Trait[T, ExpAlg[B]]) : Exp
   def lit x = (f()).lit x ,, (g()).lit x
   def add x y = (f()).add x y ,, (g()).add x y
 }
+
 
 
 val newAlg = combine IEval IPrint subEvalAlg printAlg
