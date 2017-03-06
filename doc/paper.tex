@@ -60,11 +60,11 @@
 
 \lstdefinestyle{sourcelanguage}{
   tabsize=2, % sets default tabsize to 2 spaces
-  morekeywords={type,trait,new,def, defrec, if, then, else, new, inherits},
-  otherkeywords={=>, ->},
+  morekeywords={type,trait,new,def, defrec, if, then, else, new, inherits, Trait},
   morecomment=[l]{--},
   morestring=[b]", % 'b' means inside a string delimiters are escaped by a backslash.
   morestring=[b]',
+  literate={->}{{$\rightarrow$}}1 {=>}{{$\Rightarrow$}}1,
 }
 
 \lstset{style=sourcelanguage}
@@ -73,13 +73,8 @@
 \usepackage{xspace}
 \usepackage{xcolor}
 \usepackage{comment}
-\newcommand{\hltext}[2][gray!40]{\colorbox{#1}{#2}}
-\newcommand{\hl}[2][gray!40]{%
-  \colorbox{#1}{$\displaystyle#2$}}
-\newcommand{\mynotes}[3]{{\color{#2} {\sc #1}: #3}}
-\newcommand\bruno[1]{\mynotes{bruno}{red}{#1}}
-\newcommand\jeremy[1]{\mynotes{jeremy}{blue}{#1}}
-\newcommand\name{{\bf SEDEL}\xspace}
+
+\input{macros.tex}
 
 \makeatletter\if@ACM@journal\makeatother
 %% Journal information (used by PACMPL format)

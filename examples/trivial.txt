@@ -2,33 +2,37 @@
 
 -- Examples in "The Expression Problem, Trivially!"
 
-type IEval = {eval : Int}
 
+-- BEGIN_EP_DEF
+type IEval = {eval : Int}
 trait lit (x : Int) { self : IEval =>
   def eval : Int = x
 }
-
 trait add (e1 : IEval, e2 : IEval) { self : IEval =>
   def eval : Int = e1.eval + e2.eval
 }
+-- END_EP_DEF
 
-type IPrint = IEval & { print : String }
 
-trait litP (x : Int) inherits lit(x) : IPrint { self : IPrint =>
-  def print = x.toString
-}
-
-trait addP (e1 : IPrint, e2 : IPrint) inherits add(e1,e2) : IPrint { self : IPrint =>
-  def print = "(" ++ e1.print ++ " + " ++ e2.print ++ ")"
-}
-
+-- BEGIN_SUB_DEF
 trait sub (e1 : IEval, e2 : IEval) { self : IEval =>
   def eval : Int = e1.eval - e2.eval
 }
+-- END_SUB_DEF
 
+-- BEGIN_PRINT_DEF
+type IPrint = IEval & { print : String }
+trait litP (x : Int) inherits lit(x) : IPrint { self : IPrint =>
+  def print = x.toString
+}
+trait addP (e1 : IPrint, e2 : IPrint) inherits add(e1,e2) : IPrint { self : IPrint =>
+  def print = "(" ++ e1.print ++ " + " ++ e2.print ++ ")"
+}
 trait subP (e1 : IPrint, e2 : IPrint) inherits sub(e1,e2) : IPrint { self : IPrint =>
   def print = "(" ++ e1.print ++ " - " ++ e2.print ++ ")"
 }
+-- END_PRINT_DEF
+
 
 val l1 = new[IEval] lit(4)
 
@@ -36,14 +40,11 @@ val l2 = new[IEval] lit(3)
 
 val a = new[IEval] add (l1, l2)
 
-val le1 = new[IPrint] litP(4)
-
-val le2 = new[IPrint] litP(3)
-
-val le3 = new[IPrint] addP(le1, le2)
-
-
-val ae = new[IPrint] subP(le3, le2)
-
-
-main = ae.print ++ " = " ++ ae.eval.toString
+-- BEGIN_EP_TEST
+val l1 = new[IPrint] litP(4)
+val l2 = new[IPrint] litP(3)
+val l3 = new[IPrint] addP(l1, l2)
+val e  = new[IPrint] subP(l3, l2)
+main = e.print ++ " = " ++ e.eval.toString
+-- Output: "((4 + 3) - 3) = 4"
+-- END_EP_TEST

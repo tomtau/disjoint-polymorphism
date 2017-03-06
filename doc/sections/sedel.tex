@@ -1,3 +1,185 @@
 \section{An Overview of \name}
 
-Illustrate the key features of \name (specifically those that address the issues in previous sections). 
+% Illustrate the key features of \name (specifically those that address the issues in previous sections).
+
+
+This section illustrates the main features of \name. Notably we show its support
+for dynamically composable traits, disjoint intersection types, the merge
+operator and parametric polymorphism. All examples shown in this section are
+runnable in our prototype implementation.
+
+\jeremy{don't forget to say type variable use uppercase letter, and term
+  variables lowercase}
+
+
+\subsection{(Disjoint) Intersection Types and the Merge Operator}
+\label{sec:intersection}
+
+
+\subsection{Generalized Records with Intersection Types}
+\label{sec:records}
+
+
+\subsection{Parametric Polymorphism and Intersection Types}
+\label{sec:polymorphism}
+
+
+\subsection{Dynamically Composable Traits}
+\label{sec:traits}
+
+\name natively supports a simple, yet expressive form of dynamically composable
+traits~\cite{scharli2003traits}. Traits provide a mechanism of code reuse in
+object-oriented programming, that can be used as an alternative to multiple
+inheritance. One interesting aspect about traits is the way conflicting features
+that are typical arise in multiple inheritance are dealt with. Instead of
+automatically resolved by scoping rules, conflicts are detected by the type
+system, and require programmers to explicitly resolve them. In what follows, we
+demonstrate various trait features in \name. The desugaring process from traits
+to \bname is discussed in Section~\ref{sec:desugar}.
+
+\subsubsection{Basic Traits}
+
+A Trait is, in essential, a collection of related methods that characterize only
+a specific perspective of the features of an object. Therefore, compared with
+programs using inheritance, programs using traits usually have a large number of
+small traits rather than fewer but larger classes. Code reuse with traits is
+easier than with classes, since traits are usually shorter and can be
+\textit{composed}. It is the easy of composition that makes traits such a
+appealing language feature: two traits can be freely ``added'' together (which
+is an symmetric operation); and trait systems provide conflict detection and so
+on.
+
+The first example shows basic trait composition. Many social networking sites
+allow users to ``upvote'' a comment and the number of upvotes that comment has
+received is also displayed. We would like to separate the logic for upvotes from
+comments so that it can be reused in other entities. The code below defines a
+trait, \lstinline$comment$, which contains a single method \lstinline$content$.
+
+\lstinputlisting[linerange=4-7]{../examples/comment.txt}% APPLY:linerange=COMMENT_DEF
+
+The syntax is very similar to Scala's, with the \textbf{def} keyword begins a
+term declaration. Next we create another trait, \lstinline$up$, for tracking the
+number of upvotes.
+
+\lstinputlisting[linerange=12-15]{../examples/comment.txt}% APPLY:linerange=UP_DEF
+
+At this point the reader may wonder what are those \textbf{type} declarations
+(\lstinline$Comment$ and \lstinline$Up$) for. In mainstream OO languages such as
+Java, a class declaration such as \lstinline$class C { ... }$ does two things at
+the same time:
+
+\begin{itemize}
+\item Declaring a \textit{template} for creating object;
+\item Declaring a new \textit{type}.
+\end{itemize}
+
+In contrast, trait declarations in \name only do the former. Back to our
+example, the purpose of declaring two types is just to use them for type
+annotations of the self reference. In the trait literature, a trait usually
+requires a set of methods that server as parameters for the provided behaviour.
+In our example, the type of \lstinline$self$ denotes what methods are required.
+
+Creating an object is via the \textbf{new} keyword, a convention in many OO
+languages, except for one crucial novelty: we can create an object from multiple
+traits. More precisely, the object is created from the \textit{composition} of
+those traits. Therefore, we are able to call methods from different traits on a
+single object. For example, we can create an object from \lstinline$comment$ and
+\lstinline$up$ and test its functionality as follows:
+
+\lstinputlisting[linerange=20-22]{../examples/comment.txt}% APPLY:linerange=COMP_TEST
+
+\subsubsection{Traits with Dependencies}
+
+The following example shows that a trait can depend on another trait. We define
+the type of a point and a trait for a standard point.
+
+\lstinputlisting[linerange=5-9]{../examples/point.txt}% APPLY:linerange=POINT_DEF
+
+The norm of a point can be defined as its distance to the origin. We provide two
+definitions of norm via two traits \footnote{Due to the lack of full support for
+  arithmetic operations, the definitions of Euclidean and Manhattan norms are
+  ridiculously simplified. }.
+
+\lstinputlisting[linerange=14-20]{../examples/point.txt}% APPLY:linerange=NORM_DEF
+
+Note how in \lstinline$euclideanNorm$ and \lstinline$manhattanNorm$ the type of
+the self reference is \lstinline$Point$! This is in contrast to a typical
+object-oriented language, such as Java, where the self reference must always be
+of the same type as the class being defined. It is this functionality that
+allows us to express dependencies between traits: when \lstinline$euclideanNorm$
+and \lstinline$manhattanNorm$ are instantiated and composed with some other
+traits, they must be composed with an implementation of \lstinline$Point$.
+
+\lstinputlisting[linerange=29-31]{../examples/point.txt}% APPLY:linerange=NORM_TEST
+
+
+
+\subsubsection{Traits with Inheritance}
+
+Traits in \name are extensible. A trait can be extended by inheriting all
+members of other traits, and defining additional members. This is, in some
+sense, similar to class inheritance in traditional OO languages. However, one
+difference is that, a trait can inherits one or more traits without any
+problems, provided that there are no conflicts arising. Below we present a
+solution to Wadler's Expression Problem~\cite{wadler1998expression} in \name.
+
+\lstinputlisting[linerange=7-13]{../examples/trivial.txt}% APPLY:linerange=EP_DEF
+
+The initial system defines two traits \lstinline$lit$ and \lstinline$add$ that
+implement the evaluation (\lstinline{eval}) operation. It is fairly easy to add
+a new variant, e.g., a \lstinline$sub$ trait, to the system.
+
+\lstinputlisting[linerange=18-20]{../examples/trivial.txt}% APPLY:linerange=SUB_DEF
+
+What if now we want to extend the system with a pretty printing operation. The
+basic idea is to extend traits \lstinline$lit$, \lstinline$add$, and
+\lstinline$sub$ by adding the \lstinline$print$ operation.
+
+\lstinputlisting[linerange=24-33]{../examples/trivial.txt}% APPLY:linerange=PRINT_DEF
+
+Note that trait \lstinline$litP$ inherits the \lstinline$eval$ operation from
+trait \lstinline$lit$. Same goes for \lstinline$addP$ and \lstinline$subP$. It
+is fairly simple to use the new system, as one would imagine.
+
+\lstinputlisting[linerange=44-49]{../examples/trivial.txt}% APPLY:linerange=EP_TEST
+
+
+\subsubsection{Detecting Conflicts in Trait Composition}
+
+A conflict arises if and only if we combine two traits that have identically
+named methods. The traditional approach to resolve conflicts is by method
+overriding, automatically done by the type system, whereas the trait-based
+approach enforces conflicts be resolved on the level of the composition by the
+programmers, otherwise the program is rejected by the type system. The following
+example, taken from~\cite{alpuimdisjoint}, shows how conflicting methods in two
+traits are detected.
+
+\lstinputlisting[linerange=6-22]{../examples/log.txt}% APPLY:linerange=CONFLICT_DEF
+
+Here two traits \lstinline{person} and \lstinline{consoleLogger} are composed in
+a variable \lstinline{jim}. It is type-safe to access both methods from
+\lstinline{Person} and \lstinline{Loggable} in the object \lstinline{jim}.
+
+Now if we mistakenly compose \lstinline$person$ and \lstinline$dog$, then the
+program is not accepted, due to both \lstinline{Person} and \lstinline{Dog}
+sharing the same name (\lstinline{name}) and the same type (\lstinline$String$).
+
+\lstinputlisting[linerange=29-30]{../examples/log.txt}% APPLY:linerange=CONFLICT_WRONG
+
+\subsubsection{Dynamic Instantiation}
+
+One difference with traditional traits or classes is that in \name we are able
+to compose traits \textit{dynamically} and then instantiate them later. This is
+impossible in traditional OO language, such as Java, since classes being
+instantiated must be known statically. In \name, as we will explain in
+Section~\ref{sec:desugar}, traits are just terms: they are first-class values
+and can be passed around or returned from a function, just like normal terms.
+For instance in the point example, we can define a function that takes a trait
+\lstinline$norm$, and then instantiate it.
+
+\lstinputlisting[linerange=25-25]{../examples/point.txt}% APPLY:linerange=POINT_FUNC
+
+Here \textbf{Trait} is a built-in keyword, and \lstinline$Trait[Point, Norm]$ is
+the type for traits that conform to the \lstinline$Norm$ type. We can then
+create a point object with the Euclidean norm as simply as
+\lstinline$makePoint(euclideanNorm())$.

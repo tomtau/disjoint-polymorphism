@@ -1,6 +1,10 @@
 \section{Desugaring}
+\label{sec:desugar}
 
 
-\jeremy{Test code snippet}
-
-\lstinputlisting[linerange=5-17]{../examples/expression2.txt}% APPLY:linerange=EG_TRAIT
+The section provides the procedures of desugaring traits to \bname. The idea
+behind trait translation is inspired by the functional mixin
+semantics~\cite{cook1989denotational} using open reucursion, which is proposed
+by Cook in an untyped setting. However, our translation is done in the context
+of a statically-typed programming language, which is exactly why conflicts can
+be \textit{statically} detected in traits.

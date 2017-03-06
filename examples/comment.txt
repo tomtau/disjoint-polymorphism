@@ -1,17 +1,23 @@
---> "Have fun!"
+--> "Have fun!4"
 
+-- BEGIN_COMMENT_DEF
 type Comment = { content : T -> String }
-
 trait comment(content : String) { self : Comment =>
   def content() = content
 }
+-- END_COMMENT_DEF
 
+
+-- BEGIN_UP_DEF
 type Up = { upvotes : T -> Int }
-
 trait up(upvotes : Int) { self : Up =>
   def upvotes() = upvotes
 }
+-- END_UP_DEF
 
+
+-- BEGIN_COMP_TEST
 val test = new[Comment & Up] comment("Have fun!") & up(4)
-
-main = test.content()
+main = test.content() ++ (test.upvotes()).toString
+-- Output: "Have fun!4"
+-- END_COMP_TEST
