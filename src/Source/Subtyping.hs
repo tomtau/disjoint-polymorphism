@@ -8,11 +8,11 @@ module Source.Subtyping
 import           Control.Monad.Except
 import           Environment
 import           PrettyPrint
+import           Source.Desugar
 import           Source.Syntax
 import qualified Target.Syntax as T
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 import           Unbound.LocallyNameless
-import Source.Desugar
 
 -- | Subtyping (<:) is defined only between types of kind *.
 subtype :: Ctx -> Type -> Type -> Either Doc T.UExpr
