@@ -7,7 +7,6 @@ build:
 	@stack build
 
 install:
-	-make -C data
 	@stack install
 
 test:
