@@ -57,13 +57,13 @@ trait, \lstinline$comment$, which contains a single method \lstinline$content$.
 
 \lstinputlisting[linerange=4-7]{../examples/comment.txt}% APPLY:linerange=COMMENT_DEF
 
-The syntax is very similar to Scala's, with the \textbf{def} keyword begins a
+The syntax is very similar to Scala's, with the \lstinline{def} keyword begins a
 term declaration. Next we create another trait, \lstinline$up$, for tracking the
 number of upvotes.
 
 \lstinputlisting[linerange=12-15]{../examples/comment.txt}% APPLY:linerange=UP_DEF
 
-At this point the reader may wonder what are those \textbf{type} declarations
+At this point the reader may wonder what are those \lstinline{type} declarations
 (\lstinline$Comment$ and \lstinline$Up$) for. In mainstream OO languages such as
 Java, a class declaration such as \lstinline$class C { ... }$ does two things at
 the same time:
@@ -79,7 +79,7 @@ annotations of the self reference. In the trait literature, a trait usually
 requires a set of methods that server as parameters for the provided behaviour.
 In our example, the type of \lstinline$self$ denotes what methods are required.
 
-Creating an object is via the \textbf{new} keyword, a convention in many OO
+Creating an object is via the \lstinline{new} keyword, a convention in many OO
 languages, except for one crucial novelty: we can create an object from multiple
 traits. More precisely, the object is created from the \textit{composition} of
 those traits. Therefore, we are able to call methods from different traits on a
@@ -139,7 +139,7 @@ basic idea is to extend traits \lstinline$lit$, \lstinline$add$, and
 
 Note that trait \lstinline$litP$ inherits the \lstinline$eval$ operation from
 trait \lstinline$lit$. Same goes for \lstinline$addP$ and \lstinline$subP$. It
-is fairly simple to use the new system, as one would imagine.
+is straightforward to use the new system, as one would imagine.
 
 \lstinputlisting[linerange=44-49]{../examples/trivial.txt}% APPLY:linerange=EP_TEST
 
@@ -151,8 +151,8 @@ named methods. The traditional approach to resolve conflicts is by method
 overriding, automatically done by the type system, whereas the trait-based
 approach enforces conflicts be resolved on the level of the composition by the
 programmers, otherwise the program is rejected by the type system. The following
-example, taken from~\cite{alpuimdisjoint}, shows how conflicting methods in two
-traits are detected.
+example, adapted from~\cite{alpuimdisjoint}, shows how conflicting methods in
+two traits are detected.
 
 \lstinputlisting[linerange=6-22]{../examples/log.txt}% APPLY:linerange=CONFLICT_DEF
 
@@ -179,7 +179,7 @@ For instance in the point example, we can define a function that takes a trait
 
 \lstinputlisting[linerange=25-25]{../examples/point.txt}% APPLY:linerange=POINT_FUNC
 
-Here \textbf{Trait} is a built-in keyword, and \lstinline$Trait[Point, Norm]$ is
-the type for traits that conform to the \lstinline$Norm$ type. We can then
-create a point object with the Euclidean norm as simply as
-\lstinline$makePoint(euclideanNorm())$.
+Here \lstinline{Trait} is a built-in keyword, and \lstinline$Trait[Point, Norm]$
+is the type for traits that conform to the \lstinline$Norm$ type with dependency
+on \lstinline$Point$. We can then create a point object with the Euclidean norm
+as simply as \lstinline$makePoint(euclideanNorm())$.
