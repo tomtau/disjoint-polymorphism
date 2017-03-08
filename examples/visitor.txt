@@ -49,4 +49,8 @@ def sub (e1 : ExtendedExp) (e2 : ExtendedExp) : ExtendedExp = {
 
 def e1 = sub (lit 7) (lit 2)
 
+-- But this is wrong
+-- def e1 = add (sub (lit 7) (lit 2)) (lit 3)
+
+
 main = e1.accept IPrint printAlg
