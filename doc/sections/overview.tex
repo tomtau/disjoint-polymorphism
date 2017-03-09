@@ -1,11 +1,61 @@
 \section{A Critique of Mainstream Class-Based OOP}
 
-This section discusses several points about mainstream OOP languages
-that work against modularity. 
+This section discusses several limitations of mainstream OOP languages
+that work against modularity. Those points were a driver for the
+design of \name, which aims to address all of those limitations. 
 
-\subsection{No Contravariant Subtyping on Arguments}
+\subsection{The Standard Model of Class-Based OOP}
 
-Simple example that illustrates this. Need an example with contravariant arguments
+In the standard statically typed OOP model for class-based languages
+\emph{extensions} (subclasses or subinterfaces) are viewed as \emph{subtypes} of the original
+class/interface. Moreover subclasses inherit from the superclasses,
+and inheritance and subtyping always go along together.
+This is the model adopted by most popular mainstream
+languages, such as Java, C\#, C++ or Scala. This model can be traced
+back to the origins of OOP in Simula~\cite{}, and has shown an 
+undeniable resiliance through times. One reason why this model remains 
+so popular is probably simplicity: 
+extensions (of classes or interfaces) always result in subtypes.  
+This results in a very simple programming model, which is easy 
+to explain to programmers.  
+
+Unfortunatelly, as the theory of OOP languages and subtyping has taught 
+us that the story is not quite so simple.  \ldots
+
+\subsection{No Retroactive Super Types and Contravariant Subtyping on Arguments}
+
+A consequence of extensions always being subtypes is that it is not
+possible to retroactivelly add super types. 
+
+\begin{lstlisting}
+class B {}   // original class
+
+class A super B {} // an extension, which becomes a supertype of B
+\end{lstlisting}
+
+\begin{figure}
+\begin{lstlisting}
+interface ExpVisitor<A> { // Base Visitor and Language
+	A lit(int x);
+	A add(A e1, A e2);
+}
+
+interface Exp {
+	<A> A accept(ExpVisitor<A> v);
+}
+
+interface ExtExpVisitor<A> extends ExpVisitor<A> { // Extended Visitor and Language
+	A sub(A e1, A e2);
+}
+
+interface ExtExp extends Exp { //WRONG: method is overloaded, not overriden!
+	<A> A accept(ExpVisitor<A> v); 
+}
+\end{lstlisting}
+\caption{An attempt at Extensible Visitors in Java.}
+\label{fig:JVis}
+\end{figure}
+
 
 \subsection{No Separation Between Inheritance and Subtyping}
 
