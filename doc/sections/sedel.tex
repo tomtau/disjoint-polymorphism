@@ -1,6 +1,6 @@
-\section{A \name Tutorial}
+\section{A Tour of \name}
 
-This section illustrates the core feature of \name, notably its native support
+This section showcases the novel feature of \name, notably its native support
 for dynamically composable traits. This is in contrast to the standard model of
 class-based OOP, where subtyping is coupled with inheritance. We show that \name
 overcomes all those limitations mentioned in Section~\ref{sec:critique}. All
@@ -17,8 +17,9 @@ inheritance. One interesting aspect about traits is the way conflicting features
 that are typical arise in multiple inheritance are dealt with. Instead of
 automatically resolved by scoping rules, conflicts are detected by the type
 system, and require programmers to explicitly resolve them. In what follows, we
-demonstrate various trait features in \name. The desugaring process from traits
-to \bname is discussed in Section~\ref{sec:desugar}.
+demonstrate various trait features in \name. A comparison with the traditional
+trait model can be found in Section~\ref{sec:discuss}. The desugaring process
+from traits to \bname is discussed in Section~\ref{sec:desugar}.
 
 \subsubsection{Basic Traits}
 
@@ -94,6 +95,36 @@ and \lstinline$manhattanNorm$ are instantiated and composed with some other
 traits, they must be composed with an implementation of \lstinline$Point$.
 \lstinputlisting[linerange=29-31]{../examples/point.txt}% APPLY:linerange=NORM_TEST
 
+\subsubsection{Trait and Inheritance}
+\label{sec:trivial}
+
+\jeremy{find another simple example}
+
+% Traits in \name are extensible. A trait can be extended by inheriting all
+% members of other traits, and defining additional members. This is, in some
+% sense, similar to class inheritance in traditional OO languages. However, one
+% difference is that, a trait can inherits one or more traits without any
+% problems, provided that there are no conflicts arising. Below we present a
+% solution to Wadler's Expression Problem~\cite{wadler1998expression} in \name.
+
+% \lstinputlisting[linerange=-]{}% APPLY:linerange=EP_DEF
+
+% The initial system defines two traits \lstinline$lit$ and \lstinline$add$ that
+% implement the evaluation (\lstinline{eval}) operation. It is fairly easy to add
+% a new variant, e.g., a \lstinline$sub$ trait, to the system.
+% \lstinputlisting[linerange=27-31]{../examples/visitor.txt}% APPLY:linerange=SUB_DEF
+
+% What if now we want to extend the system with a pretty printing operation. The
+% basic idea is to extend traits \lstinline$lit$, \lstinline$add$, and
+% \lstinline$sub$ by adding the \lstinline$print$ operation.
+% \lstinputlisting[linerange=37-37]{../examples/visitor.txt}% APPLY:linerange=PRINT_DEF
+
+% Note that trait \lstinline$litP$ inherits the \lstinline$eval$ operation from
+% trait \lstinline$lit$. Same goes for \lstinline$addP$ and \lstinline$subP$. It
+% is straightforward to use the new system, as one would imagine.
+% \lstinputlisting[linerange=-]{}% APPLY:linerange=EP_TEST
+
+
 \subsubsection{Detecting Conflicts in Trait Composition}
 
 A conflict arises if and only if we combine two traits that have identically
@@ -117,55 +148,97 @@ and the same type (\lstinline$String$).
 
 \lstinputlisting[linerange=6-13]{../examples/log.txt}% APPLY:linerange=CONFLICT_WRONG
 
-\subsubsection{Dynamic Instantiation}
 
-One difference with traditional traits or classes is that in \name we are able
-to compose traits \textit{dynamically} and then instantiate them later. This is
-impossible in traditional OO language, such as Java, since classes being
-instantiated must be known statically. In \name, as we will explain in
-Section~\ref{sec:desugar}, traits are just terms: they are first-class values
-and can be passed around or returned from a function, just like normal terms.
-For instance in the point example, we can define a function that takes a trait
-\lstinline$norm$, and then instantiate it.
-\lstinputlisting[linerange=25-25]{../examples/point.txt}% APPLY:linerange=POINT_FUNC
+\subsection{Extensibility and Subtyping}
 
-Here \lstinline{Trait} is a built-in keyword, and \lstinline$Trait[Point, Norm]$
-is the type of traits that conform to the \lstinline$Norm$ type with dependency
-on \lstinline$Point$. We can then create a point object with the Euclidean norm
-as simply as \lstinline$makePoint(euclideanNorm())$.
+Various solutions to the Expression Problem~\cite{wadler1998expression} in the
+literature~\cite{finally-tagless,oliveira09modular,DelawareOS13,oliveira2012extensibility,
+  swierstra:la-carte} are closed related to type-theoretic encoding of
+datatypes. Indeed, variants of the same idea keep appearing in different
+programming languages, because the encoding of the idea needs to exploit the
+particular features of the programming language (or theorem prover).
+Unfortunately language-specific constructs obscure the key ideas behind those
+solutions. In this subsection, we show a solution to the Expression Problem that
+intends to capture the key ideas of various solutions in the literature.
 
-\jeremy{Think of a good example where you have many choices to instantiate}
+To start, we begin with a very simple system modeling arithmetic expressions and
+evaluation. The initial system constitutes expressions with two variants
+(literals and addition), as depicted below:
+\lstinputlisting[linerange=4-7]{../examples/visitor.txt}% APPLY:linerange=ALGEBRA_DEF
 
+The first part, captured by the type \lstinline{ExpAlg[E]}, constitutes the
+so-called algebra of the datatype. The first component abstracts over the type
+of literal expressions (\lstinline{Int -> E}). The second component abstracts
+over the type of addition expression (\lstinline{E -> E -> E}).
 
-\subsection{Traits and Multiple Inheritance}
+The second part, which is the actual type of the arithmetic expression, is:
+\lstinputlisting[linerange=11-11]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
+Familiar readers may immediately recognize this is exactly the visitor pattern:
+the method \lstinline{accept} takes an internal visitor as argument.
 
-
-\jeremy{object algebra}
-
-Traits in \name are extensible. A trait can be extended by inheriting all
-members of other traits, and defining additional members. This is, in some
-sense, similar to class inheritance in traditional OO languages. However, one
-difference is that, a trait can inherits one or more traits without any
-problems, provided that there are no conflicts arising. Below we present a
-solution to Wadler's Expression Problem~\cite{wadler1998expression} in \name.
-\lstinputlisting[linerange=7-13]{../examples/trivial.txt}% APPLY:linerange=EP_DEF
-
-The initial system defines two traits \lstinline$lit$ and \lstinline$add$ that
-implement the evaluation (\lstinline{eval}) operation. It is fairly easy to add
-a new variant, e.g., a \lstinline$sub$ trait, to the system.
-\lstinputlisting[linerange=18-20]{../examples/trivial.txt}% APPLY:linerange=SUB_DEF
-
-What if now we want to extend the system with a pretty printing operation. The
-basic idea is to extend traits \lstinline$lit$, \lstinline$add$, and
-\lstinline$sub$ by adding the \lstinline$print$ operation.
-\lstinputlisting[linerange=24-33]{../examples/trivial.txt}% APPLY:linerange=PRINT_DEF
-
-Note that trait \lstinline$litP$ inherits the \lstinline$eval$ operation from
-trait \lstinline$lit$. Same goes for \lstinline$addP$ and \lstinline$subP$. It
-is straightforward to use the new system, as one would imagine.
-\lstinputlisting[linerange=44-49]{../examples/trivial.txt}% APPLY:linerange=EP_TEST
+% \paragraph{Data constructors.} Using \lstinline{Exp} the two data constrcutors
+% are defined as follows:
+% \lstinputlisting[linerange=52-61]{../examples/visitor.txt}% APPLY:linerange=DC_DEF
+% Note that the notation \lstinline{/\E} is type abstraction: it introduces a type
+% variable in the environment.
 
 
-\subsection{Entensible Visitors in \name}
+\paragraph{Operations.} Defining operations over expressions requires
+implementing \lstinline{ExpAlg[E]}. An interesting operation over expressions is
+evaluation. The first step is to choose a suitable concrete type for
+instantiating the type parameter \lstinline{E}. One such suitable type is:
+\lstinputlisting[linerange=15-15]{../examples/visitor.txt}% APPLY:linerange=EVAL_DEF
+Using \lstinline{IEval}, we can define a trait that implements the evaluation
+rule for each variant:
+\lstinputlisting[linerange=19-22]{../examples/visitor.txt}% APPLY:linerange=EVAL_IMPL
 
-\jeremy{inheritance is not subtyping}
+
+\paragraph{Add a subtraction variant.} Interesting things happen when a new
+variant, such as subtraction is added. To do so, we need to extend both
+\lstinline{ExpAlg[E]} and \lstinline{evalAlg}:
+\lstinputlisting[linerange=27-31]{../examples/visitor.txt}% APPLY:linerange=SUB_DEF
+Firstly, \lstinline{SubExpAlg[E]} defines an extended algebra that contains the
+variants of the original plus the new subtraction variant. Intersection types
+are used to model \textit{type inheritance}. Secondly, a new type of expressions
+with subtraction (\lstinline{ExtExp}) is needed. It is important to note that
+the \lstinline{accept} method now takes the new algebra \lstinline{SubExpAlg[E]} as
+argument.
+
+\paragraph{Inheritance is not subtyping.} In the presence of subtyping, there
+are interesting subtyping relations between datatypes and their
+extensions~\cite{oliveira09modular}. The interesting aspect about subtyping in
+the new system is that subtyping follows the opposite direction of the
+extension. In other words, subtyping is contravariant with respect to the
+extension. First note that \lstinline{SubExpAlg[E]} appears in parameter
+position of \lstinline{accept} and function parameters are natually
+contravariant: \lstinline{ExtExp} should be a \textit{supertype} of
+\lstinline{Exp}. By contrast, in common OO languages, type inheritance and
+subtyping always go along together. The consequence of this is that in those
+languages, it is simply impossible to express that \lstinline{ExtExp} is both an
+extension and a supertype of \lstinline{Exp}. Such kind of phenomena is an
+example where ``inheritance is not subtyping''~\cite{cook1989inheritance}.
+
+\paragraph{Add a new operation.} The second type of extension is adding a new
+operation, such as pretty printing. Similar to evaluation, the interface of the
+pretty printing feature is modeled as:
+\lstinputlisting[linerange=37-37]{../examples/visitor.txt}% APPLY:linerange=PRINT_DEF
+The implementation is spelled out straightforwardly:
+\lstinputlisting[linerange=42-46]{../examples/visitor.txt}% APPLY:linerange=PRINT_IMPL
+
+
+\paragraph{Usage.} The last piece is to define convenient data constructors:
+\lstinputlisting[linerange=52-61]{../examples/visitor.txt}% APPLY:linerange=DC_DEF
+So now we can test the shiny new system:
+\lstinputlisting[linerange=66-69]{../examples/visitor.txt}% APPLY:linerange=VISITOR_EG
+Notice that the programmer is able to pass \lstinline{lit 5}, which is of type
+\lstinline{Exp}, to \lstinline{sub}, which expects a value of type
+\lstinline{ExtExp}. This works precisely because \lstinline{Exp} is a
+\textit{subtype} of \lstinline{ExtExp}.
+
+
+
+\subsection{Dynamic Instantiation of Traits}
+
+
+\jeremy{object algebra illustrating multiple inheritance of things with the same
+type, and dynamical instantiation}

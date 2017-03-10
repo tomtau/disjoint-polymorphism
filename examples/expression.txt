@@ -33,6 +33,8 @@ def combine A [B * A] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A & B] = {
   add = \x y -> f.add x y ,, g.add x y
 }
 
+-- def combine A [B * A] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A] & ExpAlg[B] = f ,, g
+
 def newAlg = combine IEval IPrint subEvalAlg printAlg
 
 val o = e1 (IEval & IPrint) newAlg

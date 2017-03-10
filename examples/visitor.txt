@@ -1,56 +1,70 @@
---> "3 - 7 + 2 + 4"
+--> "(5 - (3 + 2)) = 0"
 
-type IEval = {eval : Int}
-
+-- BEGIN_ALGEBRA_DEF
 type ExpAlg[E] = {
   lit : Int -> E,
   add : E -> E -> E
 }
+-- END_ALGEBRA_DEF
 
-def evalAlg : ExpAlg[IEval] = {
-  lit = \x -> {eval = x},
-  add = \x y -> {eval = x.eval + y.eval}
+-- BEGIN_CHURCH_DEF
+type Exp = { accept : forall E . ExpAlg[E] -> E }
+-- END_CHURCH_DEF
+
+-- BEGIN_EVAL_DEF
+type IEval = { eval : Int }
+-- END_EVAL_DEF
+
+-- BEGIN_EVAL_IMPL
+trait evalAlg : ExpAlg[IEval] { self =>
+  def lit x   = { eval = x }
+  def add x y = { eval = x.eval + y.eval }
 }
+-- END_EVAL_IMPL
 
+
+-- BEGIN_SUB_DEF
 type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E }
-
-def subEvalAlg : SubExpAlg[IEval] = evalAlg ,, {
-  sub = \x y -> { eval = x.eval - y.eval }
+trait subEvalAlg inherits evalAlg : SubExpAlg[IEval]  { self =>
+  def sub x y = { eval = x.eval - y.eval }
 }
+type ExtExp = { accept: forall E. SubExpAlg[E] -> E }
+-- END_SUB_DEF
 
+
+
+-- BEGIN_PRINT_DEF
 type IPrint = { print : String }
+-- END_PRINT_DEF
 
-def printAlg : SubExpAlg[IPrint] = {
-  lit = \x -> { print = x.toString },
-  add = \x y -> { print = x.print ++ " + " ++ y.print },
-  sub = \x y -> { print = x.print ++ " - " ++ y.print }
+
+-- BEGIN_PRINT_IMPL
+trait printAlg : SubExpAlg[IPrint] { self =>
+  def lit x   = { print = x.toString }
+  def add x y = { print = "(" ++ x.print ++ " + " ++ y.print ++ ")" }
+  def sub x y = { print = "(" ++ x.print ++ " - " ++ y.print ++ ")" }
 }
+-- END_PRINT_IMPL
 
 
-type Exp = {
-  accept : forall E . ExpAlg[E] -> E
-}
 
-type ExtendedExp = {
-  accept: forall E. SubExpAlg[E] -> E
-}
-
+-- BEGIN_DC_DEF
 def lit (n : Int) : Exp = {
-  accept = /\ E . \ f -> f.lit n
+  accept = /\E . \f -> f.lit n
 }
-
 def add (e1 : Exp) (e2 : Exp) : Exp = {
-  accept = /\ E . \f -> f.add (e1.accept E f) (e2.accept E f)
+  accept = /\E . \f -> f.add (e1.accept E f) (e2.accept E f)
 }
-
-def sub (e1 : ExtendedExp) (e2 : ExtendedExp) : ExtendedExp = {
+def sub (e1 : ExtExp) (e2 : ExtExp) : ExtExp = {
   accept = /\ E . \ f -> f.sub (e1.accept E f) (e2.accept E f)
 }
 
-def e1 = add (lit 7) (lit 2)
+-- END_DC_DEF
 
 
-def e2 : ExtendedExp = { accept = /\ E. \f -> f.add (f.sub (f.lit 3) (e1.accept E f)) (f.lit 4) }
-
-
-main = e2.accept IPrint printAlg
+-- BEGIN_VISITOR_EG
+def e = sub (lit 5) (add (lit 3) (lit 2))
+main = (e.accept IPrint (new[SubExpAlg[IPrint]] printAlg)).print ++ " = " ++
+       (e.accept IEval  (new[SubExpAlg[IEval]] subEvalAlg)).toString
+-- Output: "(5 - (3 + 2)) = 0"
+-- END_VISITOR_EG

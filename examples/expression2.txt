@@ -38,8 +38,6 @@ trait combine A [B * A] (f : Trait[T, ExpAlg[A]], g : Trait[T, ExpAlg[B]]) : Exp
   def add x y = (new[ExpAlg[A]] f).add x y ,, (new[ExpAlg[B]] g).add x y
 }
 
-
-
 val newAlg = combine IEval IPrint subEvalAlg printAlg
 
 val o = e1 (IEval & IPrint) (new[ExpAlg[IEval & IPrint]] newAlg)
