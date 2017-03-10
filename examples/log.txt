@@ -2,16 +2,21 @@
 
 def extend S [U*S] (first : S) (second : U) : S&U = first ,, second
 
--- BEGIN_CONFLICT_DEF
-type Person   = {name : String, male : Bool}
-type Loggable = {log : T -> String}
-type Dog      = {name : String, male : String}
-
-trait person(n : String, s : Bool) { self =>
+-- BEGIN_CONFLICT_WRONG
+type Dog = {name : String, male : String}
+trait dog(n : String, s: String) { self =>
   def name = n
   def male = s
 }
-trait dog(n : String, s: String) { self =>
+
+-- The following doesn't type check
+-- val fool = new[Dog & Person] dog("Pluto", "yes") & person("jim", true)
+-- END_CONFLICT_WRONG
+
+-- BEGIN_CONFLICT_DEF
+type Person   = {name : String, male : Bool}
+type Loggable = {log : T -> String}
+trait person(n : String, s : Bool) { self =>
   def name = n
   def male = s
 }
@@ -25,7 +30,3 @@ val jim = new[Person & Loggable] person("jim", true) & consoleLogger
 main = jim.log ()
 
 
--- BEGIN_CONFLICT_WRONG
--- The following doesn't type check
--- val fool = new[Dog & Person] dog("Pluto", "yes") & person("jim", true)
--- END_CONFLICT_WRONG

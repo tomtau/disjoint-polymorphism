@@ -1,4 +1,5 @@
 \section{A Critique of Mainstream Class-Based OOP}
+\label{sec:critique}
 
 This section discusses several limitations of mainstream OOP languages
 that work against modularity. Those points were a driver for the
@@ -34,7 +35,7 @@ class A super B {} // an extension, which becomes a supertype of B
 \end{lstlisting}
 
 \begin{figure}
-\begin{lstlisting}
+\begin{lstlisting}[language=java]
 interface ExpVisitor<A> { // Base Visitor and Language
 	A lit(int x);
 	A add(A e1, A e2);

@@ -1,4 +1,4 @@
-\section{Desugaring}
+\section{Desugaring and Implementation}
 \label{sec:desugar}
 
 
@@ -8,12 +8,6 @@ open recursion, which is proposed by~\citet{cook1989denotational} in an untyped
 setting. However, our translation is done in the context of a statically-typed
 programming language, which is exactly why conflicts can be \textit{statically}
 detected in traits.
-
-One note on the implementation: In the work by~\citet{alpuimdisjoint}, they
-chose System F as the target language after translation. This is because later
-they need to prove type safety of the translation. Since type safety of \bname
-has been proved, we chose untyped lambda calculus as the execution model for the
-sake of efficiency.
 
 \subsection{Trait Declarations}
 
@@ -114,4 +108,11 @@ becomes
 \end{lstlisting}
 
 
-\jeremy{Should we add one section on the typing rules?}
+\subsection{Implementation}
+
+In the work by~\citet{alpuimdisjoint}, they chose System F as the target
+language after translation. This is because later they need to prove type safety
+of the translation. Since type safety of \bname has been proved, we chose
+untyped lambda calculus as the execution model for the sake of efficiency.
+
+\jeremy{add a diagram showing the pipeline of the implementation}
