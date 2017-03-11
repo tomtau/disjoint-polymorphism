@@ -79,7 +79,7 @@ kind d (And t1 t2) = justStarIffAllHaveKindStar d [t1, t2]
 kind d (DForall b) = do
   ((a, _), t) <- unbind b
   kind (extendTVarCtx a Star d) t
-kind d (SRecT l t) = justStarIffAllHaveKindStar d [t]
+kind d (SRecT _ t) = justStarIffAllHaveKindStar d [t]
 
 {-
     Δ,x::* ⊢ t :: k
@@ -275,10 +275,10 @@ infer (Acc e "toString") = do
 
 infer (Acc e l) = do
   (t, e') <- infer e
-  c <- askCtx
-  let ls = select (expandType c t) l
-  case length ls of
-    1 -> return (fst (head ls), T.UApp (snd (head ls)) e')
+  ctx <- askCtx
+  let ls = select (expandType ctx t) l
+  case ls of
+    [(a, c)] -> return (a, T.UApp c e')
     _ ->
       throwError
         (hang 2 $
@@ -438,7 +438,7 @@ B <: A ~> c'
 -}
 
 -- ad-hoc extension of toString method
-check (Acc e "toString") a = do
+check (Acc e "toString") StringT = do
   (_, e') <- infer e
   return (T.UToString e')
 
@@ -547,7 +547,7 @@ disjoint ctx (TVar x) b
 disjoint ctx b (TVar x)
   | Just a <- lookupTVarConstraintMaybe ctx x
   , Right _ <- subtype a b = return ()
-disjoint ctx (TVar x) (TVar y) =
+disjoint _ (TVar x) (TVar y) =
   throwError $
   text "Type variables:" <+>
   text (name2String x) <+>

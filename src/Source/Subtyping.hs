@@ -6,9 +6,7 @@ module Source.Subtyping
   ) where
 
 import           Control.Monad.Except
-import           Environment
 import           PrettyPrint
-import           Source.Desugar
 import           Source.Syntax
 import qualified Target.Syntax as T
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
