@@ -9,6 +9,7 @@ import           Control.Arrow (second)
 import           Control.Monad
 import           Control.Monad.Except
 import           Data.Either (isLeft)
+import qualified Data.Map as M
 import           Environment
 import           Prelude hiding ((<$>))
 import           PrettyPrint
@@ -464,7 +465,7 @@ check (Acc e l) a = do
              throwError
                (hang 2 $
                 text "Cannot find a subtype of" <+>
-                squotes (pprint a) <+> text "for all labels of" <+> text l <$>
+                squotes (pprint a) <+> text "for label" <+> text l <$>
                 text "in" <+> squotes (pprint e))
 
 
@@ -586,22 +587,28 @@ disjoint _ _ _ = return ()
 -- Return a list of possible types with their projections
 select :: Type -> Label -> [(Type, T.UExpr)]
 select t l =
+  case M.lookup l m of
+    Nothing -> []
+    Just s -> s
+  where
+    m = recordFields t
+
+recordFields :: Type -> M.Map Label [(Type, T.UExpr)]
+recordFields t =
   case t of
-    (And t1 t2) ->
+    And t1 t2 ->
       let res1 =
-            fmap
-              (second (\c -> T.elam "x" (T.UApp c (T.UP1 (T.evar "x")))))
-              (select t1 l)
+            M.map
+              (map (second (\c -> T.elam "x" (T.UApp c (T.UP1 (T.evar "x"))))))
+              (recordFields t1)
           res2 =
-            fmap
-              (second (\c -> T.elam "x" (T.UApp c (T.UP2 (T.evar "x")))))
-              (select t2 l)
-      in res1 ++ res2
-    (SRecT l' t') ->
-      if l == l'
-        then [(t', T.elam "x" (T.evar "x"))]
-        else []
-    _ -> []
+            M.map
+              (map (second (\c -> T.elam "x" (T.UApp c (T.UP2 (T.evar "x"))))))
+              (recordFields t2)
+      in M.unionWith (++) res1 res2
+    SRecT l' t' -> M.fromList [(l', [(t', T.elam "x" (T.evar "x"))])]
+    _ -> M.empty
+
 
 -- transTyp :: Fresh m => Type -> m T.Type
 -- transTyp IntT = return T.IntT
