@@ -9,6 +9,7 @@ module Source.Desugar
   , expandTypeForTerm
   ) where
 
+import Control.Arrow (second)
 import Environment
 import Source.Syntax
 import Unbound.LocallyNameless
@@ -31,7 +32,7 @@ desugarTrait trait =
    TmBind
      name
      typarams
-     ((map (\(a, b) -> (a, Just b)) params) ++ [(s2n self, Just st)])
+     ((map (second Just) params) ++ [(s2n self, Just st)])
      (maybe body (\b -> foldl1 Merge (b ++ [body])) supers)
      (retType trait))
   where

@@ -129,4 +129,4 @@ val e2 : Term = {
 -- main = (e1.accept IPrint (new[ArithAlg[IPrint]] ppArithAlg)).print ++ " = " ++
 --        (e1.accept IEval (new[ArithAlg[IEval]] evalArithAlg)).eval.toString
 
-main = (e2.accept IPrint (new[TermAlg[IPrint]] ppTermAlg)).print
+-- main = (e2.accept IPrint (new[TermAlg[IPrint]] ppTermAlg)).print

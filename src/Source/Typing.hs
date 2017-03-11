@@ -5,8 +5,10 @@ module Source.Typing
   ) where
 
 import           Common
+import           Control.Arrow (second)
 import           Control.Monad
 import           Control.Monad.Except
+import           Data.Either (isLeft)
 import           Environment
 import           Prelude hiding ((<$>))
 import           PrettyPrint
@@ -265,22 +267,24 @@ t • l = A ~> c
 Γ ⊢ e.l ⇒ A ~> c E
 
 -}
-infer (Acc e l) =
-  if l == "toString" -- ad-hoc extension to "toString" method
-    then do
-      (_, e') <- infer e
-      return (StringT, T.UToString e')
-    else do
-      (t, e') <- infer e
-      c <- askCtx
-      case select (expandType c t) l of
-        Just (a, c) -> return (a, T.UApp c e')
-        _ ->
-          throwError
-            (hang 2 $
-             text "expect a record type with label" <+>
-             squotes (text l) <+> text "for" <+> squotes (pprint e) <$>
-             text "but got" <+> squotes (pprint t))
+
+-- ad-hoc extension of toString method
+infer (Acc e "toString") = do
+  (_, e') <- infer e
+  return (StringT, T.UToString e')
+
+infer (Acc e l) = do
+  (t, e') <- infer e
+  c <- askCtx
+  let ls = select (expandType c t) l
+  case length ls of
+    1 -> return (fst (head ls), T.UApp (snd (head ls)) e')
+    _ ->
+      throwError
+        (hang 2 $
+         text "expect a record type with label" <+>
+         squotes (text l) <+> text "for" <+> squotes (pprint e) <$>
+         text "but got" <+> squotes (pprint t))
 
 {-
 
@@ -374,12 +378,6 @@ check (Lam l) (Arr a b) = do
   e' <- localCtx (extendVarCtx x a) $ check e b
   return (T.ULam (bind (translate x) e'))
 
--- check inp@(Lam _) t =
---   throwError $
---   text "expect an arrow type for " <+>
---   squotes (pprint inp) <+> text "but got" <+> squotes (pprint t)
-
-
 {-
 
 
@@ -397,11 +395,6 @@ check (DLam l) (DForall b) = do
       wf a
       localCtx (extendConstrainedTVarCtx x a) $ check e b
     Nothing -> throwError $ text "Patterns have different binding variables"
-
--- check inp@(DLam _) t =
---   throwError $
---   text "expect a forall type" <+>
---   squotes (pprint inp) <+> text "but got" <+> squotes (pprint t)
 
 {-
 
@@ -433,6 +426,48 @@ check (DRec l e) (SRecT l' a) = do
   check e a
 
 
+
+{-
+
+Γ ⊢ e ⇒ t ~> E
+t • l = B ~> c
+B <: A ~> c'
+-----------------------
+Γ ⊢ e.l ⇐ A ~> c' (c E)
+
+-}
+
+-- ad-hoc extension of toString method
+check (Acc e "toString") a = do
+  (_, e') <- infer e
+  return (T.UToString e')
+
+check (Acc e l) a = do
+  (t, e') <- infer e
+  ctx <- askCtx
+  let ls = select (expandType ctx t) l
+  case length ls of
+    0 ->
+      throwError
+        (hang 2 $
+         text "expect a record type with label" <+>
+         squotes (text l) <+> text "for" <+> squotes (pprint e) <$>
+         text "but got" <+> squotes (pprint t))
+    -- Multiple label of 'l' are found, find the only one whose type is a subtype
+    -- of 'a'
+    _ ->
+      let (bs, cs) = unzip ls
+          res = dropWhile (isLeft . fst) $ zip (fmap (flip subtype a) bs) cs
+      in case res of
+           (Right c', c):_ -> return $ T.UApp c' (T.UApp c e')
+           _ ->
+             throwError
+               (hang 2 $
+                text "Cannot find a subtype of" <+>
+                squotes (pprint a) <+> text "for all labels of" <+> text l <$>
+                text "in" <+> squotes (pprint e))
+
+
 {-
 
 Γ ⊢ e ⇒ A ~> E
@@ -447,7 +482,7 @@ check e b = do
   wf b
   (a, e') <- infer e
   ctx <- askCtx
-  let res = subtype ctx a b
+  let res = subtype (expandType ctx a) (expandType ctx b)
   case res of
     Right c -> do
       return (T.UApp c e')
@@ -508,10 +543,10 @@ disjoint _ _ TopT = return ()
 
 disjoint ctx (TVar x) b
   | Just a <- lookupTVarConstraintMaybe ctx x
-  , Right _ <- subtype ctx a b = return ()
+  , Right _ <- subtype a b = return ()
 disjoint ctx b (TVar x)
   | Just a <- lookupTVarConstraintMaybe ctx x
-  , Right _ <- subtype ctx a b = return ()
+  , Right _ <- subtype a b = return ()
 disjoint ctx (TVar x) (TVar y) =
   throwError $
   text "Type variables:" <+>
@@ -546,22 +581,27 @@ disjoint _ _ _ = return ()
 --------------------
 -- τ1 • l = τ2  → C
 --------------------
-select :: Type -> Label -> Maybe (Type, T.UExpr)
+
+-- | Select a label l from t
+-- Return a list of possible types with their projections
+select :: Type -> Label -> [(Type, T.UExpr)]
 select t l =
   case t of
     (And t1 t2) ->
       let res1 =
-            select t1 l >>= \(t', c) ->
-              return (t', T.elam "x" (T.UApp c (T.UP1 (T.evar "x"))))
+            fmap
+              (second (\c -> T.elam "x" (T.UApp c (T.UP1 (T.evar "x")))))
+              (select t1 l)
           res2 =
-            select t2 l >>= \(t', c) ->
-              return (t', T.elam "x" (T.UApp c (T.UP2 (T.evar "x"))))
-      in mplus res1 res2
-    (SRecT l' t) ->
+            fmap
+              (second (\c -> T.elam "x" (T.UApp c (T.UP2 (T.evar "x")))))
+              (select t2 l)
+      in res1 ++ res2
+    (SRecT l' t') ->
       if l == l'
-        then Just (t, T.elam "x" (T.evar "x"))
-        else Nothing
-    _ -> Nothing
+        then [(t', T.elam "x" (T.evar "x"))]
+        else []
+    _ -> []
 
 -- transTyp :: Fresh m => Type -> m T.Type
 -- transTyp IntT = return T.IntT
