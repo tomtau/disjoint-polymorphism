@@ -1,40 +1,36 @@
+{-# LANGUAGE NoImplicitPrelude, OverloadedStrings #-}
+
+
 module Utility
   ( evalFile
   ) where
 
-import           Control.Exception (SomeException, try)
-import           Data.Char (isSpace)
+import           Protolude
+import qualified Data.Text as T
+import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
+
 import           Environment
 import           PrettyPrint
 import           Source.Parser (parseExpr)
 import           Source.Typing
 import qualified Target.CBN as C
-import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 
-type Result = Either Doc String
+type Result = Either Doc Text
 
 ret :: Doc -> Result
 ret d = Left d
 
-
-parseExpectedOutput :: String -> Maybe String
+parseExpectedOutput :: Text -> Maybe Text
 parseExpectedOutput source =
-  let firstLine = takeWhile (/= '\n') source
-  in case firstLine of
-       '-':'-':'>':r -> Just $ strip r
-       _ -> Nothing
+  let firstLine = T.takeWhile (/= '\n') source
+  in fmap T.strip (T.stripPrefix "-->" (T.strip firstLine))
 
-strip :: String -> String
-strip = f . f
-  where
-    f = reverse . dropWhile isSpace
-
-readTry :: IO String -> IO (Either SomeException String)
+readTry :: IO Text -> IO (Either SomeException Text)
 readTry = try
 
-eval :: String -> Result
+eval :: Text -> Result
 eval inp =
-  case parseExpr inp of
+  case parseExpr (toS inp) of
     Left err -> ret $ warn "Syntax error" <+> text err
     Right abt ->
       let res = runTcMonad emptyCtx (tcModule abt)
@@ -56,8 +52,8 @@ evalFile path = do
            Left err -> failed err
            Right tm ->
              case parseExpectedOutput contents of
-               Nothing -> failed $ warn "No expectation" <+> text tm
+               Nothing -> failed $ warn "No expectation" <+> text (toS tm)
                Just expinp ->
                  if tm == expinp
-                   then succed (text tm)
-                   else failWith (text tm) (text expinp)
+                   then succed (text (toS tm))
+                   else failWith (text (toS tm)) (text (toS expinp))

@@ -1,16 +1,21 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternGuards #-}
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Source.Subtyping
   ( subtype
   ) where
 
-import           Control.Monad.Except
+
+import           Panic
+import           Protolude hiding (Type)
+import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
+import           Unbound.LocallyNameless
+
 import           PrettyPrint
 import           Source.Syntax
 import qualified Target.Syntax as T
-import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
-import           Unbound.LocallyNameless
 
 ----------------------------
 -- A <: B ~> E
@@ -173,7 +178,7 @@ coerce a c = do
     coerce' (DForall t) = do
       ((_, _), a) <- unbind t
       coerce' a
-    coerce' _ = error "Impossible happened in coercing!"
+    coerce' _ = panic "Impossible happened in coercing!"
 
 ------------
 -- ⌉A⌈

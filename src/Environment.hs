@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings, FlexibleContexts, NoImplicitPrelude #-}
 
 module Environment
   ( lookupVarTy
@@ -22,12 +22,13 @@ module Environment
   , emptyCtx
   ) where
 
-import           Control.Monad.Except
-import           Control.Monad.Reader
+
 import qualified Data.Map.Strict as M
-import           Source.Syntax
+import           Protolude hiding (Type)
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 import           Unbound.LocallyNameless
+
+import           Source.Syntax
 
 
 type M a = FreshMT (ReaderT a (Except Doc))
@@ -78,19 +79,19 @@ ctxMap f1 f2 f3 ctx =
   {varCtx = f1 (varCtx ctx), tyCtx = f2 (tyCtx ctx), bndCtx = f3 (bndCtx ctx)}
 
 extendVarCtx :: TmName -> Type -> Ctx -> Ctx
-extendVarCtx v t = ctxMap (M.insert v t) id id
+extendVarCtx v t = ctxMap (M.insert v t) identity identity
 
 extendTVarCtx :: TyName -> Kind -> Ctx -> Ctx
-extendTVarCtx v k = ctxMap id (M.insert v (k, TopT, TerminalType)) id
+extendTVarCtx v k = ctxMap identity (M.insert v (k, TopT, TerminalType)) identity
 
 extendConstrainedTVarCtx :: TyName -> Type -> Ctx -> Ctx
-extendConstrainedTVarCtx v t = ctxMap id (M.insert v (Star, t, TerminalType)) id
+extendConstrainedTVarCtx v t = ctxMap identity (M.insert v (Star, t, TerminalType)) identity
 
 extendVarCtxs :: [(TmName, Type)] -> Ctx -> Ctx
 extendVarCtxs = flip $ foldr (uncurry extendVarCtx)
 
 addTypeSynonym :: TyName -> Type -> Kind -> Ctx -> Ctx
-addTypeSynonym v t k = ctxMap id (M.insert v (k, t, NonTerminalType t)) id
+addTypeSynonym v t k = ctxMap identity (M.insert v (k, t, NonTerminalType t)) identity
 
 addTypeSynonyms :: [(TyName, Type, Kind)] -> Ctx -> Ctx
 addTypeSynonyms = flip $ foldr (\(v, t, k) ctx -> addTypeSynonym v t k ctx)

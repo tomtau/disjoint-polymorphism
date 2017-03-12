@@ -1,4 +1,5 @@
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 
 module Source.Desugar
@@ -9,7 +10,8 @@ module Source.Desugar
   , expandTypeForTerm
   ) where
 
-import Control.Arrow (second)
+import Protolude hiding (Type)
+
 import Environment
 import Source.Syntax
 import Unbound.LocallyNameless
@@ -33,7 +35,9 @@ desugarTrait trait =
      name
      typarams
      ((map (second Just) params) ++ [(s2n self, Just st)])
-     (maybe body (\b -> foldl1 Merge (b ++ [body])) supers)
+     -- if no supers, return body
+     -- otherwise merge them to body
+     (maybe body identity (foldl1May Merge (supers ++ [body])))
      (retType trait))
   where
     typarams = traitTyParams trait
@@ -74,7 +78,7 @@ to
 
 -}
 
-normalizeTmDecl :: TmBind -> (String, Expr)
+-- normalizeTmDecl :: TmBind -> (Text, Expr)
 normalizeTmDecl decl = (bindName decl, body)
   where
     body =

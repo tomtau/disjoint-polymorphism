@@ -1,25 +1,25 @@
-{-# LANGUAGE FlexibleContexts, PatternGuards #-}
+{-# LANGUAGE FlexibleContexts, PatternGuards, NoImplicitPrelude #-}
 
 module Source.Typing
   ( tcModule
   ) where
 
-import           Common
-import           Control.Arrow (second)
-import           Control.Monad
-import           Control.Monad.Except
-import           Data.Either (isLeft)
 import qualified Data.Map as M
+import           Protolude hiding (Type)
+import qualified Text.PrettyPrint.ANSI.Leijen as PP
+import           Text.PrettyPrint.ANSI.Leijen hiding ((<>), (<$>), Pretty)
+import           Unbound.LocallyNameless
+import           Unsafe
+
+
+import           Common
 import           Environment
-import           Prelude hiding ((<$>))
 import           PrettyPrint
 import           Source.Desugar
 import           Source.Subtyping
 import           Source.Syntax
 import qualified Target.CBN as TC
 import qualified Target.Syntax as T
-import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
-import           Unbound.LocallyNameless
 
 
 -- Type check a module
@@ -32,8 +32,8 @@ tcModule m = do
   -- Step 2: Check module
   targetDecls <- foldr tcM (return ([])) (sdecls ++ [mainE])
   -- Step 3: Generate initial environment for execution
-  let (mainType, mainTarget) = last targetDecls
-  let declsTarget = map snd . init $ targetDecls
+  let (mainType, mainTarget) = unsafeLast targetDecls
+  let declsTarget = map snd . unsafeInit $ targetDecls
   let initEnv =
         foldl
           (\env (n, e) -> TC.extendCtx (n, e, env) env)
@@ -174,7 +174,7 @@ infer (Var x) = do
 -}
 infer (Anno e a) = do
   c <- askCtx
-  e' <- check e (expandType c a)
+  e' <- tcheck e (expandType c a)
   return (a, e')
 
 {-
@@ -190,13 +190,13 @@ infer inp@(App e1 e2) = do
   c <- askCtx
   case (expandType c arr) of
     Arr a1 a2 -> do
-      e2' <- check e2 a1
+      e2' <- tcheck e2 a1
       return (a2, T.UApp e1' e2')
     _ ->
       throwError
         (hang 2 $
          text "type of application mismatch in" <+>
-         squotes (pprint inp) <> colon <$>
+         squotes (pprint inp) PP.<> colon PP.<$>
          text "function" <+>
          squotes (pprint e1) <+> text "has type" <+> squotes (pprint arr))
 
@@ -222,7 +222,7 @@ infer inp@(TApp e a) = do
       throwError
         (hang 2 $
          text "type of application mismatch in" <+>
-         squotes (pprint inp) <> colon <$>
+         squotes (pprint inp) PP.<> colon PP.<$>
          text "type-level function" <+>
          squotes (pprint e) <+> text "has type" <+> squotes (pprint t))
 
@@ -284,7 +284,7 @@ infer (Acc e l) = do
       throwError
         (hang 2 $
          text "expect a record type with label" <+>
-         squotes (text l) <+> text "for" <+> squotes (pprint e) <$>
+         squotes (text l) <+> text "for" <+> squotes (pprint e) PP.<$>
          text "but got" <+> squotes (pprint t))
 
 {-
@@ -305,28 +305,28 @@ infer (DLam t) = do
 infer (PrimOp op e1 e2) =
   case op of
     Arith _ -> do
-      e1' <- check e1 IntT
-      e2' <- check e2 IntT
+      e1' <- tcheck e1 IntT
+      e2' <- tcheck e2 IntT
       return (IntT, T.UPrimOp op e1' e2')
     Logical _ -> do
-      e1' <- check e1 IntT
-      e2' <- check e2 IntT
+      e1' <- tcheck e1 IntT
+      e2' <- tcheck e2 IntT
       return (BoolT, T.UPrimOp op e1' e2')
     Append -> do
-      e1' <- check e1 StringT
-      e2' <- check e2 StringT
+      e1' <- tcheck e1 StringT
+      e2' <- tcheck e2 StringT
       return (StringT, T.UPrimOp op e1' e2')
 
 infer inp@(If e1 e2 e3) = do
-  e1' <- check e1 BoolT
+  e1' <- tcheck e1 BoolT
   (t2, e2') <- infer e2
   (t3, e3') <- infer e3
   if aeq t2 t3
     then return (t2, T.UIf e1' e2' e3')
     else throwError $
          (hang 2 $
-          text "if branches type mismatch in" <+> squotes (pprint inp) <> colon <$>
-          squotes (pprint e2) <+> text "has type" <+> squotes (pprint t2) <$>
+          text "if branches type mismatch in" <+> squotes (pprint inp) PP.<> colon PP.<$>
+          squotes (pprint e2) <+> text "has type" <+> squotes (pprint t2) PP.<$>
           squotes (pprint e3) <+> text "has type" <+> squotes (pprint t3))
 
 {-
@@ -341,7 +341,7 @@ Note: Recursive let binding
 -}
 infer (Let b) = do
   ((x, Embed t), (e1, e2)) <- unbind b
-  e1' <- localCtx (extendVarCtx x t) $ check e1 t
+  e1' <- localCtx (extendVarCtx x t) $ tcheck e1 t
   (t', e2') <- localCtx (extendVarCtx x t) $ infer e2
   return (t', T.ULet (bind (translate x) (e1', e2')))
 
@@ -363,7 +363,7 @@ infer a = throwError $ text "Infer not implemented:" <+> pprint a
 -- Γ ⊢ e ⇐ A ~> E
 ------------------------
 
-check :: Expr -> Type -> TcMonad T.UExpr
+tcheck :: Expr -> Type -> TcMonad T.UExpr
 
 {-
 
@@ -373,10 +373,10 @@ check :: Expr -> Type -> TcMonad T.UExpr
 Γ ⊢ λx. e ⇐ A → B ~> λx. E
 
 -}
-check (Lam l) (Arr a b) = do
+tcheck (Lam l) (Arr a b) = do
   (x, e) <- unbind l
   wf a
-  e' <- localCtx (extendVarCtx x a) $ check e b
+  e' <- localCtx (extendVarCtx x a) $ tcheck e b
   return (T.ULam (bind (translate x) e'))
 
 {-
@@ -389,12 +389,12 @@ check (Lam l) (Arr a b) = do
 
 
 -}
-check (DLam l) (DForall b) = do
+tcheck (DLam l) (DForall b) = do
   t <- unbind2 l b
   case t of
     Just ((x, Embed a), e, _, b) -> do
       wf a
-      localCtx (extendConstrainedTVarCtx x a) $ check e b
+      localCtx (extendConstrainedTVarCtx x a) $ tcheck e b
     Nothing -> throwError $ text "Patterns have different binding variables"
 
 {-
@@ -406,9 +406,9 @@ check (DLam l) (DForall b) = do
 Γ ⊢ e1,,e2 ⇐ A&B ~> (E1, E2)
 
 -}
-check (Merge e1 e2) (And a b) = do
-  e1' <- check e1 a
-  e2' <- check e2 b
+tcheck (Merge e1 e2) (And a b) = do
+  e1' <- tcheck e1 a
+  e2' <- tcheck e2 b
   ctx <- askCtx
   disjoint ctx (expandType ctx a) (expandType ctx b)
   return (T.UPair e1' e2')
@@ -421,10 +421,10 @@ check (Merge e1 e2) (And a b) = do
 
 -}
 
-check (DRec l e) (SRecT l' a) = do
+tcheck (DRec l e) (SRecT l' a) = do
   when (l /= l') $
     throwError (text "Labels not equal" <+> text l <+> text "and" <+> text l')
-  check e a
+  tcheck e a
 
 
 
@@ -439,11 +439,11 @@ B <: A ~> c'
 -}
 
 -- ad-hoc extension of toString method
-check (Acc e "toString") StringT = do
+tcheck (Acc e "toString") StringT = do
   (_, e') <- infer e
   return (T.UToString e')
 
-check (Acc e l) a = do
+tcheck (Acc e l) a = do
   (t, e') <- infer e
   ctx <- askCtx
   let ls = select (expandType ctx t) l
@@ -452,10 +452,9 @@ check (Acc e l) a = do
       throwError
         (hang 2 $
          text "expect a record type with label" <+>
-         squotes (text l) <+> text "for" <+> squotes (pprint e) <$>
+         squotes (text l) <+> text "for" <+> squotes (pprint e) PP.<$>
          text "but got" <+> squotes (pprint t))
-    -- Multiple label of 'l' are found, find the only one whose type is a subtype
-    -- of 'a'
+    -- Multiple label of 'l' are found, find the only one whose type is a subtype of 'a'
     _ ->
       let (bs, cs) = unzip ls
           res = dropWhile (isLeft . fst) $ zip (fmap (flip subtype a) bs) cs
@@ -465,8 +464,11 @@ check (Acc e l) a = do
              throwError
                (hang 2 $
                 text "Cannot find a subtype of" <+>
-                squotes (pprint a) <+> text "for label" <+> text l <$>
+                squotes (pprint a) <+> text "for label" <+> text l PP.<$>
                 text "in" <+> squotes (pprint e))
+  where
+    unzip    :: [(a,b)] -> ([a],[b])
+    unzip    =  foldr (\(a,b) ~(as,bs) -> (a:as,b:bs)) ([],[])
 
 
 {-
@@ -479,7 +481,7 @@ A <: B ~> c
 
 -}
 
-check e b = do
+tcheck e b = do
   wf b
   (a, e') <- infer e
   ctx <- askCtx
@@ -490,8 +492,8 @@ check e b = do
     Left err ->
       throwError
         (hang 2 $
-         text "subtyping failed" <> colon <$>
-         squotes (pprint e) <+> text "has type" <+> squotes (pprint a) <$>
+         text "subtyping failed" PP.<> colon PP.<$>
+         squotes (pprint e) <+> text "has type" <+> squotes (pprint a) PP.<$>
          text "which is not a subtype of" <+> squotes (pprint b))
 
 
@@ -508,7 +510,7 @@ wf t = do
       throwError
         (hang 2 $
          text "expect type" <+>
-         squotes (pprint t) <+> text "has kind star" <$>
+         squotes (pprint t) <+> text "has kind star" PP.<$>
          text "but got" <+> squotes (pprint k))
 
 
@@ -593,10 +595,10 @@ select t l =
   where
     m = recordFields t
 
-recordFields :: Type -> M.Map Label [(Type, T.UExpr)]
-recordFields t = go t id
+recordFields :: Type -> Map Label [(Type, T.UExpr)]
+recordFields t = go t identity
   where
-    go :: Type -> (T.UExpr -> T.UExpr) -> M.Map Label [(Type, T.UExpr)]
+    go :: Type -> (T.UExpr -> T.UExpr) -> Map Label [(Type, T.UExpr)]
     go (And t1 t2) cont =
       M.unionWith (++) (go t1 (T.UP1 . cont)) (go t2 (T.UP2 . cont))
     go (SRecT l' t') cont =

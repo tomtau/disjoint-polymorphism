@@ -108,9 +108,9 @@ ret_type :: { Maybe Type }
   : {- empty -}     { Nothing }
   | ':' type        { Just $2 }
 
-inherit :: { Maybe [Expr] }
-  : {- empty -}            { Nothing }
-  | inherits traitConstrs  { Just $2 }
+inherit :: { [Expr] }
+  : {- empty -}            { [] }
+  | inherits traitConstrs  { $2 }
 
 decllist :: { [Decl] }
   : {- empty -}       { [] }
