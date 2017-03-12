@@ -5,6 +5,7 @@ module Source.Typing
   ) where
 
 import qualified Data.Map as M
+import           Prelude (unzip)
 import           Protolude hiding (Type)
 import qualified Text.PrettyPrint.ANSI.Leijen as PP
 import           Text.PrettyPrint.ANSI.Leijen hiding ((<>), (<$>), Pretty)
@@ -466,9 +467,6 @@ tcheck (Acc e l) a = do
                 text "Cannot find a subtype of" <+>
                 squotes (pprint a) <+> text "for label" <+> text l PP.<$>
                 text "in" <+> squotes (pprint e))
-  where
-    unzip    :: [(a,b)] -> ([a],[b])
-    unzip    =  foldr (\(a,b) ~(as,bs) -> (a:as,b:bs)) ([],[])
 
 
 {-

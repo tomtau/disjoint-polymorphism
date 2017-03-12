@@ -1,12 +1,14 @@
-{-# LANGUAGE NoImplicitPrelude, OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, ViewPatterns #-}
 
 
 module Utility
   ( evalFile
   ) where
 
-import           Protolude
+import           Control.Exception (SomeException, try)
+import           Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 
 import           Environment
@@ -15,7 +17,7 @@ import           Source.Parser (parseExpr)
 import           Source.Typing
 import qualified Target.CBN as C
 
-type Result = Either Doc Text
+type Result = Either Doc String
 
 ret :: Doc -> Result
 ret d = Left d
@@ -25,12 +27,12 @@ parseExpectedOutput source =
   let firstLine = T.takeWhile (/= '\n') source
   in fmap T.strip (T.stripPrefix "-->" (T.strip firstLine))
 
-readTry :: IO Text -> IO (Either SomeException Text)
+readTry :: IO String -> IO (Either SomeException String)
 readTry = try
 
-eval :: Text -> Result
+eval :: String -> Result
 eval inp =
-  case parseExpr (toS inp) of
+  case parseExpr inp of
     Left err -> ret $ warn "Syntax error" <+> text err
     Right abt ->
       let res = runTcMonad emptyCtx (tcModule abt)
@@ -51,9 +53,9 @@ evalFile path = do
       in case value of
            Left err -> failed err
            Right tm ->
-             case parseExpectedOutput contents of
-               Nothing -> failed $ warn "No expectation" <+> text (toS tm)
-               Just expinp ->
+             case parseExpectedOutput (T.pack contents) of
+               Nothing -> failed $ warn "No expectation" <+> text tm
+               Just (T.unpack -> expinp) ->
                  if tm == expinp
-                   then succed (text (toS tm))
-                   else failWith (text (toS tm)) (text (toS expinp))
+                   then succed (text tm)
+                   else failWith (text tm) (text expinp)
