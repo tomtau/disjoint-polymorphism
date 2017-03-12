@@ -593,21 +593,20 @@ select t l =
   where
     m = recordFields t
 
+data OC = GLt | GRt
+
 recordFields :: Type -> M.Map Label [(Type, T.UExpr)]
-recordFields t =
-  case t of
-    And t1 t2 ->
-      let res1 =
-            M.map
-              (map (second (\c -> T.elam "x" (T.UApp c (T.UP1 (T.evar "x"))))))
-              (recordFields t1)
-          res2 =
-            M.map
-              (map (second (\c -> T.elam "x" (T.UApp c (T.UP2 (T.evar "x"))))))
-              (recordFields t2)
-      in M.unionWith (++) res1 res2
-    SRecT l' t' -> M.fromList [(l', [(t', T.elam "x" (T.evar "x"))])]
-    _ -> M.empty
+recordFields t = go t []
+  where
+    go :: Type -> [OC] -> M.Map Label [(Type, T.UExpr)]
+    go (And t1 t2) path =
+      M.unionWith (++) (go t1 (GLt : path)) (go t2 (GRt : path))
+    go (SRecT l' t') path = M.fromList [(l', [(t', getProj path)])]
+    go _ _ = M.empty
+    getProj = (T.elam "x") . (foldr dir (T.evar "x"))
+    dir GLt = T.UP1
+    dir GRt = T.UP2
+
 
 
 -- transTyp :: Fresh m => Type -> m T.Type
