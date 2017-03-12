@@ -41,9 +41,9 @@ trait, \lstinline$comment$, which contains a single method \lstinline$content$.
 
 \lstinputlisting[linerange=4-7]{../examples/comment.txt}% APPLY:linerange=COMMENT_DEF
 
-The syntax is very similar to Scala's, with the \lstinline{def} keyword begins a
-term declaration. Next we create another trait, \lstinline$up$, for tracking the
-number of upvotes.
+The syntax is very similar to Scala's, with the \lstinline{def} keyword
+beginning a term declaration. Next we create another trait, \lstinline$up$, for
+tracking the number of upvotes.
 
 \lstinputlisting[linerange=12-15]{../examples/comment.txt}% APPLY:linerange=UP_DEF
 
@@ -96,33 +96,24 @@ traits, they must be composed with an implementation of \lstinline$Point$.
 \lstinputlisting[linerange=29-31]{../examples/point.txt}% APPLY:linerange=NORM_TEST
 
 \subsubsection{Trait and Inheritance}
-\label{sec:trivial}
 
-\jeremy{find another simple example}
+Traits in \name are extensible. A trait can be extended by inheriting all
+members of other traits, and defining additional members. This is, in some
+sense, similar to class inheritance in traditional OO languages. However, one
+difference is that, a trait can inherits one or more traits without any
+problems, provided that there are no conflicts arising.
 
-% Traits in \name are extensible. A trait can be extended by inheriting all
-% members of other traits, and defining additional members. This is, in some
-% sense, similar to class inheritance in traditional OO languages. However, one
-% difference is that, a trait can inherits one or more traits without any
-% problems, provided that there are no conflicts arising. Below we present a
-% solution to Wadler's Expression Problem~\cite{wadler1998expression} in \name.
-
-% \lstinputlisting[linerange=-]{}% APPLY:linerange=EP_DEF
-
-% The initial system defines two traits \lstinline$lit$ and \lstinline$add$ that
-% implement the evaluation (\lstinline{eval}) operation. It is fairly easy to add
-% a new variant, e.g., a \lstinline$sub$ trait, to the system.
-% \lstinputlisting[linerange=27-31]{../examples/visitor.txt}% APPLY:linerange=SUB_DEF
-
-% What if now we want to extend the system with a pretty printing operation. The
-% basic idea is to extend traits \lstinline$lit$, \lstinline$add$, and
-% \lstinline$sub$ by adding the \lstinline$print$ operation.
-% \lstinputlisting[linerange=37-37]{../examples/visitor.txt}% APPLY:linerange=PRINT_DEF
-
-% Note that trait \lstinline$litP$ inherits the \lstinline$eval$ operation from
-% trait \lstinline$lit$. Same goes for \lstinline$addP$ and \lstinline$subP$. It
-% is straightforward to use the new system, as one would imagine.
-% \lstinputlisting[linerange=-]{}% APPLY:linerange=EP_TEST
+Imagine we want to describe birds that can both fly and swim. For better reuse,
+we define a trait that has the ability to swim:
+\lstinputlisting[linerange=5-8]{../examples/birds.txt}% APPLY:linerange=SWIM_DEF
+Similarly, here is a trait that has the ability to fly:
+\lstinputlisting[linerange=13-16]{../examples/birds.txt}% APPLY:linerange=FLY_DEF
+Now we are ready to describe a bird (duck) that can both fly and swim:
+\lstinputlisting[linerange=20-23]{../examples/birds.txt}% APPLY:linerange=BIRD_DEF
+Notice how trait \lstinline{duck} inherits the \lstinline{swim} and
+\lstinline{fly} methods from trait \lstinline{swimming} and \lstinline{flying},
+respectively. Here is how this super duck shows off it can both fly and swim:
+\lstinputlisting[linerange=27-29]{../examples/birds.txt}% APPLY:linerange=BIRD_TEST
 
 
 \subsubsection{Detecting Conflicts in Trait Composition}

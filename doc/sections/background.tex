@@ -2,11 +2,11 @@
 \section{Background}
 \label{sec:background}
 
-This section recaps the terminologies that are used throughout the
-paper~\cite{oliveira2016disjoint, alpuimdisjoint} in case the readers are not
+This section recaps the terminologies~\cite{oliveira2016disjoint,
+  alpuimdisjoint} that are used throughout the paper in case the readers are not
 familiar with the type system (i.e., \bname) behind \name. In particular, we
 show that \name supports (disjoint) intersection types, the merge operator,
-parametric polymorphism and generalized records.
+parametric polymorphism and extensible records.
 
 \subsection{(Disjoint) Intersection Types and the Merge Operator}
 \label{sec:intersection}
@@ -114,14 +114,15 @@ any type disjoint to \lstinline{A}. Thus the problematic use of
 \lstinline{Int} is not disjoint with \lstinline{Int}.
 
 
-\subsection{Generalized Records with Intersection Types}
+\subsection{Extensible Records}
 \label{sec:records}
 
 Following~\citet{reynolds1997design} and~\citet{castagna1995calculus}, \name
 leverages intersection types to type extensible records. The idea is that a
 multi-field record can be encoded as merges of single-field records, and
 multi-record types as intersections. Therefore in \name, there are only
-single-field record constructs.
+single-field record constructs. As such, record operations in \name can occur on
+\textit{any} type.
 
 \subsubsection{Record Operations}
 
@@ -143,28 +144,36 @@ many other record systems, is delegated to the merge operator. Working with
 records is type-safe: the type system prevents accessing a field that does not
 exist.
 
-The usual notation for constructing records
+\paragraph{Record construction.} The usual notation for constructing records
 \begin{lstlisting}
-  {open = 192, high=195, low=189}
+  {open = 192, high = 195, low = 189}
 \end{lstlisting}
 is a shorthand for merges of single-field records
 \begin{lstlisting}
-  {open = 192} ,, {high=195} ,, {low=189}
+  {open = 192} ,, {high = 195} ,, {low = 189}
 \end{lstlisting}
 
-Fields are extracted using the dot notation. For example,
+\paragraph{Record selection.} Fields are extracted using the dot notation. For
+example,
 \begin{lstlisting}
-  {open = 192, high=195, low=189}.open
+  {open = 192, high=195, low= 189}.open
 \end{lstlisting}
-selects the value of the field labelled \lstinline{open} from the record.
+selects the value of the field labelled \lstinline{open} from the record. Since
+records are just merges of terms, we can even select a field that is buried deep
+inside a merge, so long as it is present.
+\begin{lstlisting}
+  ({open = 192} ,, 3 ,, {low = 189}).open
+\end{lstlisting}
 
-Extension, dual to construction, is implemented with the merge operator. The
-following example adds a \lstinline{close} field to the record:
+\paragraph{Record extension} Extension, just like construction, is implemented
+with the merge operator. The following example adds a \lstinline{close} field to
+the record:
 \begin{lstlisting}
   {open = 192, high=195, low=189} ,, {close = 195}
 \end{lstlisting}
 
 
+\begin{comment}
 \subsubsection{Restriction via Subtyping}
 
 Unlike most record systems, restriction is not a primitive operation in \name.
@@ -178,3 +187,28 @@ The disjointness constraint ensures that the value of type \lstinline{B} does
 not contain a record with type \lstinline${low : Int}$. The following examples
 shows removing the \lstinline{low} field:
 \lstinputlisting[linerange=10-11]{../examples/record.txt}% APPLY:linerange=RCD_EG
+\end{comment}
+
+
+\subsubsection{Disjointness of Records}
+
+Records in \name allow duplicate fields. This is because we adopt a lenient
+approach to record disjointness~\cite{alpuimdisjoint}. Of course records with
+distinct fields are disjoint naturally. \name accepts duplicate fields as long
+as the types of the overlapping fields are disjoint. For example,
+\begin{lstlisting}
+  {open = 192, high = 195, open = true}
+\end{lstlisting}
+is allowed in \name. However, as with the coherence problem for merges,
+selecting duplicate fields requires further type information.
+\begin{lstlisting}
+  {open = 192, high = 195, open = true}.open
+\end{lstlisting}
+would result in type error, since we don't know which \lstinline{open} to
+project, and any biased implementation would defeat the purpose of coherence.
+But the following is correct because there is only one \lstinline{open}
+associated with \lstinline{Int}.
+\begin{lstlisting}
+  {open = 192, high = 195, open = true}.open + 3
+  -- Output: 195
+\end{lstlisting}
