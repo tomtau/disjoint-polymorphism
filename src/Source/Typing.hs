@@ -593,19 +593,15 @@ select t l =
   where
     m = recordFields t
 
-data OC = GLt | GRt
-
 recordFields :: Type -> M.Map Label [(Type, T.UExpr)]
-recordFields t = go t []
+recordFields t = go t id
   where
-    go :: Type -> [OC] -> M.Map Label [(Type, T.UExpr)]
-    go (And t1 t2) path =
-      M.unionWith (++) (go t1 (GLt : path)) (go t2 (GRt : path))
-    go (SRecT l' t') path = M.fromList [(l', [(t', getProj path)])]
+    go :: Type -> (T.UExpr -> T.UExpr) -> M.Map Label [(Type, T.UExpr)]
+    go (And t1 t2) cont =
+      M.unionWith (++) (go t1 (T.UP1 . cont)) (go t2 (T.UP2 . cont))
+    go (SRecT l' t') cont =
+      M.fromList [(l', [(t', T.elam "x" (cont (T.evar "x")))])]
     go _ _ = M.empty
-    getProj = (T.elam "x") . (foldr dir (T.evar "x"))
-    dir GLt = T.UP1
-    dir GRt = T.UP2
 
 
 
