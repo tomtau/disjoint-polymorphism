@@ -8,7 +8,6 @@ module Utility
 import           Control.Exception (SomeException, try)
 import           Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.IO as TIO
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 
 import           Environment

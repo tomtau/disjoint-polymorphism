@@ -24,8 +24,8 @@ import qualified Target.Syntax as T
 -- | Subtyping (<:) is defined only between types of kind *.
 -- WARN: They must be expanded first
 subtype :: Type -> Type -> Either Doc T.UExpr
-subtype s t =
-  runExcept $ runFreshMT (subtypeS s t)
+subtype st tt =
+  runExcept $ runFreshMT (subtypeS st tt)
   where
     subtypeS :: Type -> Type -> (FreshMT (Except Doc)) T.UExpr
     {-
@@ -174,10 +174,10 @@ coerce a c = do
       a1' <- coerce' a1
       a2' <- coerce' a2
       return $ T.UPair a1' a2'
-    coerce' (SRecT _ a) = coerce' a
+    coerce' (SRecT _ t) = coerce' t
     coerce' (DForall t) = do
-      ((_, _), a) <- unbind t
-      coerce' a
+      ((_, _), t') <- unbind t
+      coerce' t'
     coerce' _ = panic "Impossible happened in coercing!"
 
 ------------

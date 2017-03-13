@@ -57,8 +57,8 @@ instance Pretty S.Type where
     t2' <- ppr t2
     return $ parens (t1' <+> text "&" <+> t2')
   ppr (S.TVar x) = return . text . name2String $ x
-  ppr (S.DForall t) =
-    lunbind t $ \((x, Embed a), t) -> do
+  ppr (S.DForall b) =
+    lunbind b $ \((x, Embed a), t) -> do
       a' <- ppr a
       t' <- ppr t
       return

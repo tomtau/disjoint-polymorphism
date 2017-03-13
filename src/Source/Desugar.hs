@@ -32,7 +32,7 @@ desugarTrait :: Trait -> SimpleDecl
 desugarTrait trait =
   (DefDecl $
    TmBind
-     name
+     tname
      typarams
      ((map (second Just) params) ++ [(s2n self, Just st)])
      -- if no supers, return body
@@ -43,7 +43,7 @@ desugarTrait trait =
     typarams = traitTyParams trait
     params = traitParams trait
     tb = traitBody trait
-    name = traitName trait
+    tname = traitName trait
     (self, st) = selfType trait
     supers = traitSuper trait
     tb' = resolveDecls tb -- We substitute away all type declarations in traits
@@ -78,7 +78,7 @@ to
 
 -}
 
--- normalizeTmDecl :: TmBind -> (Text, Expr)
+normalizeTmDecl :: TmBind -> (BindName, Expr)
 normalizeTmDecl decl = (bindName decl, body)
   where
     body =

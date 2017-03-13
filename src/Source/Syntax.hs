@@ -28,10 +28,12 @@ data SimpleDecl
   | TypeDecl TypeBind
   deriving (Show)
 
+type BindName = String
+
 data Trait = TraitDef
-  { traitName :: String
+  { traitName :: BindName
     -- ^ Trait name
-  , selfType :: (String, Type)
+  , selfType :: (BindName, Type)
     -- ^ Self type
   , traitSuper :: [Expr]
   , retType :: Maybe Type
@@ -43,7 +45,7 @@ data Trait = TraitDef
 
 -- f [A1,...,An](x1: t1, ..., xn: tn): t = e
 data TmBind  = TmBind
-  { bindName     :: String            -- f
+  { bindName     :: BindName            -- f
   , bindTyParams :: [(TyName, Type)]  -- A1, ..., An
   , bindParams   :: [(TmName, Maybe Type)]  -- x1: t1, ..., xn: tn
   , bindRhs      :: Expr              -- e
@@ -52,7 +54,7 @@ data TmBind  = TmBind
 
 -- type T[A1, ..., An] = t
 data TypeBind = TypeBind
-  { typeBindName   :: String   -- T
+  { typeBindName   :: BindName   -- T
   , typeBindParams :: [TyName] -- A1, ..., An
   , typeBindRhs    :: Type     -- t
   } deriving (Show)
@@ -178,9 +180,6 @@ mkRecdsT ((l, e):r) = foldl (\t (l', e') -> And t (SRecT l' e')) (SRecT l e) r
 
 elet :: String -> Type -> Expr -> Expr -> Expr
 elet s t e b = Let (bind (s2n s, embed t) (e, b))
-
-teleToBind :: [(String, Type)] -> Type -> Type
-teleToBind ts t = foldr (\t tt -> tforall t tt) t ts
 
 transNew :: Type -> [Expr] -> Expr
 transNew t es = elet "self" t (foldl1 Merge es) (evar "self")

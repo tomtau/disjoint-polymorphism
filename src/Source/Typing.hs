@@ -46,12 +46,12 @@ tcModule m = do
       :: SimpleDecl
       -> TcMonad [(Type, (T.UName, T.UExpr))]
       -> TcMonad [(Type, (T.UName, T.UExpr))]
-    tcM (DefDecl decl) m = do
+    tcM (DefDecl decl) ms = do
       (dbind, transD) <- tcTmDecl decl
-      fmap (((snd dbind, transD) :)) $ localCtx ((uncurry extendVarCtx) dbind) m
-    tcM (TypeDecl tdecl) m = do
+      fmap (((snd dbind, transD) :)) $ localCtx ((uncurry extendVarCtx) dbind) ms
+    tcM (TypeDecl tdecl) ms = do
       (n, tdef, k) <- tcTyDecl tdecl
-      localCtx (addTypeSynonym n tdef k) m
+      localCtx (addTypeSynonym n tdef k) ms
 
 -- Type check declarations
 tcTmDecl :: TmBind -> TcMonad ((TmName, Type), (T.UName, T.UExpr))
@@ -59,8 +59,8 @@ tcTmDecl decl = do
   oldDef <- lookupTmDef (s2n n)
   case oldDef of
     Nothing -> do
-      (typ, trans) <- infer term
-      return ((s2n n, typ), (s2n n, trans))
+      (typ, tran) <- infer term
+      return ((s2n n, typ), (s2n n, tran))
     Just _ -> throwError $ text "Multiple definitions of" <+> text n
   where
     (n, term) = normalizeTmDecl decl -- term has been annotated, so we can infer
@@ -393,9 +393,9 @@ tcheck (Lam l) (Arr a b) = do
 tcheck (DLam l) (DForall b) = do
   t <- unbind2 l b
   case t of
-    Just ((x, Embed a), e, _, b) -> do
+    Just ((x, Embed a), e, _, t') -> do
       wf a
-      localCtx (extendConstrainedTVarCtx x a) $ tcheck e b
+      localCtx (extendConstrainedTVarCtx x a) $ tcheck e t'
     Nothing -> throwError $ text "Patterns have different binding variables"
 
 {-
@@ -555,8 +555,8 @@ disjoint _ (TVar x) (TVar y) =
   text "and" <+> text (name2String y) <+> text "are not disjoint"
 
 disjoint ctx (DForall t) (DForall t') = do
-  t <- unbind2 t t'
-  case t of
+  p <- unbind2 t t'
+  case p of
     Just ((x, Embed a1), b, (_, Embed a2), c) ->
       disjoint (extendConstrainedTVarCtx x (And a1 a2) ctx) b c
     _ -> throwError $ text "Patterns have different binding variables"
