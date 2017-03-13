@@ -37,7 +37,7 @@ desugarTrait trait =
      ((map (second Just) params) ++ [(s2n self, Just st)])
      -- if no supers, return body
      -- otherwise merge them to body
-     (maybe body identity (foldl1May Merge (supers ++ [body])))
+     (maybe body (flip Merge body) (foldl1May Merge supers))
      (retType trait))
   where
     typarams = traitTyParams trait

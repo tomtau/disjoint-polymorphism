@@ -10,7 +10,6 @@ import           Protolude hiding (Type)
 import qualified Text.PrettyPrint.ANSI.Leijen as PP
 import           Text.PrettyPrint.ANSI.Leijen hiding ((<>), (<$>), Pretty)
 import           Unbound.LocallyNameless
-import           Unsafe
 
 
 import           Common
@@ -33,12 +32,13 @@ tcModule m = do
   -- Step 2: Check module
   targetDecls <- foldr tcM (return ([])) (sdecls ++ [mainE])
   -- Step 3: Generate initial environment for execution
-  let (mainType, mainTarget) = unsafeLast targetDecls
-  let declsTarget = map snd . unsafeInit $ targetDecls
+  let (mainType, mainTarget) =
+        maybe (TopT, (s2n "main", T.UUnit)) identity (lastMay targetDecls)
+  let declsTarget = fmap (map snd) (initMay targetDecls)
   let initEnv =
-        foldl
-          (\env (n, e) -> TC.extendCtx (n, e, env) env)
+        maybe
           TC.emptyEnv
+          (foldl (\env (n, e) -> TC.extendCtx (n, e, env) env) TC.emptyEnv)
           declsTarget
   return (mainType, snd mainTarget, initEnv)
   where
