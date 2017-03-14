@@ -2,6 +2,7 @@
 {-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Source.Subtyping
   ( subtype
@@ -121,9 +122,8 @@ subtype st tt =
     ∀(a*A1).B1 <: ∀(a*A2).B2   ~> λf. Λa . E1 (f a)
 
     -}
-    subtypeS (DForall t1) (DForall t2) = do
-      t <- unbind2 t1 t2
-      case t of
+    subtypeS (DForall t1) (DForall t2) =
+      unbind2 t1 t2 >>= \case
         Just ((_, Embed a1), b1, (_, Embed a2), b2) -> do
           subtypeS a2 a1
           subtypeS b1 b2

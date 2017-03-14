@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, PatternGuards, NoImplicitPrelude #-}
+{-# LANGUAGE FlexibleContexts, PatternGuards, NoImplicitPrelude, LambdaCase #-}
 
 module Source.Typing
   ( tcModule
@@ -55,9 +55,8 @@ tcModule m = do
 
 -- Type check declarations
 tcTmDecl :: TmBind -> TcMonad ((TmName, Type), (T.UName, T.UExpr))
-tcTmDecl decl = do
-  oldDef <- lookupTmDef (s2n n)
-  case oldDef of
+tcTmDecl decl =
+  lookupTmDef (s2n n) >>= \case
     Nothing -> do
       (typ, tran) <- infer term
       return ((s2n n, typ), (s2n n, tran))
@@ -278,8 +277,7 @@ infer (Acc e "toString") = do
 infer (Acc e l) = do
   (t, e') <- infer e
   ctx <- askCtx
-  let ls = select (expandType ctx t) l
-  case ls of
+  case select (expandType ctx t) l of
     [(a, c)] -> return (a, T.UApp c e')
     _ ->
       throwError
@@ -391,8 +389,7 @@ tcheck (Lam l) (Arr a b) = do
 
 -}
 tcheck (DLam l) (DForall b) = do
-  t <- unbind2 l b
-  case t of
+  unbind2 l b >>= \case
     Just ((x, Embed a), e, _, t') -> do
       wf a
       localCtx (extendConstrainedTVarCtx x a) $ tcheck e t'
@@ -555,8 +552,7 @@ disjoint _ (TVar x) (TVar y) =
   text "and" <+> text (name2String y) <+> text "are not disjoint"
 
 disjoint ctx (DForall t) (DForall t') = do
-  p <- unbind2 t t'
-  case p of
+  unbind2 t t' >>= \case
     Just ((x, Embed a1), b, (_, Embed a2), c) ->
       disjoint (extendConstrainedTVarCtx x (And a1 a2) ctx) b c
     _ -> throwError $ text "Patterns have different binding variables"
