@@ -32,12 +32,13 @@ def combine A [B * A] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A & B] = {
   add = \x y -> f.add x y ,, g.add x y
 }
 
+-- Can we simply do the following, and let the system derive the definition for us?
 -- def combine A [B * A] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A] & ExpAlg[B] = f ,, g
 
 def e1 E (f : ExpAlg[E]) = f.add (f.lit 7) (f.lit 2)
 
-def newAlg = combine IEval IPrint subEvalAlg printAlg
+def evalPrintAlg = combine IEval IPrint subEvalAlg printAlg
 
-val o = e1 (IEval & IPrint) newAlg
+val o = e1 (IEval & IPrint) evalPrintAlg
 
 main = o.print ++ " = " ++ o.eval.toString

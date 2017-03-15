@@ -192,23 +192,33 @@ shows removing the \lstinline{low} field:
 
 \subsubsection{Disjointness of Records}
 
-Records in \name allow duplicate fields. This is because we adopt a lenient
+Most record calculi forbid duplicate labels in the declarations of record types.
+Some allow labels coincide but the last field overrides the previous ones.
+Records in \name allow duplicate labels. This is because we adopt a lenient
 approach to record disjointness~\cite{alpuimdisjoint}. Of course records with
-distinct fields are disjoint naturally. \name accepts duplicate fields as long
+distinct fields are disjoint naturally. \name accepts duplicate labels as long
 as the types of the overlapping fields are disjoint. For example,
 \begin{lstlisting}
   {open = 192, high = 195, open = true}
 \end{lstlisting}
-is allowed in \name. However, as with the coherence problem for merges,
-selecting duplicate fields requires further type information.
-\begin{lstlisting}
-  {open = 192, high = 195, open = true}.open
-\end{lstlisting}
-would result in type error, since we don't know which \lstinline{open} to
-project, and any biased implementation would defeat the purpose of coherence.
-But the following is correct because there is only one \lstinline{open}
-associated with \lstinline{Int}.
-\begin{lstlisting}
-  {open = 192, high = 195, open = true}.open + 3
-  -- Output: 195
-\end{lstlisting}
+is allowed in \name. An interesting question arises when we try to select
+\lstinline{open}. What should be the result? Should it be 192 or
+\lstinline{true}? Either choice is unsatisfying, as with the coherence problem
+for merges. Instead, \name gives the merge of the two choices.
+
+\jeremy{Wait to fill in more till I figure out record normalization}
+
+
+% However, as with the coherence problem for merges,
+% selecting duplicate fields requires further type information.
+% \begin{lstlisting}
+%   {open = 192, high = 195, open = true}.open
+% \end{lstlisting}
+% would result in type error, since we don't know which \lstinline{open} to
+% project, and any biased implementation would defeat the purpose of coherence.
+% But the following is correct because there is only one \lstinline{open}
+% associated with \lstinline{Int}.
+% \begin{lstlisting}
+%   {open = 192, high = 195, open = true}.open + 3
+%   -- Output: 195
+% \end{lstlisting}

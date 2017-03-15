@@ -12,7 +12,7 @@ detected in traits.
 \subsection{Trait Declarations}
 
 Essentially traits are translated into term declarations, with methods becoming
-record fields. The self reference is adjusted to be the last parameter of the
+record fields. The self-reference is adjusted to be the last parameter of the
 declaration. For example,
 \begin{lstlisting}
   trait point(x : Int, y: Int) { self : Point =>
@@ -28,11 +28,7 @@ becomes
   }
 \end{lstlisting}
 
-Note that if the target language has call-by-value semantics, the type of the
-self reference would become a thunk, that is, \lstinline$T -> Point$, and every
-use of \lstinline{self} would be replaced by \lstinline$self()$. Since we
-purposely chose call-by-name semantics for the target language, this simplifies
-a bit. Now it is clear that \lstinline{self} is not a special keyword: it can
+Now it is clear that \lstinline{self} is not a special keyword: it can
 have any name.
 
 More formally, a trait of the form
@@ -67,7 +63,14 @@ becomes
 \begin{lstlisting}
   let self : Point = point 3 4 self in self
 \end{lstlisting}
-Note that \name has built-in recursive let expressions.
+Essentially the open term is closed using \textit{lazy fixpoints}. Lazy
+fixpoints are a standard way to encode dynamic mixin inheritance and bind
+self-reference in denotational semantics~\cite{cook1989denotational}.
+
+Lazy fixpoints are implemented in \name using the built-in \lstinline{let}
+construct (possibly recursive), which employs call-by-name semantics. It is
+possible to choose call-by-value, then the type of the self-reference would
+becomes a thunk, that is, \lstinline$T -> Point$.
 
 The composition of traits in the \lstinline{new} expression is desugared using
 the merge operator. Now it is clear that the reason traits have conflict

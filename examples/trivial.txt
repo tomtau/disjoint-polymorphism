@@ -28,12 +28,6 @@ trait subP (e1 : IPrint, e2 : IPrint) inherits sub(e1,e2) : IPrint { self : IPri
 }
 
 
-val l1 = new[IEval] lit(4)
-
-val l2 = new[IEval] lit(3)
-
-val a = new[IEval] add (l1, l2)
-
 val l1 = new[IPrint] litP(4)
 val l2 = new[IPrint] litP(3)
 val l3 = new[IPrint] addP(l1, l2)

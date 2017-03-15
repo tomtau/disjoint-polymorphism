@@ -59,7 +59,7 @@ the same time:
 
 In contrast, trait declarations in \name only do the former. Back to our
 example, the purpose of declaring two types is just to use them for type
-annotations of the self reference. In the trait literature, a trait usually
+annotations of the self-reference. In the trait literature, a trait usually
 requires a set of methods that server as parameters for the provided behaviour.
 In our example, the type of \lstinline$self$ denotes what methods are required.
 
@@ -87,8 +87,8 @@ definitions of norm via two traits\footnote{Due to the lack of full support for
 \lstinputlisting[linerange=14-20]{../examples/point.txt}% APPLY:linerange=NORM_DEF
 
 Note how in \lstinline$euclideanNorm$ and \lstinline$manhattanNorm$ the type of
-the self reference is \lstinline$Point$! This is in contrast to a typical
-object-oriented language, such as Java, where the self reference must always be
+the self-reference is \lstinline$Point$! This is in contrast to a typical
+object-oriented language, such as Java, where the self-reference must always be
 of the same type as the class being defined. It is this functionality that
 allows us to express dependencies between traits: when \lstinline$euclideanNorm$
 and \lstinline$manhattanNorm$ are instantiated and composed with some other
@@ -149,8 +149,9 @@ datatypes. Indeed, variants of the same idea keep appearing in different
 programming languages, because the encoding of the idea needs to exploit the
 particular features of the programming language (or theorem prover).
 Unfortunately language-specific constructs obscure the key ideas behind those
-solutions. In this subsection, we show a solution to the Expression Problem that
-intends to capture the key ideas of various solutions in the literature.
+solutions. In this subsection, we presents \name's solution to the Expression
+Problem that intends to capture the key ideas of various solutions in the
+literature.
 
 To start, we begin with a very simple system modeling arithmetic expressions and
 evaluation. The initial system constitutes expressions with two variants
@@ -164,8 +165,8 @@ over the type of addition expression (\lstinline{E -> E -> E}).
 
 The second part, which is the actual type of the arithmetic expression, is:
 \lstinputlisting[linerange=11-11]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
-Familiar readers may immediately recognize this is exactly the visitor pattern:
-the method \lstinline{accept} takes an internal visitor as argument.
+Acute readers may immediately recognize this is exactly the visitor pattern: the
+method \lstinline{accept} takes an internal visitor as argument.
 
 % \paragraph{Data constructors.} Using \lstinline{Exp} the two data constrcutors
 % are defined as follows:
@@ -204,10 +205,11 @@ extension. First note that \lstinline{SubExpAlg[E]} appears in parameter
 position of \lstinline{accept} and function parameters are natually
 contravariant: \lstinline{ExtExp} should be a \textit{supertype} of
 \lstinline{Exp}. By contrast, in common OO languages, type inheritance and
-subtyping always go along together. The consequence of this is that in those
-languages, it is simply impossible to express that \lstinline{ExtExp} is both an
-extension and a supertype of \lstinline{Exp}. Such kind of phenomena is an
-example where ``inheritance is not subtyping''~\cite{cook1989inheritance}.
+subtyping always go along together. For example, Scala forbids any kind of
+type-refinement on method parameter types. The consequence of this is that in
+those languages, it is simply impossible to express that \lstinline{ExtExp} is
+both an extension and a supertype of \lstinline{Exp}. Such kind of phenomena is
+an example where ``inheritance is not subtyping''~\cite{cook1989inheritance}.
 
 \paragraph{Add a new operation.} The second type of extension is adding a new
 operation, such as pretty printing. Similar to evaluation, the interface of the
@@ -221,7 +223,7 @@ The implementation is spelled out straightforwardly:
 \lstinputlisting[linerange=52-61]{../examples/visitor.txt}% APPLY:linerange=DC_DEF
 So now we can test the shiny new system:
 \lstinputlisting[linerange=66-69]{../examples/visitor.txt}% APPLY:linerange=VISITOR_EG
-Notice that the programmer is able to pass \lstinline{lit 5}, which is of type
+Notice that we are able to pass \lstinline{lit 5}, which is of type
 \lstinline{Exp}, to \lstinline{sub}, which expects a value of type
 \lstinline{ExtExp}. This works precisely because \lstinline{Exp} is a
 \textit{subtype} of \lstinline{ExtExp}.
@@ -231,5 +233,6 @@ Notice that the programmer is able to pass \lstinline{lit 5}, which is of type
 \subsection{Dynamic Instantiation of Traits}
 
 
-\jeremy{object algebra illustrating multiple inheritance of things with the same
-type, and dynamical instantiation}
+\jeremy{ A composition operator combining two algebras at run-time,
+  demonstrating the dynamic nature of trait instantiation, also show we can do
+  multiple inheritance of things with the same type}
