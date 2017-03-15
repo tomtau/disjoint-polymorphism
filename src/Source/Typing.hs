@@ -174,7 +174,8 @@ infer (Var x) = do
 -}
 infer (Anno e a) = do
   c <- askCtx
-  e' <- tcheck e (expandType c a)
+  a' <- expandType c a
+  e' <- tcheck e a'
   return (a, e')
 
 {-
@@ -188,7 +189,7 @@ infer (Anno e a) = do
 infer inp@(App e1 e2) = do
   (arr, e1') <- infer e1
   c <- askCtx
-  case (expandType c arr) of
+  expandType c arr >>= \case
     Arr a1 a2 -> do
       e2' <- tcheck e2 a1
       return (a2, T.UApp e1' e2')
@@ -213,10 +214,12 @@ infer inp@(TApp e a) = do
   wf a
   (t, e') <- infer e
   ctx <- askCtx
-  case (expandType ctx t) of
+  expandType ctx t >>= \case
     DForall t' -> do
       ((x, Embed b), c) <- unbind t'
-      disjoint ctx (expandType ctx a) (expandType ctx b)
+      a' <- expandType ctx a
+      b' <- expandType ctx b
+      disjoint ctx a' b'
       return (subst x a c, e')
     _ ->
       throwError
@@ -239,7 +242,9 @@ infer (Merge e1 e2) = do
   (a, e1') <- infer e1
   (b, e2') <- infer e2
   ctx <- askCtx
-  disjoint ctx (expandType ctx a) (expandType ctx b)
+  a' <- expandType ctx a
+  b' <- expandType ctx b
+  disjoint ctx a' b'
   return (And a b, T.UPair e1' e2')
 
 {-
@@ -277,7 +282,8 @@ infer (Acc e "toString") = do
 infer (Acc e l) = do
   (t, e') <- infer e
   ctx <- askCtx
-  case select (expandType ctx t) l of
+  t' <- expandType ctx t
+  case select t' l of
     [(a, c)] -> return (a, T.UApp c e')
     _ ->
       throwError
@@ -408,7 +414,9 @@ tcheck (Merge e1 e2) (And a b) = do
   e1' <- tcheck e1 a
   e2' <- tcheck e2 b
   ctx <- askCtx
-  disjoint ctx (expandType ctx a) (expandType ctx b)
+  a' <- expandType ctx a
+  b' <- expandType ctx b
+  disjoint ctx a' b'
   return (T.UPair e1' e2')
 
 {-
@@ -444,7 +452,8 @@ tcheck (Acc e "toString") StringT = do
 tcheck (Acc e l) a = do
   (t, e') <- infer e
   ctx <- askCtx
-  let ls = select (expandType ctx t) l
+  t' <- expandType ctx t
+  let ls = select t' l
   case length ls of
     0 ->
       throwError
@@ -480,7 +489,9 @@ tcheck e b = do
   wf b
   (a, e') <- infer e
   ctx <- askCtx
-  let res = subtype (expandType ctx a) (expandType ctx b)
+  a' <- expandType ctx a
+  b' <- expandType ctx b
+  let res = subtype a' b'
   case res of
     Right c -> do
       return (T.UApp c e')
@@ -496,7 +507,7 @@ tcheck e b = do
 wf :: Type -> TcMonad ()
 wf t = do
   ctx <- askCtx
-  let t' = expandType ctx t
+  t' <- expandType ctx t
   maybe_kind <- kind ctx t'
   case maybe_kind of
     Nothing -> throwError $ squotes (pprint t) <+> text "is not well-kinded"
