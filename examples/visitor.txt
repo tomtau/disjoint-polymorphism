@@ -56,7 +56,7 @@ def add (e1 : Exp) (e2 : Exp) : Exp = {
   accept = /\E . \f -> f.add (e1.accept E f) (e2.accept E f)
 }
 def sub (e1 : ExtExp) (e2 : ExtExp) : ExtExp = {
-  accept = /\ E . \ f -> f.sub (e1.accept E f) (e2.accept E f)
+  accept = /\E . \f -> f.sub (e1.accept E f) (e2.accept E f)
 }
 
 -- END_DC_DEF

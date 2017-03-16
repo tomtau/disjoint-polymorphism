@@ -1,4 +1,4 @@
---> "7 + 2 = 9"
+--> "7 + 2 - 4 = 5"
 
 type IEval = {eval : Int}
 
@@ -27,18 +27,21 @@ def printAlg : SubExpAlg[IPrint] = {
 }
 
 
-def combine A [B * A] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A & B] = {
-  lit = \x -> f.lit x ,, g.lit x,
-  add = \x y -> f.add x y ,, g.add x y
-}
+-- We don't have to manually write the combination as follows, subtyping handles that
+--
+-- def combine A [B * A] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A & B] = {
+--   lit = \x -> f.lit x ,, g.lit x,
+--   add = \x y -> f.add x y ,, g.add x y
+-- }
 
--- Can we simply do the following, and let the system derive the definition for us?
--- def combine A [B * A] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A] & ExpAlg[B] = f ,, g
+def combine A [B * A] (f : SubExpAlg[A]) (g : SubExpAlg[B]) = f ,, g
 
 def e1 E (f : ExpAlg[E]) = f.add (f.lit 7) (f.lit 2)
 
-def evalPrintAlg = combine IEval IPrint subEvalAlg printAlg
+def e2 E (f : SubExpAlg[E]) = f.sub (e1 E f) (f.lit 4)
 
-val o = e1 (IEval & IPrint) evalPrintAlg
+def evalPrintAlg : SubExpAlg[IEval & IPrint] = combine IEval IPrint subEvalAlg printAlg
+
+val o = e2 (IEval & IPrint) evalPrintAlg
 
 main = o.print ++ " = " ++ o.eval.toString

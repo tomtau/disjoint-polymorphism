@@ -178,6 +178,9 @@ mkRecdsT [] = TopT
 mkRecdsT [(l, e)] = SRecT l e
 mkRecdsT ((l, e):r) = foldl (\t (l', e') -> And t (SRecT l' e')) (SRecT l e) r
 
+mkArr :: [Type] -> Type -> Type
+mkArr ts t = foldr Arr t ts
+
 elet :: String -> Type -> Expr -> Expr -> Expr
 elet s t e b = Let (bind (s2n s, embed t) (e, b))
 
