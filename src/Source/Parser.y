@@ -99,10 +99,14 @@ prog :: { Module }
   | expr                     { Module [] (DefDecl (TmBind "main" [] [] $1 Nothing)) }
 
 traitdecl :: { Trait }
-  : trait LOWER_IDENT ctyparam_list trait_params_list inherit ret_type '{' LOWER_IDENT ':' type '=>' sdecllist '}'
-  { TraitDef $2 ($8, $10) $5 $6 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) $12}
-  | trait LOWER_IDENT ctyparam_list trait_params_list inherit ret_type '{' LOWER_IDENT '=>' sdecllist '}'
-  { TraitDef $2 ($8, TopT) $5 $6 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) $10}
+  : trait LOWER_IDENT ctyparam_list trait_params_list inherit ret_type '{' '}'
+  { TraitDef $2 ("self", TopT) $5 $6 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) [] }
+  | trait LOWER_IDENT ctyparam_list trait_params_list inherit ret_type '{' traitbody '}'
+  { TraitDef $2 (fst $8, fst (snd $8)) $5 $6 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) (snd (snd $8)) }
+
+traitbody :: { (String, (Type, [SimpleDecl])) }
+  : LOWER_IDENT ':' type '=>' sdecllist     { ($1, ($3, $5)) }
+  | LOWER_IDENT '=>' sdecllist              { ($1, (TopT, $3)) }
 
 ret_type :: { Maybe Type }
   : {- empty -}     { Nothing }

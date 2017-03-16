@@ -33,9 +33,8 @@ trait printAlg : SubExpAlg[IPrint] { self =>
 
 def e1 E (f : ExpAlg[E]) = f.add (f.lit 7) (f.lit 2)
 
-trait combine A [B * A] (f : Trait[T, ExpAlg[A]], g : Trait[T, ExpAlg[B]]) : ExpAlg[A&B] { self =>
-  def lit x = (new[ExpAlg[A]] f).lit x ,, (new[ExpAlg[B]] g).lit x
-  def add x y = (new[ExpAlg[A]] f).add x y ,, (new[ExpAlg[B]] g).add x y
+-- Dynamic inheritance & multiple inheritance from same type
+trait combine A [B * A] (f : Trait[T, ExpAlg[A]], g : Trait[T, ExpAlg[B]]) inherits f & g {
 }
 
 val newAlg = combine IEval IPrint subEvalAlg printAlg
