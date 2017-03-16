@@ -1,54 +1,39 @@
 --> "(5 - (3 + 2)) = 0"
 
--- BEGIN_ALGEBRA_DEF
 type ExpAlg[E] = {
   lit : Int -> E,
   add : E -> E -> E
 }
--- END_ALGEBRA_DEF
 
--- BEGIN_CHURCH_DEF
 type Exp = { accept : forall E . ExpAlg[E] -> E }
--- END_CHURCH_DEF
 
--- BEGIN_EVAL_DEF
 type IEval = { eval : Int }
--- END_EVAL_DEF
 
--- BEGIN_EVAL_IMPL
 trait evalAlg : ExpAlg[IEval] { self =>
   def lit x   = { eval = x }
   def add x y = { eval = x.eval + y.eval }
 }
--- END_EVAL_IMPL
 
 
--- BEGIN_SUB_DEF
 type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E }
 trait subEvalAlg inherits evalAlg : SubExpAlg[IEval]  { self =>
   def sub x y = { eval = x.eval - y.eval }
 }
 type ExtExp = { accept: forall E. SubExpAlg[E] -> E }
--- END_SUB_DEF
 
 
 
--- BEGIN_PRINT_DEF
 type IPrint = { print : String }
--- END_PRINT_DEF
 
 
--- BEGIN_PRINT_IMPL
 trait printAlg : SubExpAlg[IPrint] { self =>
   def lit x   = { print = x.toString }
   def add x y = { print = "(" ++ x.print ++ " + " ++ y.print ++ ")" }
   def sub x y = { print = "(" ++ x.print ++ " - " ++ y.print ++ ")" }
 }
--- END_PRINT_IMPL
 
 
 
--- BEGIN_DC_DEF
 def lit (n : Int) : Exp = {
   accept = /\E . \f -> f.lit n
 }
@@ -59,13 +44,33 @@ def sub (e1 : ExtExp) (e2 : ExtExp) : ExtExp = {
   accept = /\E . \f -> f.sub (e1.accept E f) (e2.accept E f)
 }
 
--- END_DC_DEF
+
+-- BEGIN_COMBINE1_DEF
+trait combine A [B * A] (f : Trait[T, SubExpAlg[A]] , g : Trait[T, SubExpAlg[B]])
+  : SubExpAlg[A & B] { self =>
+  def lit x   = (new[SubExpAlg[A]] f).lit x   ,, (new[SubExpAlg[B]] g).lit x
+  def add x y = (new[SubExpAlg[A]] f).add x y ,, (new[SubExpAlg[B]] g).add x y
+  def sub x y = (new[SubExpAlg[A]] f).sub x y ,, (new[SubExpAlg[B]] g).sub x y
+}
+-- END_COMBINE1_DEF
 
 
--- BEGIN_VISITOR_EG
+
+-- BEGIN_COMBINE_DEF
+trait combine1 A [B * A] (f : Trait[T, SubExpAlg[A]], g : Trait[T, SubExpAlg[B]]) inherits f & g { }
+-- END_COMBINE_DEF
+
+
+
 def e = sub (lit 5) (add (lit 3) (lit 2))
-def o1 = e.accept IPrint (new[SubExpAlg[IPrint]] printAlg)
-def o2 = e.accept IEval (new[SubExpAlg[IEval]] subEvalAlg)
-main = o1.print ++ " = " ++ o2.toString
+
+def newAlg1 = combine1 IEval IPrint subEvalAlg printAlg
+def oo = e.accept (IEval & IPrint) (new[SubExpAlg[IEval & IPrint]] newAlg1)
+
+
+-- BEGIN_COMBINE1_TEST
+def newAlg = combine IEval IPrint subEvalAlg printAlg
+def o = e.accept (IEval & IPrint) (new[SubExpAlg[IEval & IPrint]] newAlg)
+main = o.print ++ " = " ++ o.eval.toString
 -- Output: "(5 - (3 + 2)) = 0"
--- END_VISITOR_EG
+-- END_COMBINE1_TEST

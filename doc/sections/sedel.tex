@@ -140,7 +140,28 @@ and the same type (\lstinline$String$).
 \lstinputlisting[linerange=6-13]{../examples/log.txt}% APPLY:linerange=CONFLICT_WRONG
 
 
+\subsection{Dynamic Instantiation}
+
+One difference with traditional traits or classes is that traits in \name are
+quite dynamic: we are able to compose traits \textit{dynamically} and then
+instantiate them later. This is impossible in traditional OO language, such as
+Java, since classes being instantiated must be known statically. In \name, as we
+will explain in Section~\ref{sec:desugar}, traits are just terms: they are
+first-class values and can be passed around or returned from a function. For
+instance in the point example, we can define a function that takes a trait
+\lstinline$norm$, compose it with \lstinline{point} and then instantiate it.
+\lstinputlisting[linerange=25-25]{../examples/point.txt}% APPLY:linerange=POINT_FUNC
+
+Here \lstinline{Trait} is a built-in keyword, and \lstinline$Trait[Point, Norm]$
+is the type of traits that conform to the \lstinline$Norm$ type with dependency
+on \lstinline$Point$. We can then create a point object with the Euclidean norm
+as simply as \lstinline$makePoint(euclideanNorm())$.
+
+
+
+
 \subsection{Extensibility and Subtyping}
+\label{sec:extensibility}
 
 Various solutions to the Expression Problem~\cite{wadler1998expression} in the
 literature~\cite{finally-tagless,oliveira09modular,DelawareOS13,oliveira2012extensibility,
@@ -222,7 +243,7 @@ The implementation is spelled out straightforwardly:
 \paragraph{Usage.} The last piece is to define convenient data constructors:
 \lstinputlisting[linerange=52-61]{../examples/visitor.txt}% APPLY:linerange=DC_DEF
 So now we can test the shiny new system:
-\lstinputlisting[linerange=66-69]{../examples/visitor.txt}% APPLY:linerange=VISITOR_EG
+\lstinputlisting[linerange=66-70]{../examples/visitor.txt}% APPLY:linerange=VISITOR_EG
 Notice that we are able to pass \lstinline{lit 5}, which is of type
 \lstinline{Exp}, to \lstinline{sub}, which expects a value of type
 \lstinline{ExtExp}. This works precisely because \lstinline{Exp} is a
@@ -230,9 +251,65 @@ Notice that we are able to pass \lstinline{lit 5}, which is of type
 
 
 
-\subsection{Dynamic Instantiation of Traits}
+\subsection{How much dynamic is too much}
 
 
 \jeremy{ A composition operator combining two algebras at run-time,
-  demonstrating the dynamic nature of trait instantiation, also show we can do
+  demonstrating the dynamic nature of trait inheritance, also show we can do
   multiple inheritance of things with the same type}
+
+The solution to the Expression Problem presented in
+Section~\ref{sec:extensibility} has one wrinkle in its usage. To be able to call
+different operations from the same expression \lstinline{e}, we need to make two
+copies \lstinline{o1} and \lstinline{o2}: one is used for printing, while the
+other is used for evaluation. An idea approach would be allowing a single object
+to be created that supports both the printing and evaluation features.
+Unfortunately, dynamic composition of algebras is non-trivial.
+\citet{oliveira2012extensibility} addressed this problem by proposing
+\textit{object algebra combinators} that combine multiple algebras into one.
+However, as they noted, such combinators written in Java are difficult to use in
+practice. A version of this combinator has been encoded in Scala using
+intersection types and an encoding of the merge
+operator~\cite{oliveira2013feature, rendel14attributes}. Again, the Scala
+encoding of the merge operator is quite complex as it relies on low-level
+type-unsafe programming features such as dynamic proxies, reflection or other
+meta-programming techniques. In \name there is no need for such complex
+encoding, as the merge operator is natively supported.
+
+The combinator is defined by the \lstinline{combine} trait, which takes two
+object algebras to create a combined algebra. It does so by appropriately
+delegating behaviours in each component algebra to the combined algebra.
+
+\lstinputlisting[linerange=49-54]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_DEF
+
+Note how \lstinline{combine} requires all the interesting features of \name.
+Parametric polymorphism is need because \lstinline{combine} must compose algebras
+with arbitrary type parameters. Intersection types are needed because the
+resulting algebra will have an intersection type. The merge operator is needed
+to compose the input algebras dynamically. Finally, a disjointness constraint is
+needed to ensure that two input algebras build values of disjoint types
+(otherwise ambiguity could arise).
+
+With \lstinline{combine} at hand, we can finally have a object \lstinline{o}
+print and evaluate at the same time:
+
+\lstinputlisting[linerange=72-75]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_TEST
+
+The acute reader may have smelled some boilerplate code in the definition of
+\lstinline{combine}. After all, \lstinline{combine} just invokes the
+corresponding method on the arguments, which is solely driven by the types of
+the two input algebras and the resulting algebra. It turns out that the type
+system behind \name is powerful enough to derive such definition for us:
+\lstinline{combine} is no more than just the merge of two algebras!
+
+\lstinputlisting[linerange=60-60]{../examples/visitor3.txt}% APPLY:linerange=COMBINE_DEF
+
+That's it. No more boilerplate necessary. Two points worth noting: 1) \name
+supports \textit{dynamic inheritance}. Notice how we let \lstinline{combine1}
+``inherits'' \lstinline{f & g}, for which the implementation is unknown
+statically. 2) \name supports multiple inheritance of traits with the same type:
+both \lstinline{f} and \lstinline{g} are traits of the subtraction algebra.
+Mainstream OO languages cannot even imagine being such dynamic and flexible.
+\name hits a sweet spot in the design space of being how much dynamic, where we
+have as much flexibility while not sacrificing the type-safety guarantee we
+always love from a static type system.
