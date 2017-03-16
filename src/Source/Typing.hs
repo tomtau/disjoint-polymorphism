@@ -326,7 +326,10 @@ infer inp@(If e1 e2 e3) = do
   e1' <- tcheck e1 BoolT
   (t2, e2') <- infer e2
   (t3, e3') <- infer e3
-  if aeq t2 t3
+  ctx <- askCtx
+  t2' <- expandType ctx t2
+  t3' <- expandType ctx t3
+  if aeq t2' t3'
     then return (t2, T.UIf e1' e2' e3')
     else throwError $
          (hang 2 $
