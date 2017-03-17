@@ -3,14 +3,14 @@
 def extend S [U*S] (first : S) (second : U) : S&U = first ,, second
 
 -- BEGIN_CONFLICT_WRONG
-type Dog = {name : String, male : String}
-trait dog(n : String, s: String) { self =>
+type Employee = {name : String, male : String}
+trait employee(n : String, s: String) { self =>
   def name = n
   def male = s
 }
 
 -- The following doesn't type check
--- val fool = new[Dog & Person] dog("Pluto", "yes") & person("jim", true)
+-- val fool = new[Employee & Person] employee("Tom", "yes") & person("Jim", true)
 -- END_CONFLICT_WRONG
 
 -- BEGIN_CONFLICT_DEF

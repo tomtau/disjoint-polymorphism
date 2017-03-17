@@ -4,9 +4,9 @@
 
 This section recaps the terminologies~\cite{oliveira2016disjoint,
   alpuimdisjoint} that are used throughout the paper in case the readers are not
-familiar with the type system (i.e., \bname) behind \name. In particular, we
-show that \name supports (disjoint) intersection types, the merge operator,
-parametric polymorphism and extensible records.
+familiar with the type system (\bname with some extensions) behind \name. In
+particular, we show that \name supports (disjoint) intersection types, the merge
+operator, parametric polymorphism and extensible records.
 
 \subsection{(Disjoint) Intersection Types and the Merge Operator}
 \label{sec:intersection}
@@ -203,11 +203,10 @@ as the types of the overlapping fields are disjoint. For example,
 \end{lstlisting}
 is allowed in \name. An interesting question arises when we try to select a
 duplicate label, say \lstinline{open}. What should be the result? Should it be
-192 or \lstinline{true}? Either choice is unsatisfying, as with the coherence
+192 or \lstinline{true}? Neither choice is satisfying, as with the coherence
 problem for merges. Instead \name rejects such expression, and asks for more
 type information from the context. Thus the following is accepted because there
 is only one \lstinline{open} associated with \lstinline{Int}.
 \begin{lstlisting}
   {open = 192, high = 195, open = true}.open + 3
-  -- Output: 195
 \end{lstlisting}

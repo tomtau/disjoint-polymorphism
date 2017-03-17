@@ -1,8 +1,7 @@
 \section{A Tour of \name}
 
 This section showcases the novel feature of \name, notably its native support
-for dynamically composable traits. This is in contrast to the standard model of
-class-based OOP, where subtyping is coupled with inheritance. We show that \name
+for dynamically composable traits. We demonstrate by examples that \name
 overcomes all those limitations mentioned in Section~\ref{sec:critique}. All
 examples shown in this section are runnable in our prototype implementation.
 
@@ -95,7 +94,7 @@ and \lstinline$manhattanNorm$ are instantiated and composed with some other
 traits, they must be composed with an implementation of \lstinline$Point$.
 \lstinputlisting[linerange=29-31]{../examples/point.txt}% APPLY:linerange=NORM_TEST
 
-\subsubsection{Trait and Inheritance}
+\subsubsection{Traits and Inheritance}
 
 Traits in \name are extensible. A trait can be extended by inheriting all
 members of other traits, and defining additional members. This is, in some
@@ -132,9 +131,9 @@ Here two traits \lstinline{person} and \lstinline{consoleLogger} are composed in
 a variable \lstinline{jim}. It is type-safe to access both methods from
 \lstinline{Person} and \lstinline{Loggable} in the object \lstinline{jim}.
 
-If we have another trait \lstinline{dog}, and we mistakenly compose this with
-\lstinline$person$, then the program is not accepted, due to both
-\lstinline{Person} and \lstinline{Dog} sharing the same name (\lstinline{name})
+If we have another trait \lstinline{employee}, and we mistakenly compose this
+with \lstinline$person$, then the program is not accepted, due to both
+\lstinline{Person} and \lstinline{Employee} sharing the same name (\lstinline{name})
 and the same type (\lstinline$String$).
 
 \lstinputlisting[linerange=6-13]{../examples/log.txt}% APPLY:linerange=CONFLICT_WRONG
@@ -165,7 +164,7 @@ as simply as \lstinline$makePoint(euclideanNorm())$.
 
 Various solutions to the Expression Problem~\cite{wadler1998expression} in the
 literature~\cite{finally-tagless,oliveira09modular,DelawareOS13,oliveira2012extensibility,
-  swierstra:la-carte} are closed related to type-theoretic encoding of
+  swierstra:la-carte} are closely related to type-theoretic encodings of
 datatypes. Indeed, variants of the same idea keep appearing in different
 programming languages, because the encoding of the idea needs to exploit the
 particular features of the programming language (or theorem prover).
@@ -213,9 +212,9 @@ variant, such as subtraction is added. To do so, we need to extend both
 Firstly, \lstinline{SubExpAlg[E]} defines an extended algebra that contains the
 variants of the original plus the new subtraction variant. Intersection types
 are used to model \textit{type inheritance}. Secondly, a new type of expressions
-with subtraction (\lstinline{ExtExp}) is needed. It is important to note that
-the \lstinline{accept} method now takes the new algebra \lstinline{SubExpAlg[E]} as
-argument.
+(\lstinline{ExtExp}) with subtraction is needed. It is important to note that
+the \lstinline{accept} method now takes the new algebra \lstinline{SubExpAlg[E]}
+as argument.
 
 \paragraph{Inheritance is not subtyping.} In the presence of subtyping, there
 are interesting subtyping relations between datatypes and their
@@ -263,7 +262,7 @@ The solution to the Expression Problem presented in
 Section~\ref{sec:extensibility} has one wrinkle in its usage. To be able to call
 different operations from the same expression \lstinline{e}, we need to make two
 copies \lstinline{o1} and \lstinline{o2}: one is used for printing, while the
-other is used for evaluation. An idea approach would be allowing a single object
+other is used for evaluation. An ideal approach would be allowing a single object
 to be created that supports both the printing and evaluation features.
 Unfortunately, dynamic composition of algebras is non-trivial.
 \citet{oliveira2012extensibility} addressed this problem by proposing
@@ -278,8 +277,8 @@ meta-programming techniques. In \name there is no need for such complex
 encoding, as the merge operator is natively supported.
 
 The combinator is defined by the \lstinline{combine} trait, which takes two
-object algebras to create a combined algebra. It does so by appropriately
-delegating behaviours in each component algebra to the combined algebra.
+algebras to create a combined algebra. It does so by appropriately delegating
+behaviours in each component algebra to the combined algebra.
 
 \lstinputlisting[linerange=49-54]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_DEF
 

@@ -229,6 +229,7 @@ atype :: { Type }
   | record_type                   { $1 }
   | '(' type ')'                  { $2 }
   | Trait '[' type ',' type ']'   { Arr $3 $5 }
+  | Trait '[' type ']'            { Arr TopT $3 }
 
 -- record types
 record_type :: { Type }
