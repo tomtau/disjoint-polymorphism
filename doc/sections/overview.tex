@@ -28,7 +28,7 @@ us that the story is not quite so simple.  \ldots
 A consequence of extensions always being subtypes is that it is not
 possible to retroactivelly add super types. 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=java]
 class B {}   // original class
 
 class A super B {} // an extension, which becomes a supertype of B
@@ -57,15 +57,23 @@ interface ExtExp extends Exp { //WRONG: method is overloaded, not overriden!
 \label{fig:JVis}
 \end{figure}
 
+\jeremy{addressed in \ref{sec:extensibility} }
 
 \subsection{No Separation Between Inheritance and Subtyping}
 
-Example: visitors. 
+Example: visitors.
+
+\jeremy{addressed in \ref{sec:extensibility} }
+
 
 \subsection{No Dynamic Inheritance}
 
 Example: find good example? Design patterns? Dynamic Proxies?
 
+\jeremy{addressed in \ref{sec:dynamic} }
+
 \subsection{No Multiple Inheritance of Same Class}
 
 Example: composing Object Algebras (can relate to visitors).
+
+\jeremy{addressed in \ref{sec:dynamic} }
