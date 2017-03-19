@@ -57,7 +57,7 @@ trait combine A [B * A] (f : Trait[SubExpAlg[A]] , g : Trait[SubExpAlg[B]])
 
 
 -- BEGIN_COMBINE_DEF
-trait combine1 A [B * A] (f : Trait[SubExpAlg[A]], g : Trait[SubExpAlg[B]]) inherits f & g { }
+trait combine1 A [B * A] (f : Trait[SubExpAlg[A]], g : Trait[SubExpAlg[B]]) inherits f & g
 -- END_COMBINE_DEF
 
 
