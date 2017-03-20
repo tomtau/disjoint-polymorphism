@@ -164,7 +164,12 @@ traitConstrs :: { [Expr] }
 
 
 traitConstr :: { Expr }
-  : LOWER_IDENT args                  { App (foldl App (evar $1) $2) (evar "self") }
+  : LOWER_IDENT type_list_or_empty  args         { App (foldl App (foldl TApp (evar $1) $2) $3) (evar "self") }
+
+
+type_list_or_empty :: { [Type] }
+  : {- empty -}              { [] }
+  | '[' comma_types1 ']'     { $2 }
 
 
 -- Parse "(x, y, z)" or "() or nothing at all
