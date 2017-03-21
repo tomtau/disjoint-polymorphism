@@ -177,9 +177,10 @@ expandType d (OpAbs b) = do
   return $ OpAbs (bind x t')
 expandType d (OpApp t1 t2) =
   expandType d t1 >>= \case
-    OpAbs b -> do t2' <- expandType d t2
-                  (x, t) <- unbind b
-                  return (subst x t2' t)
+    OpAbs b -> do
+      t2' <- expandType d t2
+      (x, t) <- unbind b
+      return (subst x t2' t)
     _ -> throwError $ text "Cannot expand type:" <+> pprint t1
 
 expandType _ IntT = return IntT

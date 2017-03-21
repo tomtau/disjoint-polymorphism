@@ -14,7 +14,7 @@ import Unbound.LocallyNameless
 -- | Modules
 data Module = Module
   { moduleEntries :: [Decl]
-  , mainExpr :: SimpleDecl
+  , mainExpr      :: SimpleDecl
   } deriving (Show)
 
 -- | Declarations are the components of modules
@@ -31,32 +31,32 @@ data SimpleDecl
 type BindName = String
 
 data Trait = TraitDef
-  { traitName :: BindName
+  { traitName     :: BindName
     -- ^ Trait name
-  , selfType :: (BindName, Type)
+  , selfType      :: (BindName, Type)
     -- ^ Self type
-  , traitSuper :: [Expr]
-  , retType :: Maybe Type
+  , traitSuper    :: [Expr]
+  , retType       :: Maybe Type
   , traitTyParams :: [(TyName, Type)]
-  , traitParams :: [(TmName, Type)]
-  , traitBody :: [SimpleDecl]
+  , traitParams   :: [(TmName, Type)]
+  , traitBody     :: [SimpleDecl]
   } deriving (Show)
 
 
--- f [A1,...,An](x1: t1, ..., xn: tn): t = e
-data TmBind  = TmBind
-  { bindName     :: BindName            -- f
-  , bindTyParams :: [(TyName, Type)]  -- A1, ..., An
-  , bindParams   :: [(TmName, Maybe Type)]  -- x1: t1, ..., xn: tn
-  , bindRhs      :: Expr              -- e
-  , bindRhsTyAscription :: Maybe Type -- t
+-- f A1,...,An (x1: t1) ... (xn: tn): t = e
+data TmBind = TmBind
+  { bindName            :: BindName                  -- f
+  , bindTyParams        :: [(TyName, Type)]          -- A1, ..., An
+  , bindParams          :: [(TmName, Maybe Type)]    -- x1: t1, ..., xn: tn
+  , bindRhs             :: Expr                      -- e
+  , bindRhsTyAscription :: Maybe Type                -- t
   } deriving (Show)
 
 -- type T[A1, ..., An] = t
 data TypeBind = TypeBind
   { typeBindName   :: BindName   -- T
-  , typeBindParams :: [TyName] -- A1, ..., An
-  , typeBindRhs    :: Type     -- t
+  , typeBindParams :: [TyName]   -- A1, ..., An
+  , typeBindRhs    :: Type       -- t
   } deriving (Show)
 
 -- Unbound library
@@ -204,11 +204,8 @@ and
 
 -}
 
-teleToTmBind :: [(String, Type)]
-             -> [(String, Maybe Type)]
-             -> Type
-             -> Expr
-             -> (Type, Expr)
+teleToTmBind ::
+     [(String, Type)] -> [(String, Maybe Type)] -> Type -> Expr -> (Type, Expr)
 -- Ideally for defrec, users should annotate all arguments, but here we assume T
 -- if not annotated
 teleToTmBind tys tms res e =

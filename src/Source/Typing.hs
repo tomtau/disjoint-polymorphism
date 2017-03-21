@@ -42,13 +42,14 @@ tcModule m = do
           declsTarget
   return (mainType, snd mainTarget, initEnv)
   where
-    tcM
-      :: SimpleDecl
+    tcM ::
+         SimpleDecl
       -> TcMonad [(Type, (T.UName, T.UExpr))]
       -> TcMonad [(Type, (T.UName, T.UExpr))]
     tcM (DefDecl decl) ms = do
       (dbind, transD) <- tcTmDecl decl
-      fmap (((snd dbind, transD) :)) $ localCtx ((uncurry extendVarCtx) dbind) ms
+      fmap (((snd dbind, transD) :)) $
+        localCtx ((uncurry extendVarCtx) dbind) ms
     tcM (TypeDecl tdecl) ms = do
       (n, tdef, k) <- tcTyDecl tdecl
       localCtx (addTypeSynonym n tdef k) ms
@@ -197,8 +198,7 @@ infer inp@(App e1 e2) = do
       throwError
         (hang 2 $
          text "type of application mismatch in" <+>
-         squotes (pprint inp) PP.<> colon PP.<$>
-         text "function" <+>
+         squotes (pprint inp) PP.<> colon PP.<$> text "function" <+>
          squotes (pprint e1) <+> text "has type" <+> squotes (pprint arr))
 
 {-
@@ -225,8 +225,7 @@ infer inp@(TApp e a) = do
       throwError
         (hang 2 $
          text "type of application mismatch in" <+>
-         squotes (pprint inp) PP.<> colon PP.<$>
-         text "type-level function" <+>
+         squotes (pprint inp) PP.<> colon PP.<$> text "type-level function" <+>
          squotes (pprint e) <+> text "has type" <+> squotes (pprint t))
 
 {-
@@ -289,8 +288,9 @@ infer (Acc e l) = do
       throwError
         (hang 2 $
          text "expect a record type with label" <+>
-         squotes (text l) <+> text "for" <+> squotes (pprint e) PP.<$>
-         text "but got" <+> squotes (pprint t))
+         squotes (text l) <+>
+         text "for" <+>
+         squotes (pprint e) PP.<$> text "but got" <+> squotes (pprint t))
 
 {-
 
@@ -333,9 +333,11 @@ infer inp@(If e1 e2 e3) = do
     then return (t2, T.UIf e1' e2' e3')
     else throwError $
          (hang 2 $
-          text "if branches type mismatch in" <+> squotes (pprint inp) PP.<> colon PP.<$>
-          squotes (pprint e2) <+> text "has type" <+> squotes (pprint t2) PP.<$>
-          squotes (pprint e3) <+> text "has type" <+> squotes (pprint t3))
+          text "if branches type mismatch in" <+>
+          squotes (pprint inp) PP.<> colon PP.<$> squotes (pprint e2) <+>
+          text "has type" <+>
+          squotes (pprint t2) PP.<$> squotes (pprint e3) <+>
+          text "has type" <+> squotes (pprint t3))
 
 {-
 
@@ -462,8 +464,9 @@ tcheck (Acc e l) a = do
       throwError
         (hang 2 $
          text "expect a record type with label" <+>
-         squotes (text l) <+> text "for" <+> squotes (pprint e) PP.<$>
-         text "but got" <+> squotes (pprint t))
+         squotes (text l) <+>
+         text "for" <+>
+         squotes (pprint e) PP.<$> text "but got" <+> squotes (pprint t))
     -- Multiple label of 'l' are found, find the only one whose type is a subtype of 'a'
     _ ->
       let (bs, cs) = unzip ls
@@ -474,8 +477,9 @@ tcheck (Acc e l) a = do
              throwError
                (hang 2 $
                 text "Cannot find a subtype of" <+>
-                squotes (pprint a) <+> text "for label" <+> text l PP.<$>
-                text "in" <+> squotes (pprint e))
+                squotes (pprint a) <+>
+                text "for label" <+>
+                text l PP.<$> text "in" <+> squotes (pprint e))
 
 
 {-
@@ -501,9 +505,10 @@ tcheck e b = do
     Left err ->
       throwError
         (hang 2 $
-         text "subtyping failed" PP.<> colon PP.<$>
-         squotes (pprint e) <+> text "has type" <+> squotes (pprint a) PP.<$>
-         text "which is not a subtype of" <+> squotes (pprint b))
+         text "subtyping failed" PP.<> colon PP.<$> squotes (pprint e) <+>
+         text "has type" <+>
+         squotes (pprint a) PP.<$> text "which is not a subtype of" <+>
+         squotes (pprint b))
 
 
 -- | Check that a (expanded) type is well-formed: disjoint and has kind *.
@@ -519,8 +524,8 @@ wf t = do
       throwError
         (hang 2 $
          text "expect type" <+>
-         squotes (pprint t) <+> text "has kind star" PP.<$>
-         text "but got" <+> squotes (pprint k))
+         squotes (pprint t) <+>
+         text "has kind star" PP.<$> text "but got" <+> squotes (pprint k))
 
 
 wf' :: Type -> TcMonad ()

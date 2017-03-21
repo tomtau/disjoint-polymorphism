@@ -125,7 +125,7 @@ programmers, otherwise the program is rejected by the type system. The following
 example, adapted from~\citet{alpuimdisjoint}, shows how conflicting methods in
 two traits are detected.
 
-\lstinputlisting[linerange=17-27]{../examples/log.txt}% APPLY:linerange=CONFLICT_DEF
+\lstinputlisting[linerange=6-16]{../examples/log.txt}% APPLY:linerange=CONFLICT_DEF
 
 Here two traits \lstinline{person} and \lstinline{consoleLogger} are composed in
 a variable \lstinline{jim}. It is type-safe to access both methods from
@@ -136,7 +136,9 @@ with \lstinline$person$, then the program is not accepted, due to both
 \lstinline{Person} and \lstinline{Employee} sharing the same name (\lstinline{name})
 and the same type (\lstinline$String$).
 
-\lstinputlisting[linerange=6-13]{../examples/log.txt}% APPLY:linerange=CONFLICT_WRONG
+\lstinputlisting[linerange=21-27]{../examples/log.txt}% APPLY:linerange=CONFLICT_WRONG
+
+\jeremy{We lack proper support for resolving conflicts}
 
 
 \subsection{Dynamic Instantiation}
