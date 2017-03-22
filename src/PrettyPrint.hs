@@ -69,9 +69,13 @@ instance Pretty S.Type where
     return (braces $ (text l) <+> colon <+> t')
   ppr S.TopT = return $ text "T"
   ppr (S.OpAbs b) =
-    lunbind b $ \(x, t) -> do
+    lunbind b $ \((x, k), t) -> do
       t' <- ppr t
-      return $ parens (text "Lam" <+> text (name2String x) <+> dot <+> t')
+      return $
+        parens
+          (text "Lam" <>
+           parens (text (name2String x) <> text ":" <> text (show k)) <+>
+           dot <+> t')
   ppr (S.OpApp a b) = do
     a' <- ppr a
     b' <- ppr b

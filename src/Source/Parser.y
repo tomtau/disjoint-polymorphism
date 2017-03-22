@@ -253,21 +253,26 @@ record_type_field :: { (Label, Type) }
         Type parameters
 -------------------------------------------------------------------------------}
 
-typaram :: { TyName }
-  : UPPER_IDENT                    { s2n $1 }
+typaram :: { (TyName, Kind) }
+  : UPPER_IDENT                                 { (s2n $1, Star) }
+  | UPPER_IDENT '[' underscores ']'             { (s2n $1, $3) }
 
-typarams :: { [TyName] }
+underscores :: { Kind }
+  : '_'                          { KArrow Star Star }
+  | '_' ',' underscores          { KArrow Star $3 }
+
+typarams :: { [(TyName, Kind)] }
   : {- empty -}                    { []    }
   | typaram typarams               { $1:$2 }
 
-typarams1 :: { [TyName] }
-  : typaram typarams               { $1:$2 }
+-- typarams1 :: { [TyName] }
+--   : typaram typarams               { $1:$2 }
 
-typaram_list :: { [TyName] }
+typaram_list :: { [(TyName, Kind)] }
   : '[' comma_typarams1 ']'        { $2 }
   | {- empty -}                    { [] }
 
-comma_typarams1 :: { [TyName] }
+comma_typarams1 :: { [(TyName, Kind)] }
   : typaram                        { [$1]  }
   | typaram ',' comma_typarams1    { $1:$3 }
 

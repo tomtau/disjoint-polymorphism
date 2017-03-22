@@ -18,6 +18,7 @@ data ClosureExp = CExp UExpr Env deriving Show
 
 type Env = M.Map UName ClosureExp
 
+emptyEnv :: Env
 emptyEnv = M.empty
 
 extendCtx :: (UName, UExpr, Env) -> Env -> Env

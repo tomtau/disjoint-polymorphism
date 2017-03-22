@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, PatternGuards, NoImplicitPrelude, LambdaCase #-}
+{-# LANGUAGE FlexibleContexts, PatternGuards, NoImplicitPrelude, LambdaCase, OverloadedStrings #-}
 
 module Source.Typing
   ( tcModule
@@ -67,7 +67,8 @@ tcTmDecl decl =
 
 tcTyDecl :: TypeBind -> TcMonad (TyName, Type, Kind)
 tcTyDecl (TypeBind n params rhs) = do
-  return (s2n n, pullRight params rhs, Star)
+  let typDef = pullRight params rhs
+  return (s2n n, typDef, Star)
 
 -- | Kinding.
 kind :: Fresh m => Ctx -> Type -> m (Maybe Kind)
@@ -84,16 +85,16 @@ kind d (DForall b) = do
 kind d (SRecT _ t) = justStarIffAllHaveKindStar d [t]
 
 {-
-    Δ,x::* ⊢ t :: k
-    -------------------- (K-Abs) Restriction compared to F_omega: x can only have kind *
-    Δ ⊢ λx. t :: * => k
+    Δ,x::k1 ⊢ t :: k
+    -------------------- (K-Abs)
+    Δ ⊢ λx:k1. t :: k1 -> k
 -}
 kind d (OpAbs b) = do
-  (x, t) <- unbind b
-  maybe_k <- kind (extendTVarCtx x Star d) t
+  ((x, Embed k1), t) <- unbind b
+  maybe_k <- kind (extendTVarCtx x k1 d) t
   case maybe_k of
     Nothing -> return Nothing
-    Just k  -> return $ Just (KArrow Star k)
+    Just k  -> return $ Just (KArrow k1 k)
 
 {-
     Δ ⊢ t1 :: k11 => k12  Δ ⊢ t2 :: k11
@@ -127,8 +128,8 @@ hasKindStar d t = do
 -- | "Pull" the type params at the LHS of the equal sign to the right.
 -- A (high-level) example:
 --   A B t  ->  \A. \B. t
-pullRight :: [TyName] -> Type -> Type
-pullRight params t = foldr (\n t' -> OpAbs (bind n t')) t params
+pullRight :: [(TyName, Kind)] -> Type -> Type
+pullRight params t = foldr (\(n, k) t' -> OpAbs (bind (n, embed k) t')) t params
 
 
 

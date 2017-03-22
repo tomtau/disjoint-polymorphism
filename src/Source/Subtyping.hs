@@ -120,7 +120,7 @@ subtype st tt = runExcept $ runFreshMT (subtypeS st tt)
 
     B1 <: B2 ~> E1    A2 <: A1 ~> E2
     ------------------------------------------------
-    ∀(a*A1).B1 <: ∀(a*A2).B2   ~> λf. Λa . E1 (f a)
+    ∀(a*A1).B1 <: ∀(a*A2).B2   ~> E1
 
     -}
     subtypeS (DForall t1) (DForall t2) =
@@ -134,9 +134,9 @@ subtype st tt = runExcept $ runFreshMT (subtypeS st tt)
 
     Intersections distribute over records
 
-       A <: {l : A1 -> .. C -> .. An -> A'} & {l : B1 -> ... -> C -> Bn -> B'} ~> f
+       A <: {l : forall D1 ... Dm . A1 -> .. C -> .. An -> A'} & {l : forall D1 ... Dm . B1 -> ... -> C -> Bn -> B'} ~> f
       ----------------------------------------------------------------
-        A <: {l : A1 & B1 -> ... -> C -> ... -> An & Bn -> A' & B'} ~>
+        A <: {l : forall D1 ... Dm . A1 & B1 -> ... -> C -> ... -> An & Bn -> A' & B'} ~>
 
         \s . \x1 ... y .. xn . ((proj1 (f s)) (proj1 x1) ... y ... (proj1 xn), (proj2 (f s)) (proj2 x1) ... y ... (proj2 xn))
 
@@ -144,7 +144,7 @@ subtype st tt = runExcept $ runFreshMT (subtypeS st tt)
      The view pattern below ensures that we match exactly the form: a -> ... -> a' & b'
 
     -}
-    subtypeS a (SRecT l (lastArr -> (t@(_:_), (And a' b')))) = do
+    subtypeS a (SRecT l (lastForall -> (tyBinds, lastArr -> (t@(_:_), (And a' b'))))) = do
       f <- subtypeS a (And (SRecT l left) (SRecT l right))
       -- generate n fresh names [x1, ..., xn]
       let x = (s2n "x") :: T.UName
@@ -168,8 +168,8 @@ subtype st tt = runExcept $ runFreshMT (subtypeS st tt)
         (as, bs) = splitMerge2Arrow t
         (atyps, aprojs) = unzip as
         (btyps, bprojs) = unzip bs
-        left = mkArr atyps a'
-        right = mkArr btyps b'
+        left = mkForall (mkArr a' atyps) tyBinds
+        right = mkForall (mkArr b' btyps) tyBinds
         n = length as
     subtypeS a b =
       throwError $
@@ -193,6 +193,14 @@ lastArr :: Type -> ([Type], Type)
 lastArr (Arr a b) = first (a :) (lastArr b)
 lastArr a = ([], a)
 
+lastForall :: Type -> ([(TyName, Embed Type)], Type)
+lastForall = runFreshM . go
+  where
+    go :: Fresh m => Type -> m ([(TyName, Embed Type)], Type)
+    go (DForall b) = do
+      (x, t) <- unbind b
+      fmap (first (x :)) $ go t
+    go a = return ([], a)
 
 
 {-
