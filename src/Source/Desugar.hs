@@ -116,7 +116,7 @@ expandType d typ@(OpApp t1 t2) =
       expandType d (subst x t2' t)
     _ -> return typ
 
-expandType _ IntT = return IntT
+expandType _ NumT = return NumT
 expandType _ BoolT = return BoolT
 expandType _ StringT = return StringT
 expandType d (Arr t1 t2) = do

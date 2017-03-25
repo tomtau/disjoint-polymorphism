@@ -75,7 +75,7 @@ data Expr = Anno Expr Type
           | DRec Label Expr
           | Acc Expr Label
           | Merge Expr Expr
-          | IntV Int
+          | LitV Double
           | BoolV Bool
           | StrV String
           | PrimOp Operation Expr Expr
@@ -86,7 +86,7 @@ data Expr = Anno Expr Type
   deriving Show
 
 type Label = String
-data Type = IntT
+data Type = NumT
           | BoolT
           | StringT
           | Arr Type Type

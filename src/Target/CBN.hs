@@ -24,7 +24,7 @@ emptyEnv = M.empty
 extendCtx :: (UName, UExpr, Env) -> Env -> Env
 extendCtx (n, e, env) env' = M.insert n (CExp e env) env'
 
-data Value = VInt Int
+data Value = VLit Double
            | VBool Bool
            | VStr String
            | VPair ClosureExp ClosureExp
@@ -32,7 +32,7 @@ data Value = VInt Int
            | VClosure (Bind UName UExpr) Env
 
 instance Show Value where
-  show (VInt n) = show n
+  show (VLit n) = show n
   show (VBool True) = "true"
   show (VBool False) = "false"
   show (VPair (CExp e1 _) (CExp e2 _)) = "(" ++ show (pprint e1) ++ ", " ++ show (pprint e2) ++ ")"
@@ -75,7 +75,7 @@ eval (UP2 e) = do
   VPair _ (CExp e2 env') <- eval e
   v2 <- local (const env') $ eval e2
   return v2
-eval (UIntV n) = return $ VInt n
+eval (ULitV n) = return $ VLit n
 eval (UBoolV n) = return $ VBool n
 eval (UStrV n) = return $ VStr n
 eval UUnit = return VUnit
@@ -89,15 +89,18 @@ eval (UIf e1 e2 e3) = do
 eval (UToString e) = do
   v <- eval e
   return $ VStr (show v)
+eval (USqrt e) = do
+  (VLit n) <- eval e
+  return $ VLit (sqrt n)
 
 evalOp :: Operation -> Value -> Value -> Value
-evalOp (Arith Add) (VInt x) (VInt y) = VInt $ x + y
-evalOp (Arith Sub) (VInt x) (VInt y) = VInt $ x - y
-evalOp (Arith Mul) (VInt x) (VInt y) = VInt $ x * y
-evalOp (Arith Div) (VInt x) (VInt y) = VInt $ x `div` y
-evalOp (Logical Equ) (VInt x) (VInt y) = VBool $ x == y
-evalOp (Logical Neq) (VInt x) (VInt y) = VBool $ x /= y
-evalOp (Logical Lt) (VInt x) (VInt y) = VBool $ x < y
-evalOp (Logical Gt) (VInt x) (VInt y) = VBool $ x > y
+evalOp (Arith Add) (VLit x) (VLit y) = VLit $ x + y
+evalOp (Arith Sub) (VLit x) (VLit y) = VLit $ x - y
+evalOp (Arith Mul) (VLit x) (VLit y) = VLit $ x * y
+evalOp (Arith Div) (VLit x) (VLit y) = VLit $ x / y
+evalOp (Logical Equ) (VLit x) (VLit y) = VBool $ x == y
+evalOp (Logical Neq) (VLit x) (VLit y) = VBool $ x /= y
+evalOp (Logical Lt) (VLit x) (VLit y) = VBool $ x < y
+evalOp (Logical Gt) (VLit x) (VLit y) = VBool $ x > y
 evalOp Append (VStr x) (VStr y) = VStr $ x ++ y
 evalOp _ _ _ = error $ "Impossible happened in evalOp"

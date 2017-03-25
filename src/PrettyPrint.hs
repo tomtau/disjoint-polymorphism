@@ -49,7 +49,7 @@ instance Pretty S.Type where
     t1' <- ppr t1
     t2' <- ppr t2
     return $ parens (t1' <+> text "->" <+> t2')
-  ppr S.IntT = return $ text "Int"
+  ppr S.NumT = return $ text "Double"
   ppr S.BoolT = return $ text "Bool"
   ppr S.StringT = return $ text "String"
   ppr (S.And t1 t2) = do
@@ -112,7 +112,7 @@ instance Pretty S.Expr where
       return
         (parens $
          text "Λ" <> parens (text (name2String x) <> text "*" <> t') <+> dot <+> b')
-  ppr (S.IntV n) = return . text . show $ n
+  ppr (S.LitV n) = return . text . show $ n
   ppr (S.BoolV True) = return (text "true")
   ppr (S.BoolV False) = return (text "false")
   ppr (S.StrV b) = return . text $ show b
@@ -224,7 +224,7 @@ instance Pretty T.UExpr where
     lunbind bnd $ \(x, b) -> do
       b' <- ppr b
       return (parens $ text "λ" <> text (name2String x) <+> dot <+> b')
-  ppr (T.UIntV n) = return . text . show $ n
+  ppr (T.ULitV n) = return . text . show $ n
   ppr (T.UBoolV True) = return (text "true")
   ppr (T.UBoolV False) = return (text "false")
   ppr (T.UStrV b) = return . text $ show b

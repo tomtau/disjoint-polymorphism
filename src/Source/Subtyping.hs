@@ -51,7 +51,7 @@ subtype st tt = runExcept $ runFreshMT (subtypeS st tt)
               "x"
               (T.UPair (T.eapp e1 (T.evar "x")) (T.eapp e2 (T.evar "x")))
       return co
-    subtypeS IntT IntT = return (T.elam "x" (T.evar "x"))
+    subtypeS NumT NumT = return (T.elam "x" (T.evar "x"))
     subtypeS BoolT BoolT = return (T.elam "x" (T.evar "x"))
     subtypeS StringT StringT = return (T.elam "x" (T.evar "x"))
     {-
@@ -236,7 +236,7 @@ splitMerge2Arrow (a:rest) =
 --------------
 
 ordinary :: Type -> Bool
-ordinary IntT = True
+ordinary NumT = True
 ordinary BoolT = True
 ordinary StringT = True
 ordinary (Arr _ _) = True

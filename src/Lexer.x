@@ -57,7 +57,7 @@ tokens :-
 <0> @keyword                                   { mkT (const TKey) }
 <0> @compop                                    { mkT (const TSym) }
 <0> @op                                        { mkT (const TSym) }
-<0> $digit+                                    { mkT (TInt . read) }
+<0> $digit+                                    { mkT (TNum . read) }
 <0> [A-Z] [$vchar]*                            { mkT Tupperid }
 <0> \_ [$alpha \_] [$vchar]* | [a-z] [$vchar]* { mkT Tlowerid }
 <0> \" @string* \"                             { mkT (TStr . convChar . tail . init) }
@@ -69,7 +69,7 @@ data Token = T AlexPosn TokenClass String deriving (Show, Eq)
 
 data TokenClass = Tlowerid String
                 | Tupperid String
-                | TInt Int
+                | TNum Double
                 | TBool Bool
                 | TStr String
                 | TSym

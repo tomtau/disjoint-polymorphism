@@ -76,13 +76,14 @@ data UExpr = UVar UName
            | UPair UExpr UExpr
            | UP1 UExpr
            | UP2 UExpr
-           | UIntV Int
+           | ULitV Double
            | UBoolV Bool
            | UStrV String
            | UUnit
            | UPrimOp Operation UExpr UExpr
            | UIf UExpr UExpr UExpr
            | UToString UExpr
+           | USqrt UExpr
            deriving Show
 
 instance Alpha UExpr

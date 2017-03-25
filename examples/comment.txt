@@ -1,4 +1,4 @@
---> "Have fun!4"
+--> "Have fun!4.0"
 
 -- BEGIN_COMMENT_DEF
 type Comment = { content : T -> String }

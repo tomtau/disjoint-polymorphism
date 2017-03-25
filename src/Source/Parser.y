@@ -37,7 +37,7 @@ import Source.SrcLoc
     int         { T _ TKey "Int" }
     bool        { T _ TKey "Bool" }
     boolV       { T _ (TBool $$) _ }
-    num         { T _ (TInt $$) _ }
+    num         { T _ (TNum $$) _ }
     string      { T _ TKey "String" }
     str         { T _ (TStr $$) _ }
     if          { T _ TKey "if" }
@@ -227,7 +227,7 @@ comma_types1 :: { [Type] }
 
 atype :: { Type }
   : UPPER_IDENT                   { tvar $1 }
-  | int                           { IntT }
+  | int                           { NumT }
   | bool                          { BoolT }
   | string                        { StringT }
   | topT                          { TopT }
@@ -338,7 +338,7 @@ fexpr :: { Expr }
 
 aexpr :: { Expr }
       : LOWER_IDENT                      { evar $1 }
-      | num                              { IntV $1 }
+      | num                              { LitV $1 }
       | boolV                            { BoolV $1 }
       | str                              { StrV $1 }
       | aexpr '.' LOWER_IDENT            { Acc $1 $3 }

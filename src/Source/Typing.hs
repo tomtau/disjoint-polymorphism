@@ -73,7 +73,7 @@ tcTyDecl (TypeBind n params rhs) = do
 -- | Kinding.
 kind :: Fresh m => Ctx -> Type -> m (Maybe Kind)
 kind d (TVar a) = return $ lookupTVarKindMaybe d a
-kind _ IntT = return $ Just Star
+kind _ NumT = return $ Just Star
 kind _ BoolT = return $ Just Star
 kind _ StringT = return $ Just Star
 kind _ TopT = return $ Just Star
@@ -150,7 +150,7 @@ infer :: Expr -> TcMonad (Type, T.UExpr)
 -}
 infer Top = return (TopT, T.UUnit)
 
-infer (IntV n) = return (IntT, T.UIntV n)
+infer (LitV n) = return (NumT, T.ULitV n)
 
 infer (BoolV b) = return (BoolT, T.UBoolV b)
 
@@ -279,6 +279,11 @@ infer (Acc e "toString") = do
   (_, e') <- infer e
   return (StringT, T.UToString e')
 
+-- ad-hoc extension of toString method
+infer (Acc e "sqrt") = do
+  e' <- tcheck e NumT
+  return (NumT, T.USqrt e')
+
 infer (Acc e l) = do
   (t, e') <- infer e
   ctx <- askCtx
@@ -311,12 +316,12 @@ infer (DLam t) = do
 infer (PrimOp op e1 e2) =
   case op of
     Arith _ -> do
-      e1' <- tcheck e1 IntT
-      e2' <- tcheck e2 IntT
-      return (IntT, T.UPrimOp op e1' e2')
+      e1' <- tcheck e1 NumT
+      e2' <- tcheck e2 NumT
+      return (NumT, T.UPrimOp op e1' e2')
     Logical _ -> do
-      e1' <- tcheck e1 IntT
-      e2' <- tcheck e2 IntT
+      e1' <- tcheck e1 NumT
+      e2' <- tcheck e2 NumT
       return (BoolT, T.UPrimOp op e1' e2')
     Append -> do
       e1' <- tcheck e1 StringT
@@ -455,6 +460,10 @@ tcheck (Acc e "toString") StringT = do
   (_, e') <- infer e
   return (T.UToString e')
 
+tcheck (Acc e "toString") NumT = do
+  e' <- tcheck e NumT
+  return (T.UToString e')
+
 tcheck (Acc e l) a = do
   (t, e') <- infer e
   ctx <- askCtx
@@ -530,7 +539,7 @@ wf t = do
 
 
 wf' :: Type -> TcMonad ()
-wf' IntT = return ()
+wf' NumT = return ()
 wf' BoolT = return ()
 wf' StringT = return ()
 wf' (Arr a b) = wf' a >> wf' b
@@ -589,7 +598,7 @@ disjoint ctx (And a1 a2) b = do
 disjoint ctx a (And b1 b2) = do
   disjoint ctx a b1
   disjoint ctx a b2
-disjoint _ IntT IntT = throwError $ text "Int and Int are not disjoint"
+disjoint _ NumT NumT = throwError $ text "Int and Int are not disjoint"
 disjoint _ BoolT BoolT = throwError $ text "Bool and Bool are not disjoint"
 disjoint _ StringT StringT = throwError $ text "String and String are not disjoint"
 disjoint _ _ _ = return ()
@@ -622,7 +631,7 @@ recordFields t = go t identity
 
 
 -- transTyp :: Fresh m => Type -> m T.Type
--- transTyp IntT = return T.IntT
+-- transTyp NumT = return T.NumT
 -- transTyp BoolT = return T.BoolT
 -- transTyp (Arr t1 t2) = do
 --   t1' <- transTyp t1
