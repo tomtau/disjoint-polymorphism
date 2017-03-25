@@ -83,7 +83,7 @@ definitions of norm via two traits\footnote{Due to the lack of full support for
   arithmetic operations, the definitions of Euclidean and Manhattan norms are
   ridiculously simplified. }.
 
-\lstinputlisting[linerange=14-20]{../examples/point.txt}% APPLY:linerange=NORM_DEF
+\lstinputlisting[linerange=16-22]{../examples/point.txt}% APPLY:linerange=NORM_DEF
 
 Note how in \lstinline$euclideanNorm$ and \lstinline$manhattanNorm$ the type of
 the self-reference is \lstinline$Point$! This is in contrast to a typical
@@ -92,7 +92,7 @@ of the same type as the class being defined. It is this functionality that
 allows us to express dependencies between traits: when \lstinline$euclideanNorm$
 and \lstinline$manhattanNorm$ are instantiated and composed with some other
 traits, they must be composed with an implementation of \lstinline$Point$.
-\lstinputlisting[linerange=29-31]{../examples/point.txt}% APPLY:linerange=NORM_TEST
+\lstinputlisting[linerange=31-33]{../examples/point.txt}% APPLY:linerange=NORM_TEST
 
 \subsubsection{Traits and Inheritance}
 
@@ -151,7 +151,7 @@ will explain in Section~\ref{sec:desugar}, traits are just terms: they are
 first-class values and can be passed around or returned from a function. For
 instance in the point example, we can define a function that takes a trait
 \lstinline$norm$, compose it with \lstinline{point} and then instantiate it.
-\lstinputlisting[linerange=25-25]{../examples/point.txt}% APPLY:linerange=POINT_FUNC
+\lstinputlisting[linerange=27-27]{../examples/point.txt}% APPLY:linerange=POINT_FUNC
 
 Here \lstinline{Trait} is a built-in keyword, and \lstinline$Trait[Point, Norm]$
 is the type of traits that conform to the \lstinline$Norm$ type with dependency

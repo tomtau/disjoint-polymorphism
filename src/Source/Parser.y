@@ -343,6 +343,7 @@ aexpr :: { Expr }
       | str                              { StrV $1 }
       | aexpr '.' LOWER_IDENT            { Acc $1 $3 }
       | record_construct                 { $1 }
+      | aexpr lam LOWER_IDENT            { Remove $1 $3 }
       | top                              { Top }
       | aexpr ':' type                   { Anno $1 $3 }
       | '(' expr ')'                     { $2 }

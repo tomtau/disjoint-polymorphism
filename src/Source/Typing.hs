@@ -9,7 +9,7 @@ import           Prelude (unzip)
 import           Protolude hiding (Type)
 import qualified Text.PrettyPrint.ANSI.Leijen as PP
 import           Text.PrettyPrint.ANSI.Leijen hiding ((<>), (<$>), Pretty)
-import           Unbound.LocallyNameless
+import           Unbound.LocallyNameless hiding (restrict)
 
 
 import           Common
@@ -268,9 +268,9 @@ The above is what is shown in the paper. In the implementation, we'd like to
 avoid annotating a record before projection. The following is the modified rule:
 
 Γ ⊢ e ⇒ t ~> E
-t • l = A ~> c
+t • l = t1 ~> c
 -----------------------
-Γ ⊢ e.l ⇒ A ~> c E
+Γ ⊢ e.l ⇒ t1 ~> c E
 
 -}
 
@@ -297,6 +297,34 @@ infer (Acc e l) = do
          squotes (text l) <+>
          text "for" <+>
          squotes (pprint e) PP.<$> text "but got" <+> squotes (pprint t))
+
+
+{-
+
+
+Γ ⊢ e ⇒ t ~> E
+t \ l = t1 ~> c
+-----------------------
+Γ ⊢ e.l ⇒ t1 ~> c E
+
+-}
+
+infer (Remove e l) = do
+  (t, e') <- infer e
+  ctx <- askCtx
+  t' <- expandType ctx t
+  case restrict t' l of
+    [(a, c)] -> return (a, T.UApp c e')
+    _ ->
+      throwError
+        (hang 2 $
+         text "expect a record type with label" <+>
+         squotes (text l) <+>
+         text "for" <+>
+         squotes (pprint e) PP.<$> text "but got" <+> squotes (pprint t))
+
+
+
 
 {-
 
@@ -605,7 +633,7 @@ disjoint _ _ _ = return ()
 
 
 --------------------
--- τ1 • l = τ2  → C
+-- τ1 • l = τ2  ~> C
 --------------------
 
 -- | Select a label l from t
@@ -619,32 +647,36 @@ select t l =
     m = recordFields t
 
 recordFields :: Type -> Map Label [(Type, T.UExpr)]
-recordFields t = go t identity
+recordFields = go identity
   where
-    go :: Type -> (T.UExpr -> T.UExpr) -> Map Label [(Type, T.UExpr)]
-    go (And t1 t2) cont =
-      M.unionWith (++) (go t1 (T.UP1 . cont)) (go t2 (T.UP2 . cont))
-    go (SRecT l' t') cont =
+    go :: (T.UExpr -> T.UExpr) -> Type -> Map Label [(Type, T.UExpr)]
+    go cont (And t1 t2) =
+      M.unionWith (++) (go (T.UP1 . cont) t1) (go (T.UP2 . cont) t2)
+    go cont (SRecT l' t') =
       M.fromList [(l', [(t', T.elam "x" (cont (T.evar "x")))])]
     go _ _ = M.empty
 
 
+----------------------
+-- τ1 \ l = τ2 ~> C
+----------------------
 
--- transTyp :: Fresh m => Type -> m T.Type
--- transTyp NumT = return T.NumT
--- transTyp BoolT = return T.BoolT
--- transTyp (Arr t1 t2) = do
---   t1' <- transTyp t1
---   t2' <- transTyp t2
---   return (T.Arr t1' t2')
--- transTyp (And t1 t2) = do
---   t1' <- transTyp t1
---   t2' <- transTyp t2
---   return (T.Prod t1' t2')
--- transTyp (DForall t) = do
---   ((x, _), body) <- unbind t
---   b <- transTyp body
---   return (T.Forall (bind (translate x) b))
--- transTyp (SRecT _ t) = transTyp t
--- transTyp TopT = return T.UnitT
--- transTyp (TVar x) = return . T.TVar . translate $ x
+restrict :: Type -> Label -> [(Type, T.UExpr)]
+restrict t l =
+  case M.lookup l m of
+    Nothing -> []
+    Just s -> s
+  where
+    m = restrictedFields t
+
+restrictedFields :: Type -> Map Label [((Type, T.UExpr))]
+restrictedFields = go
+  where
+    go (SRecT l' t') = M.fromList [(l', [(TopT, T.elam "x" T.UUnit)])]
+    go (And t1 t2) =
+      let m1 = go t1
+          m2 = go t2
+          m1' = M.mapWithKey (\_ v -> map (\(t, c) -> (And t t2, T.elam "x" (T.UPair (T.UApp c (T.UP1 (T.evar "x"))) (T.UP2 (T.evar "x"))))) v) m1
+          m2' = M.mapWithKey (\_ v -> map (\(t, c) -> (And t1 t, T.elam "x" (T.UPair (T.UP1 (T.evar "x")) (T.UApp c (T.UP2 (T.evar "x")))))) v) m2
+      in M.unionWith (++) m1' m2'
+    go _ = M.empty

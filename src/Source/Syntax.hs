@@ -74,6 +74,7 @@ data Expr = Anno Expr Type
           | TApp Expr Type
           | DRec Label Expr
           | Acc Expr Label
+          | Remove Expr Label
           | Merge Expr Expr
           | LitV Double
           | BoolV Bool
