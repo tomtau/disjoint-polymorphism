@@ -164,7 +164,8 @@ traitConstrs :: { [Expr] }
 
 
 traitConstr :: { Expr }
-  : LOWER_IDENT type_list_or_empty  args         { App (foldl App (foldl TApp (evar $1) $2) $3) (evar "self") }
+  : LOWER_IDENT type_list_or_empty  args                    { App (foldl App (foldl TApp (evar $1) $2) $3) (evar "self") }
+  | LOWER_IDENT type_list_or_empty  args lam LOWER_IDENT    { Remove (App (foldl App (foldl TApp (evar $1) $2) $3) (evar "self")) $5 }
 
 
 type_list_or_empty :: { [Type] }
