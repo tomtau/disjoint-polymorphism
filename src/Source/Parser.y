@@ -34,7 +34,7 @@ import Source.SrcLoc
     let         { T _ TKey "let" }
     in          { T _ TKey "in" }
     module      { T _ TKey "module" }
-    int         { T _ TKey "Int" }
+    double      { T _ TKey "Double" }
     bool        { T _ TKey "Bool" }
     boolV       { T _ (TBool $$) _ }
     num         { T _ (TNum $$) _ }
@@ -164,7 +164,8 @@ traitConstrs :: { [Expr] }
 
 
 traitConstr :: { Expr }
-  : LOWER_IDENT type_list_or_empty  args         { App (foldl App (foldl TApp (evar $1) $2) $3) (evar "self") }
+  : LOWER_IDENT type_list_or_empty  args                    { App (foldl App (foldl TApp (evar $1) $2) $3) (evar "self") }
+  | LOWER_IDENT type_list_or_empty  args lam LOWER_IDENT    { Remove (App (foldl App (foldl TApp (evar $1) $2) $3) (evar "self")) $5 }
 
 
 type_list_or_empty :: { [Type] }
@@ -226,8 +227,7 @@ comma_types1 :: { [Type] }
   | type ',' comma_types1  { $1:$3 }
 
 atype :: { Type }
-  : UPPER_IDENT                   { tvar $1 }
-  | int                           { NumT }
+  : double                           { NumT }
   | bool                          { BoolT }
   | string                        { StringT }
   | topT                          { TopT }
@@ -235,6 +235,7 @@ atype :: { Type }
   | '(' type ')'                  { $2 }
   | Trait '[' type ',' type ']'   { Arr $3 $5 }
   | Trait '[' type ']'            { Arr TopT $3 }
+  | UPPER_IDENT                   { tvar $1 }
 
 -- record types
 record_type :: { Type }

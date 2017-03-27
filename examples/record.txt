@@ -2,11 +2,11 @@
 
 
 -- BEGIN_RCD_DEF
-def remove [B * {low : Int}] (x : B & {low : Int}) : B = x
+def remove [B * {low : Double}] (x : B & {low : Double}) : B = x
 -- END_RCD_DEF
 
 
 -- BEGIN_RCD_EG
-main = remove {open : Int} {open = 192, low=189}
+main = remove {open : Double} {open = 192, low=189}
 -- Output: 192
 -- END_RCD_EG

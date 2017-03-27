@@ -2,7 +2,7 @@
 
 -- BEGIN_ALGEBRA_DEF
 type ExpAlg[E] = {
-  lit : Int -> E,
+  lit : Double -> E,
   add : E -> E -> E
 }
 -- END_ALGEBRA_DEF
@@ -12,7 +12,7 @@ type Exp = { accept : forall E . ExpAlg[E] -> E }
 -- END_CHURCH_DEF
 
 -- BEGIN_EVAL_DEF
-type IEval = { eval : Int }
+type IEval = { eval : Double }
 -- END_EVAL_DEF
 
 -- BEGIN_EVAL_IMPL
@@ -49,7 +49,7 @@ trait printAlg : SubExpAlg[IPrint] { self =>
 
 
 -- BEGIN_DC_DEF
-def lit (n : Int) : Exp = {
+def lit (n : Double) : Exp = {
   accept = /\E . \f -> f.lit n
 }
 def add (e1 : Exp) (e2 : Exp) : Exp = {

@@ -2,18 +2,18 @@
 
 
 -- BEGIN_POINT_DEF
-type Point = { x : T -> Int, y : T -> Int }
-trait point(x : Int, y: Int) { self : Point =>
+type Point = { x : T -> Double, y : T -> Double }
+trait point(x : Double, y: Double) { self : Point =>
   def x() = x
   def y() = y
 }
 -- END_POINT_DEF
 
 
-def abs (x : Int) = if x < 0 then (0 - x) else x
+def abs (x : Double) = if x < 0 then (0 - x) else x
 
 -- BEGIN_NORM_DEF
-type Norm = { norm : T -> Int }
+type Norm = { norm : T -> Double }
 trait euclideanNorm() { self : Point =>
   def norm ()  = (self.x() * self.x() + self.y() * self.y()).sqrt
 }

@@ -1,13 +1,13 @@
 --> "(5.0 - (3.0 + 2.0)) = 0.0"
 
 type ExpAlg[E] = {
-  lit : Int -> E,
+  lit : Double -> E,
   add : E -> E -> E
 }
 
 type Exp = { accept : forall E . ExpAlg[E] -> E }
 
-type IEval = { eval : Int }
+type IEval = { eval : Double }
 
 trait evalAlg : ExpAlg[IEval] { self =>
   def lit x   = { eval = x }
@@ -34,7 +34,7 @@ trait printAlg : SubExpAlg[IPrint] { self =>
 
 
 
-def lit (n : Int) : Exp = {
+def lit (n : Double) : Exp = {
   accept = /\E . \f -> f.lit n
 }
 def add (e1 : Exp) (e2 : Exp) : Exp = {
