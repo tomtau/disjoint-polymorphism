@@ -2,16 +2,15 @@
 
 Mainstream statically-typed Object-Oriented Programming (OOP) languages (such as Java,
 C++ C\# or Scala) all use a similar programming model based on
-classes. For the remainder of the paper this will be referred to as
-the \emph{standard model}. The standard model has its roots on the
+classes. We refer to this as the \emph{covariant model} for the
+remainder of this paper. The covariant model has its roots on the
 origins of OOP in the 1960's in the Simula~\cite{} language. 
-The standard model essentially provides a \emph{covariant} view of
-objects, where the following basic properties are expected:
+We call this model covariant because the following basic properties are expected:
 \bruno{are the two below essentially the same?}
 
 \begin{itemize}
 
-\item {\bf Extensions produce subtypes:} In the standard model, when a 
+\item {\bf Extensions always produce subtypes:} In the standard model, when a 
 subclass \emph{extends} a class it automatically becomes a 
 \emph{subtype} of the super-class. 
 
@@ -22,7 +21,7 @@ subtyping always go along together.
 
 \end{itemize}
 
-The standard model has been sucessefully being used for over 50 years,
+The covariant model has been sucessefully being used for over 50 years,
 so it clearly has demonstrated its value in practice. In our personal
 opinion this success can be attributed to a few things. Firstly,
 subtyping and inheritance enable forms of reusability and modularity 
@@ -43,7 +42,7 @@ function of type $Cat \to Int$ \emph{cannot not be subtype} of a
 function with type $Animal \to Int$ (assumming that $Cat$ is a subtype
 of $Animal$). In fact, only the opposite can
 happen: $Animal \to Int$ can be a subtype of $Cat \to Int$.  This is
-at odds with the covariant view. Mainstream OOP languages such as Java or C\# address this
+at odds with the covariant view. Most mainstream OOP languages, such as Java or C\#, address this
 disturbance of the covariant view by making methods \emph{invariant} on 
 their argument types. In other words, if a class $A$ with method $m$
 extends a class $B$ with method $m$, then $A.m$ can only override 
@@ -58,11 +57,13 @@ the simple covariant model. As Cook et al. argued inheritance and
 subtyping are different relations: subtyping being a relation on types 
 and inheritance being a relation on objects. In the standard model 
 the subtype relation is based on the inheritance hierarchy. This 
-would work very well if extensions would \emph{always} produce 
+works very well if extensions produce 
 subtypes. However, as Cook et al.'s work famously demonstrated 
-this is not always the case. Following their observations about 
-inheritance and subtyping, Cook et al. suggest a programing model 
-with the following properties:
+this is not always the case. The essential implication of this is that
+the standard model cannot express programs that do not follow the 
+covariant view of objects well. Following their observations about 
+inheritance and subtyping, Cook et al. suggest a more general and 
+flexible programing model with the following properties:
 
 \begin{itemize}
 
@@ -76,12 +77,22 @@ producing subtypes.
 
 \end{itemize}
 
-Therefore Cook et al's model does away with the simple-minded covariant 
-view of objects, and proposes a more general model
-
 Despite being proposed almost 30 years ago, and one of the most
 famous papers in OOP, Cook et al.'s paper has not had much impact 
-on the design of OOP languages. A possible explanation for this 
+on the design of mainstream OOP languages. 
+%Certainly this is not because
+%researchers or designer of OOP language are unaware of the subtleties 
+%of covariance and contravariance. Indeed over the years, and for other
+%reasons various features have been added to programming languages to 
+We believe that there are two primary reasons for the lack of adoption
+of Cook et al.'s model.  Firstly, the mental programming model is not
+as simple as the standard (covariant) model. In Cook's model programmers have to
+think more carefully on whether extensions produce subtypes or not,
+for example.  Secondly, there are not many compelling applications in
+the literature where the need for a more flexible OOP model is
+necessary. Thus language designers may argue that the costs outweight 
+the benefits, and may decide to stick instead to the covariant 
+model, which is simple, and well-understood by programmers. 
 
 
 There are multiple flavours of inheritance. To avoid confusion, since 
@@ -116,3 +127,17 @@ mutable and cannot be arbitrarely changed at run-time.
 
 \end{itemize}
 
+In summary the contributions of this paper are:
+
+\begin{itemize}
+
+\item \name: a type-safe and coherent OO language supporting dynamic
+inheritance.
+
+\item An illustration of applications that utilize \name's type system 
+for improved modularity and extensibility.
+
+\item Thin-layer of sugar on top of disjoint intersection types and
+  polymorphism.
+
+\end{itemize}
