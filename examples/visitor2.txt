@@ -1,0 +1,132 @@
+--> ()
+
+-- features: bool, nat, untyped, typed, type+sub
+-- operations: eval, pp, typecheck
+
+-- Nat Algebra
+
+type NatAlg[E] = {
+  lit : Int -> E,
+  add : E -> E -> E
+}
+
+
+-- Nat Encoding
+
+type CNat = {
+  accept : forall E . NatAlg[E] -> E
+}
+
+
+-- Bool Algebra
+
+type BoolAlg[E] = {
+  ctrue : E,
+  cfalse : E,
+  cif : E -> E -> E -> E
+}
+
+-- Bool Encoding
+
+type CBool = {
+  accept : forall E . BoolAlg[E] -> E
+}
+
+
+
+-- Evaluation
+type IEval = {eval : Int}
+
+trait evalNatAlg : NatAlg[IEval] { self =>
+  def lit n = { eval = n }
+  def add e1 e2 = { eval = e1.eval + e2.eval }
+}
+
+trait evalBoolAlg : BoolAlg[IEval] { self =>
+  def ctrue = { eval = 1 }
+  def cfalse = { eval = 0 }
+  def cif b e1 e2 = { eval = if b.eval == 0 then e2.eval else e1.eval }
+}
+
+
+-- Nat and Bool
+
+type ArithAlg [E] = NatAlg [E] & BoolAlg [E] & { isZero : E -> E }
+
+type Arith = {
+  accept : forall E. ArithAlg [E] -> E
+}
+
+trait evalArithAlg inherits evalNatAlg & evalBoolAlg : ArithAlg [IEval] { self =>
+  def isZero e = { eval = if e.eval == 0 then 1 else 0 }
+}
+
+
+-- Pretty Printer
+
+type IPrint = { print : String }
+
+trait ppNatAlg : NatAlg [IPrint] { self =>
+  def lit n = { print = n.toString }
+  def add e1 e2 = { print = "(" ++ e1.print ++ " + " ++ e2.print ++ ")"}
+}
+
+trait ppBoolAlg : BoolAlg [IPrint] { self =>
+  def ctrue = { print = "true" }
+  def cfalse = { print = "false" }
+  def cif b e1 e2 = { print = "(if " ++ b.print ++ " then " ++ e2.print ++ " else " ++ e1.print ++ ")" }
+}
+
+trait ppArithAlg inherits ppNatAlg & ppBoolAlg : ArithAlg[IPrint] { self =>
+  def isZero e = { print = "(isZero " ++ e.print ++ ")" }
+}
+
+
+-- Untyped lambda calculus
+
+type TermAlg [E] = ArithAlg [E] & {
+  var : String -> E,
+  abs : String -> E -> E,
+  app : E -> E -> E
+}
+
+type Term = {
+  accept : forall E . TermAlg [E] -> E
+}
+
+trait ppTermAlg inherits ppArithAlg : TermAlg [IPrint] { self =>
+  def var s = {print = s}
+  def abs s e = {print = "(lambda " ++ s ++ " . " ++ e.print ++ ")"}
+  def app e1 e2 = {print = "(" ++ e1.print ++ " " ++ e2.print ++ ")"}
+}
+
+
+
+-- type Subst E = { subst : String -> E -> E }
+
+trait evalTermAlg inherits evalArithAlg : TermAlg [IEval] { self =>
+  def var s = { eval = 0 }
+  def abs s e = { eval = 0 }
+  def app e1 e2 = { eval = 0 }
+}
+
+
+
+
+
+-- Test
+
+val e1 : Arith = {
+  accept = /\E . \f -> f.cif (f.isZero (f.lit 3)) (f.add (f.lit 3) (f.lit 4)) (f.lit 4)
+}
+
+
+-- (\x -> x + 3) e1
+val e2 : Term = {
+ accept = /\E . \f -> f.app (f.abs "x" (f.add (f.var "x") (f.lit 3))) (e1.accept E f)
+}
+
+-- main = (e1.accept IPrint (new[ArithAlg[IPrint]] ppArithAlg)).print ++ " = " ++
+--        (e1.accept IEval (new[ArithAlg[IEval]] evalArithAlg)).eval.toString
+
+-- main = (e2.accept IPrint (new[TermAlg[IPrint]] ppTermAlg)).print

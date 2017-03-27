@@ -1,33 +1,30 @@
+{-# LANGUAGE OverloadedStrings, ViewPatterns #-}
+
+
 module Utility
   ( evalFile
   ) where
 
 import           Control.Exception (SomeException, try)
-import           Data.Char (isSpace)
+import           Data.Text (Text)
+import qualified Data.Text as T
+import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
+
 import           Environment
 import           PrettyPrint
 import           Source.Parser (parseExpr)
 import           Source.Typing
 import qualified Target.CBN as C
-import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 
 type Result = Either Doc String
 
 ret :: Doc -> Result
 ret d = Left d
 
-
-parseExpectedOutput :: String -> Maybe String
+parseExpectedOutput :: Text -> Maybe Text
 parseExpectedOutput source =
-  let firstLine = takeWhile (/= '\n') source
-  in case firstLine of
-       '-':'-':'>':r -> Just $ strip r
-       _ -> Nothing
-
-strip :: String -> String
-strip = f . f
-  where
-    f = reverse . dropWhile isSpace
+  let firstLine = T.takeWhile (/= '\n') source
+  in fmap T.strip (T.stripPrefix "-->" (T.strip firstLine))
 
 readTry :: IO String -> IO (Either SomeException String)
 readTry = try
@@ -55,9 +52,9 @@ evalFile path = do
       in case value of
            Left err -> failed err
            Right tm ->
-             case parseExpectedOutput contents of
+             case parseExpectedOutput (T.pack contents) of
                Nothing -> failed $ warn "No expectation" <+> text tm
-               Just expinp ->
+               Just (T.unpack -> expinp) ->
                  if tm == expinp
                    then succed (text tm)
                    else failWith (text tm) (text expinp)

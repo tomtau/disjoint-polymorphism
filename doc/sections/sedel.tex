@@ -1,3 +1,317 @@
-\section{An Overview of \name}
+\section{A Tour of \name}
 
-Illustrate the key features of \name (specifically those that address the issues in previous sections). 
+This section showcases the novel feature of \name, notably its native support
+for dynamically composable traits. We demonstrate by examples that \name
+overcomes all those limitations mentioned in Section~\ref{sec:critique}. All
+examples shown in this section are runnable in our prototype implementation.
+
+
+\subsection{Dynamically Composable Traits}
+\label{sec:traits}
+
+\name natively supports a simple, yet expressive form of dynamically composable
+traits~\cite{scharli2003traits}. Traits provide a mechanism of code reuse in
+object-oriented programming, that can be used as an alternative to multiple
+inheritance. One interesting aspect about traits is the way conflicting features
+that are typical arise in multiple inheritance are dealt with. Instead of
+automatically resolved by scoping rules, conflicts are detected by the type
+system, and require programmers to explicitly resolve them. In what follows, we
+demonstrate various trait features in \name. A comparison with the traditional
+trait model can be found in Section~\ref{sec:discuss}. The desugaring process
+from traits to \bname is discussed in Section~\ref{sec:desugar}.
+
+\subsubsection{Basic Traits}
+
+A Trait is, in essential, a collection of related methods that characterize only
+a specific perspective of the features of an object. Therefore, compared with
+programs using inheritance, programs using traits usually have a large number of
+small traits rather than fewer but larger classes. Code reuse with traits is
+easier than with classes, since traits are usually shorter and can be
+\textit{composed}. It is the ease of composition that makes traits such a
+appealing language feature: two traits can be freely ``added'' together (which
+is an symmetric operation); and trait systems provide conflict detection and so
+on.
+
+The first example shows basic trait composition. Many social networking sites
+allow users to ``upvote'' a comment and the number of upvotes that comment has
+received is also displayed. We would like to separate the logic for upvotes from
+comments so that it can be reused in other entities. The code below defines a
+trait, \lstinline$comment$, which contains a single method \lstinline$content$.
+
+\lstinputlisting[linerange=4-7]{../examples/comment.txt}% APPLY:linerange=COMMENT_DEF
+
+The syntax is very similar to Scala's, with the \lstinline{def} keyword
+beginning a term declaration. Next we create another trait, \lstinline$up$, for
+tracking the number of upvotes.
+
+\lstinputlisting[linerange=12-15]{../examples/comment.txt}% APPLY:linerange=UP_DEF
+
+At this point the reader may wonder what are those \lstinline{type} declarations
+(\lstinline$Comment$ and \lstinline$Up$) for. In mainstream OO languages such as
+Java, a class declaration such as \lstinline[language=java]$class C { ... }$ does two things at
+the same time:
+
+\begin{itemize}
+\item Declaring a \textit{template} for creating object;
+\item Declaring a new \textit{type}.
+\end{itemize}
+
+In contrast, trait declarations in \name only do the former. Back to our
+example, the purpose of declaring two types is just to use them for type
+annotations of the self-reference. In the trait literature, a trait usually
+requires a set of methods that server as parameters for the provided behaviour.
+In our example, the type of \lstinline$self$ denotes what methods are required.
+
+Creating an object is via the \lstinline{new} keyword, a convention in many OO
+languages, except for one crucial novelty: we can create an object from multiple
+traits. More precisely, the object is created from the \textit{composition} of
+those traits. Therefore, we are able to call methods from different traits on a
+single object. For example, we can create an object from \lstinline$comment$ and
+\lstinline$up$ and test its functionality as follows:
+
+\lstinputlisting[linerange=20-22]{../examples/comment.txt}% APPLY:linerange=COMP_TEST
+
+\subsubsection{Traits with Dependencies}
+
+The following example shows that a trait can depend on another trait. We define
+the type of a point and a trait for a standard point.
+
+\lstinputlisting[linerange=5-9]{../examples/point.txt}% APPLY:linerange=POINT_DEF
+
+The norm of a point can be defined as its distance to the origin. We provide two
+definitions of norm via two traits\footnote{Due to the lack of full support for
+  arithmetic operations, the definitions of Euclidean and Manhattan norms are
+  ridiculously simplified. }.
+
+\lstinputlisting[linerange=16-22]{../examples/point.txt}% APPLY:linerange=NORM_DEF
+
+Note how in \lstinline$euclideanNorm$ and \lstinline$manhattanNorm$ the type of
+the self-reference is \lstinline$Point$! This is in contrast to a typical
+object-oriented language, such as Java, where the self-reference must always be
+of the same type as the class being defined. It is this functionality that
+allows us to express dependencies between traits: when \lstinline$euclideanNorm$
+and \lstinline$manhattanNorm$ are instantiated and composed with some other
+traits, they must be composed with an implementation of \lstinline$Point$.
+\lstinputlisting[linerange=31-33]{../examples/point.txt}% APPLY:linerange=NORM_TEST
+
+\subsubsection{Traits and Inheritance}
+
+Traits in \name are extensible. A trait can be extended by inheriting all
+members of other traits, and defining additional members. This is, in some
+sense, similar to class inheritance in traditional OO languages. However, one
+difference is that, a trait can inherits one or more traits without any
+problems, provided that there are no conflicts arising.
+
+Imagine we want to describe birds that can both fly and swim. For better reuse,
+we define a trait that has the ability to swim:
+\lstinputlisting[linerange=5-8]{../examples/birds.txt}% APPLY:linerange=SWIM_DEF
+Similarly, here is a trait that has the ability to fly:
+\lstinputlisting[linerange=13-16]{../examples/birds.txt}% APPLY:linerange=FLY_DEF
+Now we are ready to describe a bird (duck) that can both fly and swim:
+\lstinputlisting[linerange=20-23]{../examples/birds.txt}% APPLY:linerange=BIRD_DEF
+Notice how trait \lstinline{duck} inherits the \lstinline{swim} and
+\lstinline{fly} methods from trait \lstinline{swimming} and \lstinline{flying},
+respectively. Here is how this super duck shows off it can both fly and swim:
+\lstinputlisting[linerange=27-29]{../examples/birds.txt}% APPLY:linerange=BIRD_TEST
+
+
+\subsubsection{Detecting Conflicts in Trait Composition}
+
+A conflict arises if and only if we combine two traits that have identically
+named methods. The traditional approach to resolve conflicts is by method
+overriding, automatically done by the type system, whereas the trait-based
+approach enforces conflicts be resolved on the level of the composition by the
+programmers, otherwise the program is rejected by the type system. The following
+example, adapted from~\citet{alpuimdisjoint}, shows how conflicting methods in
+two traits are detected.
+
+\lstinputlisting[linerange=6-16]{../examples/log.txt}% APPLY:linerange=CONFLICT_DEF
+
+Here two traits \lstinline{person} and \lstinline{consoleLogger} are composed in
+a variable \lstinline{jim}. It is type-safe to access both methods from
+\lstinline{Person} and \lstinline{Loggable} in the object \lstinline{jim}.
+
+If we have another trait \lstinline{employee}, and we mistakenly compose this
+with \lstinline$person$, then the program is not accepted, due to both
+\lstinline{Person} and \lstinline{Employee} sharing the same name (\lstinline{name})
+and the same type (\lstinline$String$).
+
+\lstinputlisting[linerange=21-27]{../examples/log.txt}% APPLY:linerange=CONFLICT_WRONG
+
+\jeremy{We lack proper support for resolving conflicts}
+
+
+\subsection{Dynamic Instantiation}
+
+One difference with traditional traits or classes is that traits in \name are
+quite dynamic: we are able to compose traits \textit{dynamically} and then
+instantiate them later. This is impossible in traditional OO language, such as
+Java, since classes being instantiated must be known statically. In \name, as we
+will explain in Section~\ref{sec:desugar}, traits are just terms: they are
+first-class values and can be passed around or returned from a function. For
+instance in the point example, we can define a function that takes a trait
+\lstinline$norm$, compose it with \lstinline{point} and then instantiate it.
+\lstinputlisting[linerange=27-27]{../examples/point.txt}% APPLY:linerange=POINT_FUNC
+
+Here \lstinline{Trait} is a built-in keyword, and \lstinline$Trait[Point, Norm]$
+is the type of traits that conform to the \lstinline$Norm$ type with dependency
+on \lstinline$Point$. We can then create a point object with the Euclidean norm
+as simply as \lstinline$makePoint(euclideanNorm())$.
+
+
+
+
+\subsection{Extensibility and Subtyping}
+\label{sec:extensibility}
+
+Various solutions to the Expression Problem~\cite{wadler1998expression} in the
+literature~\cite{finally-tagless,oliveira09modular,DelawareOS13,oliveira2012extensibility,
+  swierstra:la-carte} are closely related to type-theoretic encodings of
+datatypes. Indeed, variants of the same idea keep appearing in different
+programming languages, because the encoding of the idea needs to exploit the
+particular features of the programming language (or theorem prover).
+Unfortunately language-specific constructs obscure the key ideas behind those
+solutions. In this subsection, we presents \name's solution to the Expression
+Problem that intends to capture the key ideas of various solutions in the
+literature.
+
+To start, we begin with a very simple system modeling arithmetic expressions and
+evaluation. The initial system constitutes expressions with two variants
+(literals and addition), as depicted below:
+\lstinputlisting[linerange=4-7]{../examples/visitor.txt}% APPLY:linerange=ALGEBRA_DEF
+
+The first part, captured by the type \lstinline{ExpAlg[E]}, constitutes the
+so-called algebra of the datatype. The first component abstracts over the type
+of literal expressions (\lstinline{Int -> E}). The second component abstracts
+over the type of addition expression (\lstinline{E -> E -> E}).
+
+The second part, which is the actual type of the arithmetic expression, is:
+\lstinputlisting[linerange=11-11]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
+An attentive reader may immediately recognize this is exactly the visitor
+pattern: the method \lstinline{accept} takes an internal visitor as argument.
+
+% \paragraph{Data constructors.} Using \lstinline{Exp} the two data constrcutors
+% are defined as follows:
+% \lstinputlisting[linerange=52-61]{../examples/visitor.txt}% APPLY:linerange=DC_DEF
+% Note that the notation \lstinline{/\E} is type abstraction: it introduces a type
+% variable in the environment.
+
+
+\paragraph{Operations.} Defining operations over expressions requires
+implementing \lstinline{ExpAlg[E]}. An interesting operation over expressions is
+evaluation. The first step is to choose a suitable concrete type for
+instantiating the type parameter \lstinline{E}. One such suitable type is:
+\lstinputlisting[linerange=15-15]{../examples/visitor.txt}% APPLY:linerange=EVAL_DEF
+Using \lstinline{IEval}, we can define a trait that implements the evaluation
+rule for each variant:
+\lstinputlisting[linerange=19-22]{../examples/visitor.txt}% APPLY:linerange=EVAL_IMPL
+
+
+\paragraph{Add a subtraction variant.} Interesting things happen when a new
+variant, such as subtraction is added. To do so, we need to extend both
+\lstinline{ExpAlg[E]} and \lstinline{evalAlg}:
+\lstinputlisting[linerange=27-31]{../examples/visitor.txt}% APPLY:linerange=SUB_DEF
+Firstly, \lstinline{SubExpAlg[E]} defines an extended algebra that contains the
+variants of the original plus the new subtraction variant. Intersection types
+are used to model \textit{type inheritance}. Secondly, a new type of expressions
+(\lstinline{ExtExp}) with subtraction is needed. It is important to note that
+the \lstinline{accept} method now takes the new algebra \lstinline{SubExpAlg[E]}
+as argument.
+
+\paragraph{Inheritance is not subtyping.} In the presence of subtyping, there
+are interesting subtyping relations between datatypes and their
+extensions~\cite{oliveira09modular}. The interesting aspect about subtyping in
+the new system is that subtyping follows the opposite direction of the
+extension. In other words, subtyping is contravariant with respect to the
+extension. First note that \lstinline{SubExpAlg[E]} appears in parameter
+position of \lstinline{accept} and function parameters are natually
+contravariant: \lstinline{ExtExp} should be a \textit{supertype} of
+\lstinline{Exp}. By contrast, in common OO languages, type inheritance and
+subtyping always go along together. For example, Scala forbids any kind of
+type-refinement on method parameter types. The consequence of this is that in
+those languages, it is simply impossible to express that \lstinline{ExtExp} is
+both an extension and a supertype of \lstinline{Exp}. Such kind of phenomena is
+an example where ``inheritance is not subtyping''~\cite{cook1989inheritance}.
+
+\paragraph{Add a new operation.} The second type of extension is adding a new
+operation, such as pretty printing. Similar to evaluation, the interface of the
+pretty printing feature is modeled as:
+\lstinputlisting[linerange=37-37]{../examples/visitor.txt}% APPLY:linerange=PRINT_DEF
+The implementation is spelled out straightforwardly:
+\lstinputlisting[linerange=42-46]{../examples/visitor.txt}% APPLY:linerange=PRINT_IMPL
+
+
+\paragraph{Usage.} The last piece is to define convenient data constructors:
+\lstinputlisting[linerange=52-61]{../examples/visitor.txt}% APPLY:linerange=DC_DEF
+So now we can test the shiny new system:
+\lstinputlisting[linerange=66-70]{../examples/visitor.txt}% APPLY:linerange=VISITOR_EG
+Notice that we are able to pass \lstinline{lit 5}, which is of type
+\lstinline{Exp}, to \lstinline{sub}, which expects a value of type
+\lstinline{ExtExp}. This works precisely because \lstinline{Exp} is a
+\textit{subtype} of \lstinline{ExtExp}.
+
+
+
+\subsection{How much dynamic is too much}
+\label{sec:dynamic}
+
+
+\jeremy{ A composition operator combining two algebras at run-time,
+  demonstrating the dynamic nature of trait inheritance, also show we can do
+  multiple inheritance of things with the same type}
+
+The solution to the Expression Problem presented in
+Section~\ref{sec:extensibility} has one wrinkle in its usage. To be able to call
+different operations from the same expression \lstinline{e}, we need to make two
+copies \lstinline{o1} and \lstinline{o2}: one is used for printing, while the
+other is used for evaluation. An ideal approach would be allowing a single object
+to be created that supports both the printing and evaluation features.
+Unfortunately, dynamic composition of algebras is non-trivial.
+\citet{oliveira2012extensibility} addressed this problem by proposing
+\textit{object algebra combinators} that combine multiple algebras into one.
+However, as they noted, such combinators written in Java are difficult to use in
+practice. A version of this combinator has been encoded in Scala using
+intersection types and an encoding of the merge
+operator~\cite{oliveira2013feature, rendel14attributes}. Again, the Scala
+encoding of the merge operator is quite complex as it relies on low-level
+type-unsafe programming features such as dynamic proxies, reflection or other
+meta-programming techniques. In \name there is no need for such complex
+encoding, as the merge operator is natively supported.
+
+The combinator is defined by the \lstinline{combine} trait, which takes two
+algebras to create a combined algebra. It does so by appropriately delegating
+behaviours in each component algebra to the combined algebra.
+
+\lstinputlisting[linerange=49-54]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_DEF
+
+Note how \lstinline{combine} requires all the interesting features of \name.
+Parametric polymorphism is need because \lstinline{combine} must compose algebras
+with arbitrary type parameters. Intersection types are needed because the
+resulting algebra will have an intersection type. The merge operator is needed
+to compose the input algebras dynamically. Finally, a disjointness constraint is
+needed to ensure that two input algebras build values of disjoint types
+(otherwise ambiguity could arise).
+
+With \lstinline{combine} at hand, we can finally have a object \lstinline{o}
+print and evaluate at the same time:
+
+\lstinputlisting[linerange=72-75]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_TEST
+
+An acute reader may have smelled some boilerplate code in the definition of
+\lstinline{combine}. After all, \lstinline{combine} just invokes the
+corresponding method on the arguments, which is solely driven by the types of
+the two input algebras and the resulting algebra. It turns out that the type
+system behind \name is powerful enough to derive such definition for us:
+\lstinline{combine} is no more than just the merge of two algebras!
+
+\lstinputlisting[linerange=60-60]{../examples/visitor3.txt}% APPLY:linerange=COMBINE_DEF
+
+That's it. No more boilerplate necessary. Two points worth noting: 1) \name
+supports \textit{dynamic inheritance}. Notice how we let \lstinline{combine1}
+``inherits'' \lstinline{f & g}, for which the implementation is unknown
+statically. 2) \name supports multiple inheritance of traits with the same type:
+both \lstinline{f} and \lstinline{g} are traits of the subtraction algebra.
+Mainstream OO languages cannot even imagine being such dynamic and flexible.
+\name hits a sweet spot in the design space of being how much dynamic, where we
+retain as much flexibility as in a dynamic language without sacrificing the
+type-safety guarantee we always love from a static type system.

@@ -1,27 +1,30 @@
---> "I am apigeon, I can swim"
+--> "I am a duck, I can fly, I can swim"
 
+
+-- BEGIN_SWIM_DEF
 type Swimming = { swim : T -> String }
-
-trait swimming(species : String) { self : Swimming =>
-  def swim() = "I am a" ++ species ++ ", I can swim"
+trait swimming { self =>
+  def swim() = "I can swim"
 }
+-- END_SWIM_DEF
 
-type Bird = {  fly : T -> String }
 
-trait pigeon() {  self : Swimming =>
-  def fly() = "I'm a good flyer"
+-- BEGIN_FLY_DEF
+type Flying = {  fly : T -> String }
+trait flying { self =>
+  def fly() = "I can fly"
 }
+-- END_FLY_DEF
 
-trait hawk() {  self : Swimming  =>
-  def fly() = "I'm an excellent flyer"
+-- BEGIN_BIRD_DEF
+type Bird = { name : String }
+trait duck inherits swimming & flying { self =>
+  def name = "I am a duck"
 }
+-- END_BIRD_DEF
 
-trait frigatebird() { self : Bird =>
-  def fly () = "I'm an excellent flyer"
-}
-
-val aPigeon = new[Swimming & Bird] swimming("pigeon") & pigeon()
-
-val aFrigatabird = new[Bird] frigatebird()
-
-main = aPigeon.swim()
+-- BEGIN_BIRD_TEST
+val superDuck = new[Swimming & Flying & Bird] duck
+main = superDuck.name ++ ", " ++ superDuck.fly() ++ ", " ++ superDuck.swim()
+-- Output: "I am a duck, I can fly, I can swim"
+-- END_BIRD_TEST

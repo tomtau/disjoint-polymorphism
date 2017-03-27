@@ -1,7 +1,12 @@
---> "hello"
+--> 192.0
 
-def remove A [B * {l : A}] (x : {l : A} & B) : B = x
 
-val test = {l = 3, r = "hello"}
+-- BEGIN_RCD_DEF
+def remove [B * {low : Int}] (x : B & {low : Int}) : B = x
+-- END_RCD_DEF
 
-main = remove Int {r : String} test
+
+-- BEGIN_RCD_EG
+main = remove {open : Int} {open = 192, low=189}
+-- Output: 192
+-- END_RCD_EG

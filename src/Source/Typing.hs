@@ -1,22 +1,25 @@
-{-# LANGUAGE FlexibleContexts, PatternGuards #-}
+{-# LANGUAGE FlexibleContexts, PatternGuards, NoImplicitPrelude, LambdaCase, OverloadedStrings #-}
 
 module Source.Typing
   ( tcModule
   ) where
 
+import qualified Data.Map as M
+import           Prelude (unzip)
+import           Protolude hiding (Type)
+import qualified Text.PrettyPrint.ANSI.Leijen as PP
+import           Text.PrettyPrint.ANSI.Leijen hiding ((<>), (<$>), Pretty)
+import           Unbound.LocallyNameless hiding (restrict)
+
+
 import           Common
-import           Control.Monad
-import           Control.Monad.Except
 import           Environment
-import           Prelude hiding ((<$>))
 import           PrettyPrint
 import           Source.Desugar
 import           Source.Subtyping
 import           Source.Syntax
 import qualified Target.CBN as TC
 import qualified Target.Syntax as T
-import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
-import           Unbound.LocallyNameless
 
 
 -- Type check a module
@@ -29,46 +32,48 @@ tcModule m = do
   -- Step 2: Check module
   targetDecls <- foldr tcM (return ([])) (sdecls ++ [mainE])
   -- Step 3: Generate initial environment for execution
-  let (mainType, mainTarget) = last targetDecls
-  let declsTarget = map snd . init $ targetDecls
+  let (mainType, mainTarget) =
+        maybe (TopT, (s2n "main", T.UUnit)) identity (lastMay targetDecls)
+  let declsTarget = fmap (map snd) (initMay targetDecls)
   let initEnv =
-        foldl
-          (\env (n, e) -> TC.extendCtx (n, e, env) env)
+        maybe
           TC.emptyEnv
+          (foldl (\env (n, e) -> TC.extendCtx (n, e, env) env) TC.emptyEnv)
           declsTarget
   return (mainType, snd mainTarget, initEnv)
   where
-    tcM
-      :: SimpleDecl
+    tcM ::
+         SimpleDecl
       -> TcMonad [(Type, (T.UName, T.UExpr))]
       -> TcMonad [(Type, (T.UName, T.UExpr))]
-    tcM (DefDecl decl) m = do
+    tcM (DefDecl decl) ms = do
       (dbind, transD) <- tcTmDecl decl
-      fmap (((snd dbind, transD) :)) $ localCtx ((uncurry extendVarCtx) dbind) m
-    tcM (TypeDecl tdecl) m = do
+      fmap (((snd dbind, transD) :)) $
+        localCtx ((uncurry extendVarCtx) dbind) ms
+    tcM (TypeDecl tdecl) ms = do
       (n, tdef, k) <- tcTyDecl tdecl
-      localCtx (addTypeSynonym n tdef k) m
+      localCtx (addTypeSynonym n tdef k) ms
 
 -- Type check declarations
 tcTmDecl :: TmBind -> TcMonad ((TmName, Type), (T.UName, T.UExpr))
-tcTmDecl decl = do
-  oldDef <- lookupTmDef (s2n n)
-  case oldDef of
+tcTmDecl decl =
+  lookupTmDef (s2n n) >>= \case
     Nothing -> do
-      (typ, trans) <- infer term
-      return ((s2n n, typ), (s2n n, trans))
+      (typ, tran) <- infer term
+      return ((s2n n, typ), (s2n n, tran))
     Just _ -> throwError $ text "Multiple definitions of" <+> text n
   where
     (n, term) = normalizeTmDecl decl -- term has been annotated, so we can infer
 
 tcTyDecl :: TypeBind -> TcMonad (TyName, Type, Kind)
 tcTyDecl (TypeBind n params rhs) = do
-  return (s2n n, pullRight params rhs, Star)
+  let typDef = pullRight params rhs
+  return (s2n n, typDef, Star)
 
 -- | Kinding.
 kind :: Fresh m => Ctx -> Type -> m (Maybe Kind)
 kind d (TVar a) = return $ lookupTVarKindMaybe d a
-kind _ IntT = return $ Just Star
+kind _ NumT = return $ Just Star
 kind _ BoolT = return $ Just Star
 kind _ StringT = return $ Just Star
 kind _ TopT = return $ Just Star
@@ -77,19 +82,19 @@ kind d (And t1 t2) = justStarIffAllHaveKindStar d [t1, t2]
 kind d (DForall b) = do
   ((a, _), t) <- unbind b
   kind (extendTVarCtx a Star d) t
-kind d (SRecT l t) = justStarIffAllHaveKindStar d [t]
+kind d (SRecT _ t) = justStarIffAllHaveKindStar d [t]
 
 {-
-    Δ,x::* ⊢ t :: k
-    -------------------- (K-Abs) Restriction compared to F_omega: x can only have kind *
-    Δ ⊢ λx. t :: * => k
+    Δ,x::k1 ⊢ t :: k
+    -------------------- (K-Abs)
+    Δ ⊢ λx:k1. t :: k1 -> k
 -}
 kind d (OpAbs b) = do
-  (x, t) <- unbind b
-  maybe_k <- kind (extendTVarCtx x Star d) t
+  ((x, Embed k1), t) <- unbind b
+  maybe_k <- kind (extendTVarCtx x k1 d) t
   case maybe_k of
     Nothing -> return Nothing
-    Just k  -> return $ Just (KArrow Star k)
+    Just k  -> return $ Just (KArrow k1 k)
 
 {-
     Δ ⊢ t1 :: k11 => k12  Δ ⊢ t2 :: k11
@@ -123,8 +128,8 @@ hasKindStar d t = do
 -- | "Pull" the type params at the LHS of the equal sign to the right.
 -- A (high-level) example:
 --   A B t  ->  \A. \B. t
-pullRight :: [TyName] -> Type -> Type
-pullRight params t = foldr (\n t' -> OpAbs (bind n t')) t params
+pullRight :: [(TyName, Kind)] -> Type -> Type
+pullRight params t = foldr (\(n, k) t' -> OpAbs (bind (n, embed k) t')) t params
 
 
 
@@ -145,7 +150,7 @@ infer :: Expr -> TcMonad (Type, T.UExpr)
 -}
 infer Top = return (TopT, T.UUnit)
 
-infer (IntV n) = return (IntT, T.UIntV n)
+infer (LitV n) = return (NumT, T.ULitV n)
 
 infer (BoolV b) = return (BoolT, T.UBoolV b)
 
@@ -171,7 +176,8 @@ infer (Var x) = do
 -}
 infer (Anno e a) = do
   c <- askCtx
-  e' <- check e (expandType c a)
+  a' <- expandType c a
+  e' <- tcheck e a'
   return (a, e')
 
 {-
@@ -185,16 +191,15 @@ infer (Anno e a) = do
 infer inp@(App e1 e2) = do
   (arr, e1') <- infer e1
   c <- askCtx
-  case (expandType c arr) of
+  expandType c arr >>= \case
     Arr a1 a2 -> do
-      e2' <- check e2 a1
+      e2' <- tcheck e2 a1
       return (a2, T.UApp e1' e2')
     _ ->
       throwError
         (hang 2 $
          text "type of application mismatch in" <+>
-         squotes (pprint inp) <> colon <$>
-         text "function" <+>
+         squotes (pprint inp) PP.<> colon PP.<$> text "function" <+>
          squotes (pprint e1) <+> text "has type" <+> squotes (pprint arr))
 
 {-
@@ -210,17 +215,18 @@ infer inp@(TApp e a) = do
   wf a
   (t, e') <- infer e
   ctx <- askCtx
-  case (expandType ctx t) of
+  expandType ctx t >>= \case
     DForall t' -> do
       ((x, Embed b), c) <- unbind t'
-      disjoint ctx (expandType ctx a) (expandType ctx b)
+      a' <- expandType ctx a
+      b' <- expandType ctx b
+      disjoint ctx a' b'
       return (subst x a c, e')
     _ ->
       throwError
         (hang 2 $
          text "type of application mismatch in" <+>
-         squotes (pprint inp) <> colon <$>
-         text "type-level function" <+>
+         squotes (pprint inp) PP.<> colon PP.<$> text "type-level function" <+>
          squotes (pprint e) <+> text "has type" <+> squotes (pprint t))
 
 {-
@@ -236,7 +242,9 @@ infer (Merge e1 e2) = do
   (a, e1') <- infer e1
   (b, e2') <- infer e2
   ctx <- askCtx
-  disjoint ctx (expandType ctx a) (expandType ctx b)
+  a' <- expandType ctx a
+  b' <- expandType ctx b
+  disjoint ctx a' b'
   return (And a b, T.UPair e1' e2')
 
 {-
@@ -260,27 +268,63 @@ The above is what is shown in the paper. In the implementation, we'd like to
 avoid annotating a record before projection. The following is the modified rule:
 
 Γ ⊢ e ⇒ t ~> E
-t • l = A ~> c
+t • l = t1 ~> c
 -----------------------
-Γ ⊢ e.l ⇒ A ~> c E
+Γ ⊢ e.l ⇒ t1 ~> c E
 
 -}
-infer (Acc e l) =
-  if l == "toString" -- ad-hoc extension to "toString" method
-    then do
-      (_, e') <- infer e
-      return (StringT, T.UToString e')
-    else do
-      (t, e') <- infer e
-      c <- askCtx
-      case select (expandType c t) l of
-        Just (a, c) -> return (a, T.UApp c e')
-        _ ->
-          throwError
-            (hang 2 $
-             text "expect a record type with label" <+>
-             squotes (text l) <+> text "for" <+> squotes (pprint e) <$>
-             text "but got" <+> squotes (pprint t))
+
+-- ad-hoc extension of toString method
+infer (Acc e "toString") = do
+  (_, e') <- infer e
+  return (StringT, T.UToString e')
+
+-- ad-hoc extension of toString method
+infer (Acc e "sqrt") = do
+  e' <- tcheck e NumT
+  return (NumT, T.USqrt e')
+
+infer (Acc e l) = do
+  (t, e') <- infer e
+  ctx <- askCtx
+  t' <- expandType ctx t
+  case select t' l of
+    [(a, c)] -> return (a, T.UApp c e')
+    _ ->
+      throwError
+        (hang 2 $
+         text "expect a record type with label" <+>
+         squotes (text l) <+>
+         text "for" <+>
+         squotes (pprint e) PP.<$> text "but got" <+> squotes (pprint t))
+
+
+{-
+
+
+Γ ⊢ e ⇒ t ~> E
+t \ l = t1 ~> c
+-----------------------
+Γ ⊢ e.l ⇒ t1 ~> c E
+
+-}
+
+infer (Remove e l) = do
+  (t, e') <- infer e
+  ctx <- askCtx
+  t' <- expandType ctx t
+  case restrict t' l of
+    [(a, c)] -> return (a, T.UApp c e')
+    _ ->
+      throwError
+        (hang 2 $
+         text "expect a record type with label" <+>
+         squotes (text l) <+>
+         text "for" <+>
+         squotes (pprint e) PP.<$> text "but got" <+> squotes (pprint t))
+
+
+
 
 {-
 
@@ -300,29 +344,34 @@ infer (DLam t) = do
 infer (PrimOp op e1 e2) =
   case op of
     Arith _ -> do
-      e1' <- check e1 IntT
-      e2' <- check e2 IntT
-      return (IntT, T.UPrimOp op e1' e2')
+      e1' <- tcheck e1 NumT
+      e2' <- tcheck e2 NumT
+      return (NumT, T.UPrimOp op e1' e2')
     Logical _ -> do
-      e1' <- check e1 IntT
-      e2' <- check e2 IntT
+      e1' <- tcheck e1 NumT
+      e2' <- tcheck e2 NumT
       return (BoolT, T.UPrimOp op e1' e2')
     Append -> do
-      e1' <- check e1 StringT
-      e2' <- check e2 StringT
+      e1' <- tcheck e1 StringT
+      e2' <- tcheck e2 StringT
       return (StringT, T.UPrimOp op e1' e2')
 
 infer inp@(If e1 e2 e3) = do
-  e1' <- check e1 BoolT
+  e1' <- tcheck e1 BoolT
   (t2, e2') <- infer e2
   (t3, e3') <- infer e3
-  if aeq t2 t3
+  ctx <- askCtx
+  t2' <- expandType ctx t2
+  t3' <- expandType ctx t3
+  if aeq t2' t3'
     then return (t2, T.UIf e1' e2' e3')
     else throwError $
          (hang 2 $
-          text "if branches type mismatch in" <+> squotes (pprint inp) <> colon <$>
-          squotes (pprint e2) <+> text "has type" <+> squotes (pprint t2) <$>
-          squotes (pprint e3) <+> text "has type" <+> squotes (pprint t3))
+          text "if branches type mismatch in" <+>
+          squotes (pprint inp) PP.<> colon PP.<$> squotes (pprint e2) <+>
+          text "has type" <+>
+          squotes (pprint t2) PP.<$> squotes (pprint e3) <+>
+          text "has type" <+> squotes (pprint t3))
 
 {-
 
@@ -336,7 +385,7 @@ Note: Recursive let binding
 -}
 infer (Let b) = do
   ((x, Embed t), (e1, e2)) <- unbind b
-  e1' <- localCtx (extendVarCtx x t) $ check e1 t
+  e1' <- localCtx (extendVarCtx x t) $ tcheck e1 t
   (t', e2') <- localCtx (extendVarCtx x t) $ infer e2
   return (t', T.ULet (bind (translate x) (e1', e2')))
 
@@ -358,7 +407,7 @@ infer a = throwError $ text "Infer not implemented:" <+> pprint a
 -- Γ ⊢ e ⇐ A ~> E
 ------------------------
 
-check :: Expr -> Type -> TcMonad T.UExpr
+tcheck :: Expr -> Type -> TcMonad T.UExpr
 
 {-
 
@@ -368,17 +417,11 @@ check :: Expr -> Type -> TcMonad T.UExpr
 Γ ⊢ λx. e ⇐ A → B ~> λx. E
 
 -}
-check (Lam l) (Arr a b) = do
+tcheck (Lam l) (Arr a b) = do
   (x, e) <- unbind l
   wf a
-  e' <- localCtx (extendVarCtx x a) $ check e b
+  e' <- localCtx (extendVarCtx x a) $ tcheck e b
   return (T.ULam (bind (translate x) e'))
-
--- check inp@(Lam _) t =
---   throwError $
---   text "expect an arrow type for " <+>
---   squotes (pprint inp) <+> text "but got" <+> squotes (pprint t)
-
 
 {-
 
@@ -390,18 +433,12 @@ check (Lam l) (Arr a b) = do
 
 
 -}
-check (DLam l) (DForall b) = do
-  t <- unbind2 l b
-  case t of
-    Just ((x, Embed a), e, _, b) -> do
+tcheck (DLam l) (DForall b) = do
+  unbind2 l b >>= \case
+    Just ((x, Embed a), e, _, t') -> do
       wf a
-      localCtx (extendConstrainedTVarCtx x a) $ check e b
+      localCtx (extendConstrainedTVarCtx x a) $ tcheck e t'
     Nothing -> throwError $ text "Patterns have different binding variables"
-
--- check inp@(DLam _) t =
---   throwError $
---   text "expect a forall type" <+>
---   squotes (pprint inp) <+> text "but got" <+> squotes (pprint t)
 
 {-
 
@@ -412,11 +449,13 @@ check (DLam l) (DForall b) = do
 Γ ⊢ e1,,e2 ⇐ A&B ~> (E1, E2)
 
 -}
-check (Merge e1 e2) (And a b) = do
-  e1' <- check e1 a
-  e2' <- check e2 b
+tcheck (Merge e1 e2) (And a b) = do
+  e1' <- tcheck e1 a
+  e2' <- tcheck e2 b
   ctx <- askCtx
-  disjoint ctx (expandType ctx a) (expandType ctx b)
+  a' <- expandType ctx a
+  b' <- expandType ctx b
+  disjoint ctx a' b'
   return (T.UPair e1' e2')
 
 {-
@@ -427,10 +466,58 @@ check (Merge e1 e2) (And a b) = do
 
 -}
 
-check (DRec l e) (SRecT l' a) = do
+tcheck (DRec l e) (SRecT l' a) = do
   when (l /= l') $
     throwError (text "Labels not equal" <+> text l <+> text "and" <+> text l')
-  check e a
+  tcheck e a
+
+
+
+{-
+
+Γ ⊢ e ⇒ t ~> E
+t • l = B ~> c
+B <: A ~> c'
+-----------------------
+Γ ⊢ e.l ⇐ A ~> c' (c E)
+
+-}
+
+-- ad-hoc extension of toString method
+tcheck (Acc e "toString") StringT = do
+  (_, e') <- infer e
+  return (T.UToString e')
+
+tcheck (Acc e "toString") NumT = do
+  e' <- tcheck e NumT
+  return (T.UToString e')
+
+tcheck (Acc e l) a = do
+  (t, e') <- infer e
+  ctx <- askCtx
+  t' <- expandType ctx t
+  let ls = select t' l
+  case length ls of
+    0 ->
+      throwError
+        (hang 2 $
+         text "expect a record type with label" <+>
+         squotes (text l) <+>
+         text "for" <+>
+         squotes (pprint e) PP.<$> text "but got" <+> squotes (pprint t))
+    -- Multiple label of 'l' are found, find the only one whose type is a subtype of 'a'
+    _ ->
+      let (bs, cs) = unzip ls
+          res = dropWhile (isLeft . fst) $ zip (fmap (flip subtype a) bs) cs
+      in case res of
+           (Right c', c):_ -> return $ T.UApp c' (T.UApp c e')
+           _ ->
+             throwError
+               (hang 2 $
+                text "Cannot find a subtype of" <+>
+                squotes (pprint a) <+>
+                text "for label" <+>
+                text l PP.<$> text "in" <+> squotes (pprint e))
 
 
 {-
@@ -443,27 +530,30 @@ A <: B ~> c
 
 -}
 
-check e b = do
+tcheck e b = do
   wf b
   (a, e') <- infer e
   ctx <- askCtx
-  let res = subtype ctx a b
+  a' <- expandType ctx a
+  b' <- expandType ctx b
+  let res = subtype a' b'
   case res of
     Right c -> do
       return (T.UApp c e')
     Left err ->
       throwError
         (hang 2 $
-         text "subtyping failed" <> colon <$>
-         squotes (pprint e) <+> text "has type" <+> squotes (pprint a) <$>
-         text "which is not a subtype of" <+> squotes (pprint b))
+         text "subtyping failed" PP.<> colon PP.<$> squotes (pprint e) <+>
+         text "has type" <+>
+         squotes (pprint a) PP.<$> text "which is not a subtype of" <+>
+         squotes (pprint b))
 
 
 -- | Check that a (expanded) type is well-formed: disjoint and has kind *.
 wf :: Type -> TcMonad ()
 wf t = do
   ctx <- askCtx
-  let t' = expandType ctx t
+  t' <- expandType ctx t
   maybe_kind <- kind ctx t'
   case maybe_kind of
     Nothing -> throwError $ squotes (pprint t) <+> text "is not well-kinded"
@@ -472,12 +562,12 @@ wf t = do
       throwError
         (hang 2 $
          text "expect type" <+>
-         squotes (pprint t) <+> text "has kind star" <$>
-         text "but got" <+> squotes (pprint k))
+         squotes (pprint t) <+>
+         text "has kind star" PP.<$> text "but got" <+> squotes (pprint k))
 
 
 wf' :: Type -> TcMonad ()
-wf' IntT = return ()
+wf' NumT = return ()
 wf' BoolT = return ()
 wf' StringT = return ()
 wf' (Arr a b) = wf' a >> wf' b
@@ -508,19 +598,18 @@ disjoint _ _ TopT = return ()
 
 disjoint ctx (TVar x) b
   | Just a <- lookupTVarConstraintMaybe ctx x
-  , Right _ <- subtype ctx a b = return ()
+  , Right _ <- subtype a b = return ()
 disjoint ctx b (TVar x)
   | Just a <- lookupTVarConstraintMaybe ctx x
-  , Right _ <- subtype ctx a b = return ()
-disjoint ctx (TVar x) (TVar y) =
+  , Right _ <- subtype a b = return ()
+disjoint _ (TVar x) (TVar y) =
   throwError $
   text "Type variables:" <+>
   text (name2String x) <+>
   text "and" <+> text (name2String y) <+> text "are not disjoint"
 
 disjoint ctx (DForall t) (DForall t') = do
-  t <- unbind2 t t'
-  case t of
+  unbind2 t t' >>= \case
     Just ((x, Embed a1), b, (_, Embed a2), c) ->
       disjoint (extendConstrainedTVarCtx x (And a1 a2) ctx) b c
     _ -> throwError $ text "Patterns have different binding variables"
@@ -537,47 +626,57 @@ disjoint ctx (And a1 a2) b = do
 disjoint ctx a (And b1 b2) = do
   disjoint ctx a b1
   disjoint ctx a b2
-disjoint _ IntT IntT = throwError $ text "Int and Int are not disjoint"
+disjoint _ NumT NumT = throwError $ text "Int and Int are not disjoint"
 disjoint _ BoolT BoolT = throwError $ text "Bool and Bool are not disjoint"
 disjoint _ StringT StringT = throwError $ text "String and String are not disjoint"
 disjoint _ _ _ = return ()
 
 
 --------------------
--- τ1 • l = τ2  → C
+-- τ1 • l = τ2  ~> C
 --------------------
-select :: Type -> Label -> Maybe (Type, T.UExpr)
-select t l =
-  case t of
-    (And t1 t2) ->
-      let res1 =
-            select t1 l >>= \(t', c) ->
-              return (t', T.elam "x" (T.UApp c (T.UP1 (T.evar "x"))))
-          res2 =
-            select t2 l >>= \(t', c) ->
-              return (t', T.elam "x" (T.UApp c (T.UP2 (T.evar "x"))))
-      in mplus res1 res2
-    (SRecT l' t) ->
-      if l == l'
-        then Just (t, T.elam "x" (T.evar "x"))
-        else Nothing
-    _ -> Nothing
 
--- transTyp :: Fresh m => Type -> m T.Type
--- transTyp IntT = return T.IntT
--- transTyp BoolT = return T.BoolT
--- transTyp (Arr t1 t2) = do
---   t1' <- transTyp t1
---   t2' <- transTyp t2
---   return (T.Arr t1' t2')
--- transTyp (And t1 t2) = do
---   t1' <- transTyp t1
---   t2' <- transTyp t2
---   return (T.Prod t1' t2')
--- transTyp (DForall t) = do
---   ((x, _), body) <- unbind t
---   b <- transTyp body
---   return (T.Forall (bind (translate x) b))
--- transTyp (SRecT _ t) = transTyp t
--- transTyp TopT = return T.UnitT
--- transTyp (TVar x) = return . T.TVar . translate $ x
+-- | Select a label l from t
+-- Return a list of possible types with their projections
+select :: Type -> Label -> [(Type, T.UExpr)]
+select t l =
+  case M.lookup l m of
+    Nothing -> []
+    Just s -> s
+  where
+    m = recordFields t
+
+recordFields :: Type -> Map Label [(Type, T.UExpr)]
+recordFields = go identity
+  where
+    go :: (T.UExpr -> T.UExpr) -> Type -> Map Label [(Type, T.UExpr)]
+    go cont (And t1 t2) =
+      M.unionWith (++) (go (T.UP1 . cont) t1) (go (T.UP2 . cont) t2)
+    go cont (SRecT l' t') =
+      M.fromList [(l', [(t', T.elam "x" (cont (T.evar "x")))])]
+    go _ _ = M.empty
+
+
+----------------------
+-- τ1 \ l = τ2 ~> C
+----------------------
+
+restrict :: Type -> Label -> [(Type, T.UExpr)]
+restrict t l =
+  case M.lookup l m of
+    Nothing -> []
+    Just s -> s
+  where
+    m = restrictedFields t
+
+restrictedFields :: Type -> Map Label [((Type, T.UExpr))]
+restrictedFields = go
+  where
+    go (SRecT l' t') = M.fromList [(l', [(TopT, T.elam "x" T.UUnit)])]
+    go (And t1 t2) =
+      let m1 = go t1
+          m2 = go t2
+          m1' = M.mapWithKey (\_ v -> map (\(t, c) -> (And t t2, T.elam "x" (T.UPair (T.UApp c (T.UP1 (T.evar "x"))) (T.UP2 (T.evar "x"))))) v) m1
+          m2' = M.mapWithKey (\_ v -> map (\(t, c) -> (And t1 t, T.elam "x" (T.UPair (T.UP1 (T.evar "x")) (T.UApp c (T.UP2 (T.evar "x")))))) v) m2
+      in M.unionWith (++) m1' m2'
+    go _ = M.empty

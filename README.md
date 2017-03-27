@@ -2,7 +2,7 @@
 
 [![wercker status](https://app.wercker.com/status/f8efc6b9552b883a408799e75a4b87f3/s/master "wercker status")](https://app.wercker.com/project/byKey/f8efc6b9552b883a408799e75a4b87f3)
 
-A prototype-based, statically typed language that supports dynamic composable
+A delegation-based, statically typed language that supports dynamic composable
 traits, disjoint polymorphism, intersection types and a merge operator. For the
 underlying theory, please refer
 to [Disjoint Polymorphism](http://i.cs.hku.hk/~bruno/papers/ESOP2017.pdf).

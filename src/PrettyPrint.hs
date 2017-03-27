@@ -49,7 +49,7 @@ instance Pretty S.Type where
     t1' <- ppr t1
     t2' <- ppr t2
     return $ parens (t1' <+> text "->" <+> t2')
-  ppr S.IntT = return $ text "Int"
+  ppr S.NumT = return $ text "Double"
   ppr S.BoolT = return $ text "Bool"
   ppr S.StringT = return $ text "String"
   ppr (S.And t1 t2) = do
@@ -57,8 +57,8 @@ instance Pretty S.Type where
     t2' <- ppr t2
     return $ parens (t1' <+> text "&" <+> t2')
   ppr (S.TVar x) = return . text . name2String $ x
-  ppr (S.DForall t) =
-    lunbind t $ \((x, Embed a), t) -> do
+  ppr (S.DForall b) =
+    lunbind b $ \((x, Embed a), t) -> do
       a' <- ppr a
       t' <- ppr t
       return
@@ -69,9 +69,13 @@ instance Pretty S.Type where
     return (braces $ (text l) <+> colon <+> t')
   ppr S.TopT = return $ text "T"
   ppr (S.OpAbs b) =
-    lunbind b $ \(x, t) -> do
+    lunbind b $ \((x, k), t) -> do
       t' <- ppr t
-      return $ parens (text "Lam" <+> text (name2String x) <+> dot <+> t')
+      return $
+        parens
+          (text "Lam" <>
+           parens (text (name2String x) <> text ":" <> text (show k)) <+>
+           dot <+> t')
   ppr (S.OpApp a b) = do
     a' <- ppr a
     b' <- ppr b
@@ -100,15 +104,17 @@ instance Pretty S.Expr where
     lunbind bnd $ \((x, Embed t), b) -> do
       b' <- ppr b
       t' <- ppr t
-      return (parens $ text "λ" <> text (name2String x) <> colon <> t' <+> dot <+> b')
+      return
+        (parens $ text "λ" <> text (name2String x) <> colon <> t' <+> dot <+> b')
   ppr (S.DLam bnd) =
     lunbind bnd $ \((x, Embed t), b) -> do
       b' <- ppr b
       t' <- ppr t
       return
         (parens $
-         text "Λ" <> parens (text (name2String x) <> text "*" <> t') <+> dot <+> b')
-  ppr (S.IntV n) = return . text . show $ n
+         text "Λ" <> parens (text (name2String x) <> text "*" <> t') <+>
+         dot <+> b')
+  ppr (S.LitV n) = return . text . show $ n
   ppr (S.BoolV True) = return (text "true")
   ppr (S.BoolV False) = return (text "false")
   ppr (S.StrV b) = return . text $ show b
@@ -132,6 +138,9 @@ instance Pretty S.Expr where
   ppr (S.Acc e l) = do
     e' <- ppr e
     return $ e' <> dot <> text l
+  ppr (S.Remove e l) = do
+    e' <- ppr e
+    return $ e' <+> char '\\' <+> text l
   ppr S.Top = return $ text "T"
   ppr (S.Let b) = do
     lunbind b $ \((x, Embed t), (e, body)) -> do
@@ -140,7 +149,8 @@ instance Pretty S.Expr where
       b' <- ppr body
       return $
         text "let" <+>
-        text (name2String x) <+> colon <+> t' <+> text "=" <+> e' <+> text "in" <+> b'
+        text (name2String x) <+>
+        colon <+> t' <+> text "=" <+> e' <+> text "in" <+> b'
 
 
 instance Pretty T.Type where
@@ -220,7 +230,7 @@ instance Pretty T.UExpr where
     lunbind bnd $ \(x, b) -> do
       b' <- ppr b
       return (parens $ text "λ" <> text (name2String x) <+> dot <+> b')
-  ppr (T.UIntV n) = return . text . show $ n
+  ppr (T.ULitV n) = return . text . show $ n
   ppr (T.UBoolV True) = return (text "true")
   ppr (T.UBoolV False) = return (text "false")
   ppr (T.UStrV b) = return . text $ show b
@@ -253,6 +263,9 @@ instance Pretty T.UExpr where
   ppr (T.UToString e) = do
     e' <- ppr e
     return $ e' <> dot <> text "toString"
+  ppr (T.USqrt e) = do
+    e' <- ppr e
+    return $ e' <> dot <> text "sqrt"
 
 
 pprint :: Pretty a => a -> Doc

@@ -38,6 +38,7 @@
 % Miscellaneous
 \usepackage{paralist}
 \usepackage{graphicx}
+\usepackage{epstopdf}
 \usepackage{float}
 
 % Code highlighting
@@ -58,21 +59,23 @@
   sensitive=true
 }
 
-\lstdefinestyle{sourcelanguage}{
+\lstdefinestyle{sedel}{
   tabsize=2, % sets default tabsize to 2 spaces
-  morekeywords={type,trait,new,def, defrec, if, then, else, new, inherits},
-  otherkeywords={=>, ->},
+  morekeywords={type,trait,new,def, defrec, if, then, else, new, inherits,
+    Trait, let, in},
   morecomment=[l]{--},
   morestring=[b]", % 'b' means inside a string delimiters are escaped by a backslash.
   morestring=[b]',
+  literate={->}{{$\rightarrow$}}1 {=>}{{$\Rightarrow$}}1 {/\\}{{$\Lambda$}}1,
 }
 
-\lstset{style=sourcelanguage}
+\lstset{style=sedel}
 
 % Revision tools
 \usepackage{xspace}
 \usepackage{xcolor}
 \usepackage{comment}
+
 \newcommand{\hltext}[2][gray!40]{\colorbox{#1}{#2}}
 \newcommand{\hl}[2][gray!40]{%
   \colorbox{#1}{$\displaystyle#2$}}
@@ -80,6 +83,8 @@
 \newcommand\bruno[1]{\mynotes{bruno}{red}{#1}}
 \newcommand\jeremy[1]{\mynotes{jeremy}{blue}{#1}}
 \newcommand\name{{\bf Sedel}\xspace}
+
+\input{macros.tex}
 
 \makeatletter\if@ACM@journal\makeatother
 %% Journal information (used by PACMPL format)
@@ -125,7 +130,7 @@
 \begin{document}
 
 %% Title information
-\title[Short Title]{\name: Safe and Expressive Delegation-Based Programming}         %% [Short Title] is optional;
+\title[\name]{\name: Safe and Expressive Delegation-Based Programming}         %% [Short Title] is optional;
                                         %% when present, will be used in
                                         %% header instead of Full Title.
 %%\titlenote{with title note}             %% \titlenote is optional;
@@ -265,11 +270,15 @@ can type-check various delegation-based programs and patterns.
 
 \input{sections/overview.tex}
 
+\input{sections/background.tex}
+
 \input{sections/sedel.tex}
 
 \input{sections/applications.tex}
 
 \input{sections/desugar.tex}
+
+\input{sections/discussion.tex}
 
 \input{sections/related.tex}
 

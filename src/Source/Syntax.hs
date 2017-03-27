@@ -14,7 +14,7 @@ import Unbound.LocallyNameless
 -- | Modules
 data Module = Module
   { moduleEntries :: [Decl]
-  , mainExpr :: SimpleDecl
+  , mainExpr      :: SimpleDecl
   } deriving (Show)
 
 -- | Declarations are the components of modules
@@ -28,33 +28,35 @@ data SimpleDecl
   | TypeDecl TypeBind
   deriving (Show)
 
+type BindName = String
+
 data Trait = TraitDef
-  { traitName :: String
+  { traitName     :: BindName
     -- ^ Trait name
-  , selfType :: (String, Type)
+  , selfType      :: (BindName, Type)
     -- ^ Self type
-  , traitSuper :: Maybe [Expr]
-  , retType :: Maybe Type
+  , traitSuper    :: [Expr]
+  , retType       :: Maybe Type
   , traitTyParams :: [(TyName, Type)]
-  , traitParams :: [(TmName, Type)]
-  , traitBody :: [SimpleDecl]
+  , traitParams   :: [(TmName, Type)]
+  , traitBody     :: [SimpleDecl]
   } deriving (Show)
 
 
--- f [A1,...,An](x1: t1, ..., xn: tn): t = e
-data TmBind  = TmBind
-  { bindName     :: String            -- f
-  , bindTyParams :: [(TyName, Type)]  -- A1, ..., An
-  , bindParams   :: [(TmName, Maybe Type)]  -- x1: t1, ..., xn: tn
-  , bindRhs      :: Expr              -- e
-  , bindRhsTyAscription :: Maybe Type -- t
+-- f A1,...,An (x1: t1) ... (xn: tn): t = e
+data TmBind = TmBind
+  { bindName            :: BindName                  -- f
+  , bindTyParams        :: [(TyName, Type)]          -- A1, ..., An
+  , bindParams          :: [(TmName, Maybe Type)]    -- x1: t1, ..., xn: tn
+  , bindRhs             :: Expr                      -- e
+  , bindRhsTyAscription :: Maybe Type                -- t
   } deriving (Show)
 
 -- type T[A1, ..., An] = t
 data TypeBind = TypeBind
-  { typeBindName   :: String   -- T
-  , typeBindParams :: [TyName] -- A1, ..., An
-  , typeBindRhs    :: Type     -- t
+  { typeBindName   :: BindName           -- T
+  , typeBindParams :: [(TyName, Kind)]   -- A1, ..., An
+  , typeBindRhs    :: Type               -- t
   } deriving (Show)
 
 -- Unbound library
@@ -72,8 +74,9 @@ data Expr = Anno Expr Type
           | TApp Expr Type
           | DRec Label Expr
           | Acc Expr Label
+          | Remove Expr Label
           | Merge Expr Expr
-          | IntV Int
+          | LitV Double
           | BoolV Bool
           | StrV String
           | PrimOp Operation Expr Expr
@@ -84,7 +87,7 @@ data Expr = Anno Expr Type
   deriving Show
 
 type Label = String
-data Type = IntT
+data Type = NumT
           | BoolT
           | StringT
           | Arr Type Type
@@ -94,9 +97,8 @@ data Type = IntT
           | SRecT Label Type
           | TopT
           -- Type synonyms
-          | OpAbs (Bind TyName Type)
-          -- ^ Type-level abstraction: "type T A = t" becomes "type T = \A. t",
-          -- and "\A. t" is the abstraction.
+          | OpAbs (Bind (TyName, Embed Kind) Type)
+          -- ^ Type-level abstraction: "type T A = t" becomes "type T = \A : *. t",
           | OpApp Type Type
           -- ^ Type-level application: t1 t2
 
@@ -107,15 +109,17 @@ data Kind = Star | KArrow Kind Kind deriving (Eq, Show)
 
 
 -- Unbound library instances
-$(derive [''Expr, ''Type, ''SimpleDecl, ''TmBind, ''TypeBind])
+$(derive [''Expr, ''Type, ''SimpleDecl, ''TmBind, ''TypeBind, ''Kind])
 
 instance Alpha Type
 instance Alpha Expr
 instance Alpha SimpleDecl
 instance Alpha TmBind
 instance Alpha TypeBind
+instance Alpha Kind
 
 instance Subst Expr Type
+instance Subst Expr Kind
 instance Subst Expr ArithOp
 instance Subst Expr LogicalOp
 instance Subst Expr Operation
@@ -131,6 +135,7 @@ instance Subst Type ArithOp
 instance Subst Type SimpleDecl
 instance Subst Type TmBind
 instance Subst Type TypeBind
+instance Subst Type Kind
 
 instance Subst Type Type where
   isvar (TVar v) = Just (SubstName v)
@@ -176,11 +181,14 @@ mkRecdsT [] = TopT
 mkRecdsT [(l, e)] = SRecT l e
 mkRecdsT ((l, e):r) = foldl (\t (l', e') -> And t (SRecT l' e')) (SRecT l e) r
 
+mkArr :: Type -> [Type] ->Type
+mkArr = foldr Arr
+
+mkForall :: Type -> [(TyName, Embed Type)] -> Type
+mkForall = foldr (\b t -> DForall (bind b t))
+
 elet :: String -> Type -> Expr -> Expr -> Expr
 elet s t e b = Let (bind (s2n s, embed t) (e, b))
-
-teleToBind :: [(String, Type)] -> Type -> Type
-teleToBind ts t = foldr (\t tt -> tforall t tt) t ts
 
 transNew :: Type -> [Expr] -> Expr
 transNew t es = elet "self" t (foldl1 Merge es) (evar "self")
@@ -202,11 +210,8 @@ and
 
 -}
 
-teleToTmBind :: [(String, Type)]
-             -> [(String, Maybe Type)]
-             -> Type
-             -> Expr
-             -> (Type, Expr)
+teleToTmBind ::
+     [(String, Type)] -> [(String, Maybe Type)] -> Type -> Expr -> (Type, Expr)
 -- Ideally for defrec, users should annotate all arguments, but here we assume T
 -- if not annotated
 teleToTmBind tys tms res e =

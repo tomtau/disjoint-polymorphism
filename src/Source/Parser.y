@@ -37,7 +37,7 @@ import Source.SrcLoc
     int         { T _ TKey "Int" }
     bool        { T _ TKey "Bool" }
     boolV       { T _ (TBool $$) _ }
-    num         { T _ (TInt $$) _ }
+    num         { T _ (TNum $$) _ }
     string      { T _ TKey "String" }
     str         { T _ (TStr $$) _ }
     if          { T _ TKey "if" }
@@ -99,18 +99,22 @@ prog :: { Module }
   | expr                     { Module [] (DefDecl (TmBind "main" [] [] $1 Nothing)) }
 
 traitdecl :: { Trait }
-  : trait LOWER_IDENT ctyparam_list trait_params_list inherit ret_type '{' LOWER_IDENT ':' type '=>' sdecllist '}'
-  { TraitDef $2 ($8, $10) $5 $6 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) $12}
-  | trait LOWER_IDENT ctyparam_list trait_params_list inherit ret_type '{' LOWER_IDENT '=>' sdecllist '}'
-  { TraitDef $2 ($8, TopT) $5 $6 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) $10}
+  : trait LOWER_IDENT ctyparam_list trait_params_list inherit ret_type
+  { TraitDef $2 ("self", TopT) $5 $6 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) [] }
+  | trait LOWER_IDENT ctyparam_list trait_params_list inherit ret_type '{' traitbody '}'
+  { TraitDef $2 (fst $8, fst (snd $8)) $5 $6 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) (snd (snd $8)) }
+
+traitbody :: { (String, (Type, [SimpleDecl])) }
+  : LOWER_IDENT ':' type '=>' sdecllist     { ($1, ($3, $5)) }
+  | LOWER_IDENT '=>' sdecllist              { ($1, (TopT, $3)) }
 
 ret_type :: { Maybe Type }
   : {- empty -}     { Nothing }
   | ':' type        { Just $2 }
 
-inherit :: { Maybe [Expr] }
-  : {- empty -}            { Nothing }
-  | inherits traitConstrs  { Just $2 }
+inherit :: { [Expr] }
+  : {- empty -}            { [] }
+  | inherits traitConstrs  { $2 }
 
 decllist :: { [Decl] }
   : {- empty -}       { [] }
@@ -160,7 +164,12 @@ traitConstrs :: { [Expr] }
 
 
 traitConstr :: { Expr }
-  : LOWER_IDENT args                  { App (foldl App (evar $1) $2) (evar "self") }
+  : LOWER_IDENT type_list_or_empty  args         { App (foldl App (foldl TApp (evar $1) $2) $3) (evar "self") }
+
+
+type_list_or_empty :: { [Type] }
+  : {- empty -}              { [] }
+  | '[' comma_types1 ']'     { $2 }
 
 
 -- Parse "(x, y, z)" or "() or nothing at all
@@ -218,13 +227,14 @@ comma_types1 :: { [Type] }
 
 atype :: { Type }
   : UPPER_IDENT                   { tvar $1 }
-  | int                           { IntT }
+  | int                           { NumT }
   | bool                          { BoolT }
   | string                        { StringT }
   | topT                          { TopT }
   | record_type                   { $1 }
   | '(' type ')'                  { $2 }
   | Trait '[' type ',' type ']'   { Arr $3 $5 }
+  | Trait '[' type ']'            { Arr TopT $3 }
 
 -- record types
 record_type :: { Type }
@@ -243,21 +253,26 @@ record_type_field :: { (Label, Type) }
         Type parameters
 -------------------------------------------------------------------------------}
 
-typaram :: { TyName }
-  : UPPER_IDENT                    { s2n $1 }
+typaram :: { (TyName, Kind) }
+  : UPPER_IDENT                                 { (s2n $1, Star) }
+  | UPPER_IDENT '[' underscores ']'             { (s2n $1, $3) }
 
-typarams :: { [TyName] }
+underscores :: { Kind }
+  : '_'                          { KArrow Star Star }
+  | '_' ',' underscores          { KArrow Star $3 }
+
+typarams :: { [(TyName, Kind)] }
   : {- empty -}                    { []    }
   | typaram typarams               { $1:$2 }
 
-typarams1 :: { [TyName] }
-  : typaram typarams               { $1:$2 }
+-- typarams1 :: { [TyName] }
+--   : typaram typarams               { $1:$2 }
 
-typaram_list :: { [TyName] }
+typaram_list :: { [(TyName, Kind)] }
   : '[' comma_typarams1 ']'        { $2 }
   | {- empty -}                    { [] }
 
-comma_typarams1 :: { [TyName] }
+comma_typarams1 :: { [(TyName, Kind)] }
   : typaram                        { [$1]  }
   | typaram ',' comma_typarams1    { $1:$3 }
 
@@ -323,11 +338,12 @@ fexpr :: { Expr }
 
 aexpr :: { Expr }
       : LOWER_IDENT                      { evar $1 }
-      | num                              { IntV $1 }
+      | num                              { LitV $1 }
       | boolV                            { BoolV $1 }
       | str                              { StrV $1 }
       | aexpr '.' LOWER_IDENT            { Acc $1 $3 }
       | record_construct                 { $1 }
+      | aexpr lam LOWER_IDENT            { Remove $1 $3 }
       | top                              { Top }
       | aexpr ':' type                   { Anno $1 $3 }
       | '(' expr ')'                     { $2 }

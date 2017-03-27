@@ -1,4 +1,4 @@
---> "7 + 2 = 9"
+--> "7.0 + 2.0 - 4.0 = 5.0"
 
 type IEval = {eval : Int}
 
@@ -26,15 +26,22 @@ def printAlg : SubExpAlg[IPrint] = {
   sub = \x y -> { print = x.print ++ " - " ++ y.print }
 }
 
+
+-- We don't have to manually write the combination as follows, subtyping handles that
+--
+-- def combine A [B * A] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A & B] = {
+--   lit = \x -> f.lit x ,, g.lit x,
+--   add = \x y -> f.add x y ,, g.add x y
+-- }
+
+def combine A [B * A] (f : SubExpAlg[A]) (g : SubExpAlg[B]) = f ,, g
+
 def e1 E (f : ExpAlg[E]) = f.add (f.lit 7) (f.lit 2)
 
-def combine A [B * A] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A & B] = {
-  lit = \x -> f.lit x ,, g.lit x,
-  add = \x y -> f.add x y ,, g.add x y
-}
+def e2 E (f : SubExpAlg[E]) = f.sub (e1 E f) (f.lit 4)
 
-def newAlg = combine IEval IPrint subEvalAlg printAlg
+def evalPrintAlg : SubExpAlg[IEval & IPrint] = combine IEval IPrint subEvalAlg printAlg
 
-val o = e1 (IEval & IPrint) newAlg
+val o = e2 (IEval & IPrint) evalPrintAlg
 
 main = o.print ++ " = " ++ o.eval.toString
