@@ -1,9 +1,9 @@
 --> "7.0 + 2.0 - 4.0 = 5.0"
 
-type IEval = {eval : Int}
+type IEval = {eval : Double}
 
 type ExpAlg[E] = {
-  lit : Int -> E,
+  lit : Double -> E,
   add : E -> E -> E
 }
 

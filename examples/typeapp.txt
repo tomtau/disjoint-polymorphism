@@ -2,6 +2,6 @@
 
 type IdType [B] = B -> B
 
-def id : IdType [Int] = \x -> x
+def id : IdType [Double] = \x -> x
 
 main = id 3

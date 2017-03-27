@@ -3,21 +3,21 @@
 -- Examples in "The Expression Problem, Trivially!"
 
 
-type IEval = {eval : Int}
-trait lit (x : Int) { self : IEval =>
-  def eval : Int = x
+type IEval = {eval : Double}
+trait lit (x : Double) { self : IEval =>
+  def eval : Double = x
 }
 trait add (e1 : IEval, e2 : IEval) { self : IEval =>
-  def eval : Int = e1.eval + e2.eval
+  def eval : Double = e1.eval + e2.eval
 }
 
 
 trait sub (e1 : IEval, e2 : IEval) { self : IEval =>
-  def eval : Int = e1.eval - e2.eval
+  def eval : Double = e1.eval - e2.eval
 }
 
 type IPrint = IEval & { print : String }
-trait litP (x : Int) inherits lit(x) : IPrint { self : IPrint =>
+trait litP (x : Double) inherits lit(x) : IPrint { self : IPrint =>
   def print = x.toString
 }
 trait addP (e1 : IPrint, e2 : IPrint) inherits add(e1,e2) : IPrint { self : IPrint =>

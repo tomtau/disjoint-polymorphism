@@ -1,13 +1,13 @@
 --> ()
 
 type Circle = {
-  radius : Int
+  radius : Double
 }
 
 type CircleFns = {
-  area : T -> Int,
-  grow : T -> Int,
-  shrink : T -> Int
+  area : T -> Double,
+  grow : T -> Double,
+  shrink : T -> Double
 }
 
 trait circleFns : CircleFns { self : Circle =>
@@ -16,7 +16,7 @@ trait circleFns : CircleFns { self : Circle =>
   def shrink() = self.radius - 1
 }
 
-trait circle(radius : Int) : Circle { self =>
+trait circle(radius : Double) : Circle { self =>
   def radius = radius
 }
 
@@ -47,6 +47,6 @@ trait buttonFns : ButtonFns { self : Button =>
 
 type RoundButton = Circle & Button
 
-trait roundButton(radius : Int, label : String, action : T -> String) inherits circle(radius) & button(label, action)
+trait roundButton(radius : Double, label : String, action : T -> String) inherits circle(radius) & button(label, action)
 
 def test = new[RoundButton & CircleFns & ButtonFns] roundButton(3, "Test", \_ -> "hello") & circleFns & buttonFns

@@ -23,7 +23,7 @@ $white = [\ \t\n\r]
 $paren = [\(\)\[\]\{\}]
 
 @keyword = let | in
-         | Int | Bool | String
+         | Double | Bool | String
          | if  | then | else
          | def | type | module
          | defrec | forall | trait
@@ -57,7 +57,7 @@ tokens :-
 <0> @keyword                                   { mkT (const TKey) }
 <0> @compop                                    { mkT (const TSym) }
 <0> @op                                        { mkT (const TSym) }
-<0> \-?[$digit]*\.?[$digit]                    { mkT (TNum . read) }
+<0> \-?[$digit]*\.?[$digit]+                   { mkT (TNum . read) }
 <0> [A-Z] [$vchar]*                            { mkT Tupperid }
 <0> \_ [$alpha \_] [$vchar]* | [a-z] [$vchar]* { mkT Tlowerid }
 <0> \" @string* \"                             { mkT (TStr . convChar . tail . init) }

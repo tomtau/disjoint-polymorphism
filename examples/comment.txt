@@ -9,8 +9,8 @@ trait comment(content : String) { self : Comment =>
 
 
 -- BEGIN_UP_DEF
-type Up = { upvotes : T -> Int }
-trait up(upvotes : Int) { self : Up =>
+type Up = { upvotes : T -> Double }
+trait up(upvotes : Double) { self : Up =>
   def upvotes() = upvotes
 }
 -- END_UP_DEF

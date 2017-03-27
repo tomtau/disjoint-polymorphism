@@ -6,7 +6,7 @@
 -- Nat Algebra
 
 type NatAlg[E] = {
-  lit : Int -> E,
+  lit : Double -> E,
   add : E -> E -> E
 }
 
@@ -35,7 +35,7 @@ type CBool = {
 
 
 -- Evaluation
-type IEval = {eval : Int}
+type IEval = {eval : Double}
 
 trait evalNatAlg : NatAlg[IEval] { self =>
   def lit n = { eval = n }

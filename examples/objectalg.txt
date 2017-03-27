@@ -9,8 +9,8 @@
 
 
 type ExpAlg[Repr[_]] = {
-  lit : Int -> Repr[Int],
-  add : Repr[Int] -> Repr[Int] -> Repr[Int],
+  lit : Double -> Repr[Double],
+  add : Repr[Double] -> Repr[Double] -> Repr[Double],
   lam : forall A B. (Repr[A] -> Repr[B]) -> Repr[A -> B],
   app : forall A B. Repr[A -> B] -> Repr[A] -> Repr[B]
 }
@@ -26,7 +26,7 @@ trait evalAlg : ExpAlg[IEval] { self =>
 }
 
 
-type IPrint[E] = { print : Int -> String }
+type IPrint[E] = { print : Double -> String }
 
 trait printAlg : ExpAlg[IPrint] { self =>
   def lit x = { print = \_ -> x.toString }
@@ -41,7 +41,7 @@ trait printAlg : ExpAlg[IPrint] { self =>
 
 
 type MulExpAlg[Repr[_]] = ExpAlg[Repr] & {
-  mul : Repr[Int] -> Repr[Int] -> Repr[Int]
+  mul : Repr[Double] -> Repr[Double] -> Repr[Double]
 }
 
 trait mulEvalAlg inherits evalAlg : MulExpAlg[IEval] { self =>
@@ -55,9 +55,9 @@ trait mulPrintAlg inherits printAlg : MulExpAlg[IPrint] { self =>
 
 def e1 (f : MulExpAlg[IEval]) = f.mul (f.add (f.lit 7) (f.lit 2)) (f.lit 4)
 
-def e2 (f : MulExpAlg[IEval]) = f.lam Int Int (\x -> f.add x (e1 f))
+def e2 (f : MulExpAlg[IEval]) = f.lam Double Double (\x -> f.add x (e1 f))
 
-def e3 (f : MulExpAlg[IEval]) =  f.add (f.app Int Int (e2 f) (f.lit 1)) (f.lit 2)
+def e3 (f : MulExpAlg[IEval]) =  f.add (f.app Double Double (e2 f) (f.lit 1)) (f.lit 2)
 
 
 -- type IEvalAndPrint[A] = IEval[A] & IPrint[A]
