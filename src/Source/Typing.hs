@@ -488,9 +488,9 @@ tcheck (Acc e "toString") StringT = do
   (_, e') <- infer e
   return (T.UToString e')
 
-tcheck (Acc e "toString") NumT = do
+tcheck (Acc e "sqrt") NumT = do
   e' <- tcheck e NumT
-  return (T.UToString e')
+  return (T.USqrt e')
 
 tcheck (Acc e l) a = do
   (t, e') <- infer e
