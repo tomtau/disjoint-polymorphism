@@ -1,1 +1,93 @@
 \section{Introduction}
+
+Mainstream Object-Oriented Programming (OOP) languages (such as Java,
+C++ C\# or Scala) all use a similar programming model based on
+classes. For the remainder of the paper this will be referred to as
+the \emph{standard model}. The standard model has its roots on the
+origins of OOP in the 1960's in the Simula~\cite{} language. We argue
+that the standard model essentially provides a \emph{covariant} view of
+objects. We will elaborate on the term covariant later. But for now
+it is enough to describe some basic properties that are expected 
+in the standard model:
+
+\begin{itemize}
+
+\item {\bf Extensions as subtypes:} In the standard model, when a 
+subclass \emph{extends} a class it automatically becomes a 
+\emph{subtype} of the super-class. 
+
+\item{\bf Inheritance and subtyping work harmoniously together:}
+Class extension does two things at once: it inherits code from the
+superclass; and it creates a subtype. In other words inheritance and
+subtyping always go along together. 
+
+\end{itemize}
+
+The standard model has been sucessefully being used for over 50 years,
+so it clearly has demonstrated its value in practice. In our personal
+opinion this success can be attributed to a few things. Firstly,
+subtyping and inheritance enable forms of reusability and modularity 
+that are not easily or naturally available in languages without such
+mechanisms. Secondly, the model is relatively simple and intuitive 
+to grasp for programmers. \bruno{more?}
+
+Unfortunatelly the study of the theoretical foundations has
+taught us that the story about OOP is not quite so simple. Since the
+earliest works on the theory of OOP and subtyping, we have known that 
+the covariant view of objects is somewhat simplified. 
+
+Cardelli's work on calculi for OOP has
+shown, for example, that functions are not strictly covariant. 
+A function of type $A \to B$ is a subtype of another function 
+$C \to D$ when $B$ is a subtype of $D$ and $A$ is a \emph{supertype} 
+of $C$. Mainstream OOP languages such as Java or C\# address this
+disturbance of the covariant view by making methods invariant on 
+their argument types, thus restricting the natural subtyping of
+functions. Various other issues related to covariance are known. 
+For example...
+
+Cook et al.'s work on ``\emph{Inheritance is not Subtyping}''~\cite{}
+is another example of how the theory of  OOP languages contradicts 
+the simple covariant model. As Cook et al. argued inheritance and
+subtyping are different relations: subtyping being a realtion on types 
+and 
+
+\begin{itemize}
+
+\item {\bf Extensions are not always subtypes:} Sometimes they can 
+be supertypes or have no subtyping relation with the superclass. 
+
+\item {\bf Inheritance and subtyping should be decoupled:}
+
+\end{itemize}
+
+There are multiple flavours of inheritance. To avoid confusion, since 
+the same terminology is often used in the literature to mean different 
+things, we use the following 3 terms in this paper:
+
+\begin{itemize}
+
+\item{{\bf Static inheritance:}} Static inheritance refers to what the
+  typical model of inheritance in class-based languages. The
+  inheritance model is said to be static because when using class
+  extension, the extended classes are statically known at compile-type.
+Static inheritance is used in languages such as Java, Scala or C\# or
+C++\footnote{Note that C++ templates allow the Mixin pattern, which
+  enables ...}.
+
+\item{{\bf Mutable Inheritance:}} Prototype-based languages such as 
+Javascript or Self allow another model of inheritance, which we call
+\emph{mutable inheritance}. In this inheritance model, self references 
+can be changed at any point. 
+
+\item{{\bf Dynamic Inheritance:}} Dynamic inheritance is a less well-known 
+model which stands in between static and mutable inheritance.
+Dynamic inheritance is a model used by some academic delegation 
+OOP languages, such as ...  
+Unlike the static inheritance model, with dynamic inheritance 
+objects can inherits from other objects which are not statically
+known. However, unlike mutable inheritance, the self-reference is not 
+mutable and cannot be arbitrarely changed at run-time. 
+
+\end{itemize}
+
