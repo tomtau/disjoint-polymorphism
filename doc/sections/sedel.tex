@@ -102,7 +102,8 @@ composed with other traits, they must be composed with an implementation of
 The above line also shows that we can create an object from multiple traits.
 More precisely, the object is created from the \textit{composition} of those
 traits. Therefore, we are able to call methods from different traits on a single
-object, such as \lstinline{circleFns.area()} and \lstinline{circleFns.radius}
+object, such as \lstinline{circleWithFns.area()} and
+\lstinline{circleWithFns.radius}.
 
 Similarly we define functions for buttons as well.
 \lstinputlisting[linerange=56-63]{../examples/box.txt}% APPLY:linerange=BUTTON_FNS
@@ -173,9 +174,10 @@ is the type of traits that conforms to the \lstinline$Norm$ type with dependency
 on \lstinline{Point}. It is worth noting that this kind of dynamic composition
 and instantiation is impossible in traditional OO languages, such as Java,
 because the concrete implementation of \lstinline{norm} is unknown at
-compile-time. This gives us the flexibility to choose different norms. For
-example, below is another version of round button that provides
-\lstinline{inCircle} method with Euclidean norm baked in.
+compile-time, let alone compose it with other traits. This gives us the
+flexibility to choose different norms. For example, below is another version of
+round button that provides \lstinline{inCircle} method with Euclidean norm baked
+in.
 \lstinputlisting[linerange=115-115]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST2
 
 
