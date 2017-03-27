@@ -11,7 +11,7 @@ type CircleFns = {
 }
 
 trait circleFns : CircleFns { self : Circle =>
-  def area() = self.radius * self.radius * 3
+  def area() = self.radius * self.radius * 3.14
   def grow() = self.radius + 1
   def shrink() = self.radius - 1
 }
