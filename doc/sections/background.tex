@@ -138,11 +138,11 @@ Note that this type is just syntactic sugar for:
 That is, a multi-field record type is desugared as intersections of single-field
 record types.
 
-\name supports two primitive operations related to records:
-\textit{construction} and \textit{selection}. \textit{Extension}, described in
-many other record systems, is delegated to the merge operator. Working with
-records is type-safe: the type system prevents accessing a field that does not
-exist.
+\name supports three primitive operations related to records:
+\textit{construction} \textit{selection} and \textit{restriction}.
+\textit{Extension}, described in many other record systems, is delegated to the
+merge operator. Working with records is type-safe: the type system prevents
+accessing a field that does not exist.
 
 \paragraph{Record construction.} The usual notation for constructing records
 \begin{lstlisting}
@@ -164,6 +164,8 @@ inside a merge, so long as it is present.
 \begin{lstlisting}
   ({open = 192} ,, 3 ,, {low = 189}).open
 \end{lstlisting}
+
+\jeremy{say something about record restriction}
 
 \paragraph{Record extension} Extension, just like construction, is implemented
 with the merge operator. The following example adds a \lstinline{close} field to

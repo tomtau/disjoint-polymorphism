@@ -626,7 +626,7 @@ disjoint ctx (And a1 a2) b = do
 disjoint ctx a (And b1 b2) = do
   disjoint ctx a b1
   disjoint ctx a b2
-disjoint _ NumT NumT = throwError $ text "Int and Int are not disjoint"
+disjoint _ NumT NumT = throwError $ text "Double and Double are not disjoint"
 disjoint _ BoolT BoolT = throwError $ text "Bool and Bool are not disjoint"
 disjoint _ StringT StringT = throwError $ text "String and String are not disjoint"
 disjoint _ _ _ = return ()

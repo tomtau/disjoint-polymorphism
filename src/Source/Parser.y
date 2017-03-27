@@ -312,11 +312,11 @@ ctyparams1 :: { [(String, Type)] }
 
 expr :: { Expr }
      : lam lparam_list1 '->' expr                            { foldr elam (elam (last $2) $4) (init $2) }
-     | blam ctyparams1 '.' expr                             { foldr dlam (dlam (last $2) $4) (init $2) }
-     | let LOWER_IDENT ':' type '=' expr in expr   { elet $2 $4 $6 $8 }
-     | if expr then expr else expr                  { If $2 $4 $6 }
-     | new '[' type ']' traitConstrs                        { transNew $3 $5 }
-     | infixexpr                                            { $1 }
+     | blam ctyparams1 '.' expr                              { foldr dlam (dlam (last $2) $4) (init $2) }
+     | let LOWER_IDENT ':' type '=' expr in expr             { elet $2 $4 $6 $8 }
+     | if expr then expr else expr                           { If $2 $4 $6 }
+     | new '[' type ']' traitConstrs                         { transNew $3 $5 }
+     | infixexpr                                             { $1 }
 
 infixexpr :: { Expr }
           : infixexpr '+' infixexpr                                       { PrimOp (Arith Add) $1 $3 }
