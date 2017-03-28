@@ -72,7 +72,7 @@ difference is that, a trait can inherit one or more traits without any problems,
 provided that there are no conflicts arising (cf. Section~\ref{sec:conflicts}).
 
 To demonstrate that, we create another trait \lstinline$circle$ extending
-\lstinline{point} with extra method \lstinline{radius}.
+\lstinline{point} with an extra method \lstinline{radius}.
 \lstinputlisting[linerange=18-21]{../examples/box.txt}% APPLY:linerange=CIRCLE_DEF
 Notice how we let \lstinline{circle} inherit \lstinline{point} and define
 additional method \lstinline{radius}. Intersection types are used to model the
@@ -136,7 +136,7 @@ The following trait gets rejected because both \lstinline{asOval} and
 \lstinline{circle} have a conflicting \lstinline{radius} method.
 \lstinputlisting[linerange=82-83]{../examples/box.txt}% APPLY:linerange=CONFLICT_DEF
 
-To resolve the conflict, the programmer needs to explicitly decides which
+To resolve the conflict, the programmer needs to explicitly state which
 \lstinline{radius} gets to stay. In \name, trait composition supports
 \textit{exclusion}, which allows one to avoid a conflict before it occurs. The
 following is one choice, and is accepted by \name again.
@@ -158,11 +158,11 @@ which, given a point, tests if the point lies inside the circle.
 \lstinputlisting[linerange=104-107]{../examples/box.txt}% APPLY:linerange=CIRCLE_FNS2
 
 \lstinline{CircleFns2} just extends \lstinline{CircleFns} by another method
-\lstinline{inCircle}, which, as shown in the trait \lstinline{circleFns2}, is
+\lstinline{inCircle}, which, as shown in trait \lstinline{circleFns2}, is
 implemented by invoking the \lstinline{norm} method from something of type
-\lstinline{Circle & Norm}. So what is this \lstinline{Norm} type? It consists of a single
-method \lstinline{norm} -- distance of a point to the origin . We provide two
-different norms via two traits.
+\lstinline{Circle & Norm}. So what is this \lstinline{Norm} type? It consists of
+a single method \lstinline{norm} -- distance of a point to the origin . We
+provide two different norms via two traits.
 \lstinputlisting[linerange=94-100]{../examples/box.txt}% APPLY:linerange=NORM_DEF
 
 To facilitate creating round buttons with different norms baked in, we define a
