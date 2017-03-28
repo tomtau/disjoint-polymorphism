@@ -1,4 +1,4 @@
---> 5.0
+--> "var x = 3.0; var y = 4.0; (if (x < y) then (x + 2.0) else (y + 1.0)) = 5.0"
 
 
 -----------------------------
@@ -26,6 +26,25 @@ def bind A B (x : Maybe[A]) (f : A -> Maybe[B]) : Maybe[B] =
 def fromJust A (x : Maybe[A]) : A =
   x.match A { nothing = undefined A, just = \b -> b }
 
+def isJust A (x : Maybe[A]) : Bool =
+  x.match Bool { nothing = false, just = \_ -> true }
+
+type EnvF[E] = String -> Maybe[E]
+
+def empty A : EnvF[A] = \_ -> {match = /\C. \f -> f.nothing}
+
+def lookup A (s : String) (env : EnvF[A]) = env s
+
+def insert A (s1 : String) (v1 : A) (f : EnvF[A]) : EnvF[A] =
+  \s2 -> if s1 == s2 then just A v1 else f s2
+
+
+-----------------------------
+-- Evaluation interface
+-----------------------------
+
+type IEval = {eval : EnvF[Value] -> Maybe[Value]}
+
 type ValAlg[E] = {
   numV : Double -> E,
   boolV : Bool -> E
@@ -45,14 +64,40 @@ def fromNum (v : Value) : Double =
 def fromBool (v : Value) : Bool =
   v.match Bool { numV = \_ -> undefined Bool, boolV = \b -> b }
 
-type EnvF = String -> Maybe[Value]
 
-def empty : EnvF = \_ -> {match = /\C. \f -> f.nothing}
 
-def lookup (s : String) (env : EnvF) = env s
+-----------------------------
+-- Pretty printer interface
+-----------------------------
 
-def insert (s1 : String) (v1 : Value) (f : EnvF) : EnvF =
-  \s2 -> if s1 == s2 then just Value v1 else f s2
+type IPrint = { print : String }
+
+
+
+-----------------------------
+-- Type checker interface
+-----------------------------
+
+type TypeAlg[E] = {
+  tnum : E,
+  tbool : E
+}
+
+type Type = {
+  match : forall E. TypeAlg[E] -> E
+}
+
+
+def tnum : Type = { match = /\E. \f -> f.tnum }
+
+def tbool : Type = { match = /\E. \f -> f.tbool }
+
+def caseType A (t : Type) (x : A) (y : A) : A =
+  t.match A {tnum = x, tbool = y}
+
+type ITCheck = { tcheck : EnvF[Type] -> Maybe[Type] }
+
+
 
 
 -----------------------------
@@ -71,11 +116,9 @@ type Arith = {
   accept : forall E. ArithAlg[E] -> E
 }
 
--- Evaluation
-type IEval = {eval : EnvF -> Maybe[Value]}
-
+-- Evaluator
 trait evalArithAlg : ArithAlg[IEval] { self =>
-  def num n     = { eval = \env -> just Value (numV n) }
+  def num n     = { eval = \_ -> just Value (numV n) }
   def add e1 e2 = { eval = \env ->
     bind Value Value (e1.eval env) (\v1 ->
       bind Value Value (e2.eval env) (\v2 ->
@@ -98,13 +141,7 @@ trait evalArithAlg : ArithAlg[IEval] { self =>
   }
 }
 
-def eg1 : Arith = {
-  accept = /\E. \f -> f.add (f.mul (f.num 3) (f.num 4)) (f.num 5) }
-
-
--- Pretty printer
-type IPrint = { print : String }
-
+-- Pretty pinter
 trait ppArithAlg : ArithAlg[IPrint] { self =>
   def num n     = { print = n.toString }
   def add e1 e2 = { print = "(" ++ e1.print ++ " + " ++ e2.print ++ ")"}
@@ -112,6 +149,53 @@ trait ppArithAlg : ArithAlg[IPrint] { self =>
   def mul e1 e2 = { print = "(" ++ e1.print ++ " * " ++ e2.print ++ ")"}
   def div e1 e2 = { print = "(" ++ e1.print ++ " / " ++ e2.print ++ ")"}
 }
+
+-- Type checker
+trait tcArithAlg : ArithAlg[ITCheck] { self =>
+  def num n     = { tcheck = \_ -> just Type tnum }
+  def add e1 e2 = { tcheck = \env ->
+    bind Type Type (e1.tcheck env) (\t1 ->
+      caseType Maybe[Type] t1
+        (bind Type Type (e2.tcheck env) (\t2 ->
+          caseType Maybe[Type] t2
+            (just Type tnum)
+            (nothing Type)))
+        (nothing Type))
+  }
+  def sub e1 e2 = { tcheck = \env ->
+    bind Type Type (e1.tcheck env) (\t1 ->
+      caseType Maybe[Type] t1
+        (bind Type Type (e2.tcheck env) (\t2 ->
+          caseType Maybe[Type] t2
+            (just Type tnum)
+            (nothing Type)))
+        (nothing Type))
+  }
+  def mul e1 e2 = { tcheck = \env ->
+    bind Type Type (e1.tcheck env) (\t1 ->
+      caseType Maybe[Type] t1
+        (bind Type Type (e2.tcheck env) (\t2 ->
+          caseType Maybe[Type] t2
+            (just Type tnum)
+            (nothing Type)))
+        (nothing Type))
+  }
+  def div e1 e2 = { tcheck = \env ->
+    bind Type Type (e1.tcheck env) (\t1 ->
+      caseType Maybe[Type] t1
+        (bind Type Type (e2.tcheck env) (\t2 ->
+          caseType Maybe[Type] t2
+            (just Type tnum)
+            (nothing Type)))
+        (nothing Type))
+  }
+}
+
+
+def eg1 : Arith = {
+  accept = /\E. \f -> f.add (f.mul (f.num 3) (f.num 4)) (f.num 5) }
+
+
 
 -----------------------------
 -- Add conditional expression
@@ -123,6 +207,7 @@ type BoolArithAlg[E] = ArithAlg[E] & {
   ifexpr : E -> E -> E -> E
 }
 
+-- Evaluator
 trait evalBoolArithAlg inherits evalArithAlg : BoolArithAlg[IEval] { self =>
   def eq e1 e2        = { eval = \env ->
     bind Value Value (e1.eval env) (\v1 ->
@@ -142,12 +227,51 @@ trait evalBoolArithAlg inherits evalArithAlg : BoolArithAlg[IEval] { self =>
   }
 }
 
+-- Pretty printer
 trait ppBoolArithAlg inherits ppArithAlg : BoolArithAlg[IPrint] { self =>
   def eq e1 e2        = { print = "(" ++ e1.print ++ " == " ++ e2.print ++ ")" }
   def le e1 e2        = { print = "(" ++ e1.print ++ " < " ++ e2.print ++ ")" }
   def ifexpr e1 e2 e3 =
     { print = "(if " ++ e1.print ++ " then " ++ e2.print ++ " else " ++ e3.print ++ ")" }
 }
+
+
+-- Type checker
+trait tcBoolArithAlg inherits tcArithAlg : BoolArithAlg[ITCheck] { self =>
+  def eq e1 e2 = { tcheck = \env ->
+    bind Type Type (e1.tcheck env) (\t1 ->
+      caseType Maybe[Type] t1
+        (bind Type Type (e2.tcheck env) (\t2 ->
+          caseType Maybe[Type] t2
+            (just Type tbool)
+            (nothing Type)))
+        (nothing Type))
+  }
+  def le e1 e2 = { tcheck = \env ->
+    bind Type Type (e1.tcheck env) (\t1 ->
+      caseType Maybe[Type] t1
+        (bind Type Type (e2.tcheck env) (\t2 ->
+          caseType Maybe[Type] t2
+            (just Type tbool)
+            (nothing Type)))
+        (nothing Type))
+  }
+  def ifexpr e1 e2 e3 = { tcheck = \env ->
+    bind Type Type (e1.tcheck env) (\t1 ->
+      caseType Maybe[Type] t1
+        (nothing Type)
+        (bind Type Type (e2.tcheck env) (\t2 ->
+          (bind Type Type (e3.tcheck env) (\t3 ->
+            caseType Maybe[Type] t2
+              (caseType Maybe[Type] t3
+                (just Type t2)
+                (nothing Type))
+              (caseType Maybe[Type] t3
+                (nothing Type)
+                (just Type t2)))))))
+  }
+}
+
 
 type BoolArith = {
   accept : forall E. BoolArithAlg[E] -> E
@@ -167,19 +291,36 @@ type VarArithAlg[E] = BoolArithAlg[E] & {
   decl : String -> E -> E -> E
 }
 
+-- Evaluator
 trait evalVarArithAlg inherits evalBoolArithAlg : VarArithAlg[IEval] { self =>
-  def var n      = { eval = \env -> lookup n env }
+  def var n      = { eval = \env -> lookup Value n env }
   def decl n e b = { eval = \env ->
     bind Value Value (e.eval env) (\v ->
-      let newEnv : EnvF = insert n v env
-      in b.eval newEnv)
+      b.eval (insert Value n v env))
   }
 }
+
+-- Pretty printer
+trait ppVarArithAlg inherits ppBoolArithAlg : VarArithAlg[IPrint] { self =>
+  def var n      = { print = n }
+  def decl n e b = { print = "var " ++ n ++ " = " ++ e.print ++ "; " ++ b.print }
+}
+
+-- Type checker
+trait tcVarArithAlg inherits tcBoolArithAlg : VarArithAlg[ITCheck] { self =>
+  def var n      = { tcheck = \env -> lookup Type n env }
+  def decl n e b = { tcheck = \env ->
+    bind Type Type (e.tcheck env) (\t ->
+      b.tcheck (insert Type n t env)
+    )
+  }
+}
+
+
 
 type VarArith = {
   accept : forall E. VarArithAlg[E] -> E
 }
-
 
 -- var x = 3; var y = 4; if (x < y) x + 2; else y + 1
 def eg3 : VarArith = {
@@ -192,10 +333,21 @@ def eg3 : VarArith = {
 }
 
 
-main = fromNum (fromJust Value ((eg3.accept IEval (new[VarArithAlg[IEval]] evalVarArithAlg)).eval empty))
 
--- trait combine A [B * A] (f : Trait[ArithAlg[A]], g : Trait[ArithAlg[B]]) inherits f & g
+-- Put all together
 
--- def newAlg = combine IEval IPrint evalArithAlg ppArithAlg
+trait superAlg inherits evalVarArithAlg & ppVarArithAlg & tcVarArithAlg
 
--- main = (e1.accept (IEval & IPrint) (new[ArithAlg[IEval & IPrint]] newAlg)).print
+type SuperAlg = IEval & IPrint & ITCheck
+
+def superAlgInst = new[VarArithAlg[SuperAlg]] superAlg
+
+def evalAndPrint (e : VarArith) : String  =
+  let inst : SuperAlg = e.accept SuperAlg superAlgInst
+  in if isJust Type (inst.tcheck (empty Type))
+     then inst.print ++ " = " ++ (fromNum (fromJust Value (inst.eval (empty Value)))).toString
+     else "Type error!"
+
+
+
+main = evalAndPrint eg3
