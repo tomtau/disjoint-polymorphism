@@ -10,7 +10,7 @@ module Lexer (
   runAlex,
   ) where
 
-import Data.Char (isHexDigit, isOctDigit)
+import Data.Char (chr, isHexDigit, isOctDigit)
 import Numeric (readOct)
 }
 
@@ -50,6 +50,7 @@ tokens :-
 
 <0> $white+                                    { skip }
 <0> "--".*                                     { skip }
+<0> "{-"                                       { nestedComment }
 <0> $paren                                     { mkT (const TSym) }
 
 <0> true                                       { mkT (const (TBool True))}
@@ -135,6 +136,39 @@ lexError s = do
                 (if (not (null input))
                    then " before " ++ show (head input)
                    else " at end of file"))
+
+
+-- Nested comment block
+nestedComment :: AlexInput -> Int -> Alex Token
+nestedComment _ _ = do
+  input <- alexGetInput
+  go 1 input
+  where
+    go 0 input = do
+      alexSetInput input
+      alexMonadScan
+    go n input = do
+      case alexGetByte input of
+        Nothing -> err input
+        Just (c, input) -> do
+          case chr (fromIntegral c) of
+            '-' -> do
+              case alexGetByte input of
+                Nothing -> err input
+                Just (125, input) -> go (n - 1) input
+                Just (_, input) -> go n input
+            '\123' -> do
+              case alexGetByte input of
+                Nothing -> err input
+                Just (c', input)
+                  | c' == fromIntegral (ord '-') -> go (n + 1) input
+                Just (_, input) -> go n input
+            _ -> go n input
+    err input = do
+      alexSetInput input
+      lexError "error in nested comment"
+
+
 
 showPosn :: AlexPosn -> String
 showPosn (AlexPn _ line col) = show line ++ ':' : show col

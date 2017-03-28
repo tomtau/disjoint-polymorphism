@@ -115,7 +115,7 @@ traits \lstinline{circle} and \lstinline{button}:
 
 Next we add abilities to the round button on the fly and test its functionality
 as follows:
-\lstinputlisting[linerange=122-125]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST
+\lstinputlisting[linerange=124-127]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST
 
 
 
@@ -134,13 +134,13 @@ Let us introduce another shape: something oval.
 
 The following trait gets rejected because both \lstinline{asOval} and
 \lstinline{circle} have a conflicting \lstinline{radius} method.
-\lstinputlisting[linerange=81-82]{../examples/box.txt}% APPLY:linerange=CONFLICT_DEF
+\lstinputlisting[linerange=82-83]{../examples/box.txt}% APPLY:linerange=CONFLICT_DEF
 
 To resolve the conflict, the programmer needs to explicitly decides which
 \lstinline{radius} gets to stay. In \name, trait composition supports
 \textit{exclusion}, which allows one to avoid a conflict before it occurs. The
 following is one choice, and is accepted by \name again.
-\lstinputlisting[linerange=87-88]{../examples/box.txt}% APPLY:linerange=CONFLICT_RESOLVE
+\lstinputlisting[linerange=89-90]{../examples/box.txt}% APPLY:linerange=CONFLICT_RESOLVE
 
 
 
@@ -155,7 +155,7 @@ first-class values and can be passed around or returned from a function.
 
 Let us extend the functions of circles by another method \lstinline{inCircle},
 which, given a point, tests if the point lies inside the circle.
-\lstinputlisting[linerange=102-105]{../examples/box.txt}% APPLY:linerange=CIRCLE_FNS2
+\lstinputlisting[linerange=104-107]{../examples/box.txt}% APPLY:linerange=CIRCLE_FNS2
 
 \lstinline{CircleFns2} just extends \lstinline{CircleFns} by another method
 \lstinline{inCircle}, which, as shown in the trait \lstinline{circleFns2}, is
@@ -163,11 +163,11 @@ implemented by invoking the \lstinline{norm} method from something of type
 \lstinline{Circle & Norm}. So what is this \lstinline{Norm} type? It consists of a single
 method \lstinline{norm} -- distance of a point to the origin . We provide two
 different norms via two traits.
-\lstinputlisting[linerange=92-98]{../examples/box.txt}% APPLY:linerange=NORM_DEF
+\lstinputlisting[linerange=94-100]{../examples/box.txt}% APPLY:linerange=NORM_DEF
 
 To facilitate creating round buttons with different norms baked in, we define a
 factory that takes a trait \lstinline$norm$ and produces a round button:
-\lstinputlisting[linerange=109-111]{../examples/box.txt}% APPLY:linerange=POINT_FUNC
+\lstinputlisting[linerange=111-113]{../examples/box.txt}% APPLY:linerange=POINT_FUNC
 
 Here \lstinline{Trait} is a built-in keyword, and \lstinline$Trait[Point, Norm]$
 is the type of traits that conforms to the \lstinline$Norm$ type with dependency
@@ -178,7 +178,7 @@ compile-time, let alone compose it with other traits. This gives us the
 flexibility to choose different norms. For example, below is another version of
 round button that provides \lstinline{inCircle} method with Euclidean norm baked
 in.
-\lstinputlisting[linerange=115-115]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST2
+\lstinputlisting[linerange=117-117]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST2
 
 
 

@@ -10,7 +10,7 @@ trait swimming { self =>
 
 
 -- BEGIN_FLY_DEF
-type Flying = {  fly : T -> String }
+type Flying = { fly : T -> String }
 trait flying { self =>
   def fly() = "I can fly"
 }

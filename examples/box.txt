@@ -66,7 +66,7 @@ trait buttonFns : ButtonFns { self : Button =>
 -- BEGIN_ROUNDBUTTON_DEF
 type RoundButton = Circle & Button
 trait roundButton(radius : Double, center: Point, label : String)
-  inherits circle(center, radius) & button(label) { self => }
+  inherits circle(center, radius) & button(label)
 -- END_ROUNDBUTTON_DEF
 
 
@@ -77,10 +77,12 @@ trait asOval(shortRadius : Double, longRadius : Double) { self =>
 }
 -- END_ASOVAL_DEF
 
+{-
 -- BEGIN_CONFLICT_DEF
--- trait oval(shortRadius : Double, longRadius : Double, center: Point)
---   inherits circle(center, shortRadius) & asOval(shortRadius, longRadius)
+trait oval(shortRadius : Double, longRadius : Double, center: Point)
+  inherits circle(center, shortRadius) & asOval(shortRadius, longRadius)
 -- END_CONFLICT_DEF
+-}
 
 
 -- BEGIN_CONFLICT_RESOLVE
