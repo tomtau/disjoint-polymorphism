@@ -1,132 +1,201 @@
---> ()
+--> 5.0
 
--- features: bool, nat, untyped, typed, type+sub
--- operations: eval, pp, typecheck
 
--- Nat Algebra
+-----------------------------
+-- Infrastructure
+-----------------------------
 
-type NatAlg[E] = {
-  lit : Double -> E,
-  add : E -> E -> E
+def undefined : forall E. E = /\E. let x : E = x in x
+
+type MaybeAlg[B, A] = {
+  nothing : B,
+  just : A -> B
 }
 
-
--- Nat Encoding
-
-type CNat = {
-  accept : forall E . NatAlg[E] -> E
+type Maybe[A] = {
+   match : forall C. MaybeAlg[C,A] -> C
 }
 
+def nothing A : Maybe[A] = { match = /\C. \f -> f.nothing }
 
--- Bool Algebra
+def just A (x : A) : Maybe[A] = { match = /\C. \f -> f.just x }
 
-type BoolAlg[E] = {
-  ctrue : E,
-  cfalse : E,
-  cif : E -> E -> E -> E
+def bind A B (x : Maybe[A]) (f : A -> Maybe[B]) : Maybe[B] =
+  x.match Maybe[B] { nothing = nothing B, just = \a -> f a }
+
+def fromJust A (x : Maybe[A]) : A =
+  x.match A { nothing = undefined A, just = \b -> b }
+
+type ValAlg[E] = {
+  numV : Double -> E,
+  boolV : Bool -> E
 }
 
--- Bool Encoding
-
-type CBool = {
-  accept : forall E . BoolAlg[E] -> E
+type Value = {
+  match : forall C. ValAlg[C] -> C
 }
 
+def numV (n : Double) : Value = { match = /\C. \f -> f.numV n }
+
+def boolV (b : Bool) : Value = { match = /\C. \f -> f.boolV b }
+
+def fromNum (v : Value) : Double =
+  v.match Double { numV = \n -> n, boolV = \_ -> undefined Double }
+
+def fromBool (v : Value) : Bool =
+  v.match Bool { numV = \_ -> undefined Bool, boolV = \b -> b }
+
+type EnvF = String -> Maybe[Value]
+
+def empty : EnvF = \_ -> {match = /\C. \f -> f.nothing}
+
+def lookup (s : String) (env : EnvF) = env s
+
+def insert (s1 : String) (v1 : Value) (f : EnvF) : EnvF =
+  \s2 -> if s1 == s2 then just Value v1 else f s2
 
 
--- Evaluation
-type IEval = {eval : Double}
+-----------------------------
+-- Base arithmetic expression
+-----------------------------
 
-trait evalNatAlg : NatAlg[IEval] { self =>
-  def lit n = { eval = n }
-  def add e1 e2 = { eval = e1.eval + e2.eval }
+type ArithAlg[E] = {
+  num : Double -> E,
+  add : E -> E -> E,
+  sub : E -> E -> E,
+  mul : E -> E -> E,
+  div : E -> E -> E
 }
-
-trait evalBoolAlg : BoolAlg[IEval] { self =>
-  def ctrue = { eval = 1 }
-  def cfalse = { eval = 0 }
-  def cif b e1 e2 = { eval = if b.eval == 0 then e2.eval else e1.eval }
-}
-
-
--- Nat and Bool
-
-type ArithAlg [E] = NatAlg [E] & BoolAlg [E] & { isZero : E -> E }
 
 type Arith = {
-  accept : forall E. ArithAlg [E] -> E
+  accept : forall E. ArithAlg[E] -> E
 }
 
-trait evalArithAlg inherits evalNatAlg & evalBoolAlg : ArithAlg [IEval] { self =>
-  def isZero e = { eval = if e.eval == 0 then 1 else 0 }
+-- Evaluation
+type IEval = {eval : EnvF -> Maybe[Value]}
+
+trait evalArithAlg : ArithAlg[IEval] { self =>
+  def num n     = { eval = \env -> just Value (numV n) }
+  def add e1 e2 = { eval = \env ->
+    bind Value Value (e1.eval env) (\v1 ->
+      bind Value Value (e2.eval env) (\v2 ->
+        just Value (numV (fromNum v1 + fromNum v2))))
+  }
+  def sub e1 e2 = { eval = \env ->
+    bind Value Value (e1.eval env) (\v1 ->
+      bind Value Value (e2.eval env) (\v2 ->
+        just Value (numV (fromNum v1 - fromNum v2))))
+  }
+  def mul e1 e2 = { eval = \env ->
+    bind Value Value (e1.eval env) (\v1 ->
+      bind Value Value (e2.eval env) (\v2 ->
+        just Value (numV (fromNum v1 * fromNum v2))))
+  }
+  def div e1 e2 = { eval = \env ->
+    bind Value Value (e1.eval env) (\v1 ->
+      bind Value Value (e2.eval env) (\v2 ->
+        just Value (numV (fromNum v1 / fromNum v2))))
+  }
 }
 
+def eg1 : Arith = {
+  accept = /\E. \f -> f.add (f.mul (f.num 3) (f.num 4)) (f.num 5) }
 
--- Pretty Printer
 
+-- Pretty printer
 type IPrint = { print : String }
 
-trait ppNatAlg : NatAlg [IPrint] { self =>
-  def lit n = { print = n.toString }
+trait ppArithAlg : ArithAlg[IPrint] { self =>
+  def num n     = { print = n.toString }
   def add e1 e2 = { print = "(" ++ e1.print ++ " + " ++ e2.print ++ ")"}
+  def sub e1 e2 = { print = "(" ++ e1.print ++ " - " ++ e2.print ++ ")"}
+  def mul e1 e2 = { print = "(" ++ e1.print ++ " * " ++ e2.print ++ ")"}
+  def div e1 e2 = { print = "(" ++ e1.print ++ " / " ++ e2.print ++ ")"}
 }
 
-trait ppBoolAlg : BoolAlg [IPrint] { self =>
-  def ctrue = { print = "true" }
-  def cfalse = { print = "false" }
-  def cif b e1 e2 = { print = "(if " ++ b.print ++ " then " ++ e2.print ++ " else " ++ e1.print ++ ")" }
+-----------------------------
+-- Add conditional expression
+-----------------------------
+
+type BoolArithAlg[E] = ArithAlg[E] & {
+  eq  : E -> E -> E,
+  le  : E -> E -> E,
+  ifexpr : E -> E -> E -> E
 }
 
-trait ppArithAlg inherits ppNatAlg & ppBoolAlg : ArithAlg[IPrint] { self =>
-  def isZero e = { print = "(isZero " ++ e.print ++ ")" }
+trait evalBoolArithAlg inherits evalArithAlg : BoolArithAlg[IEval] { self =>
+  def eq e1 e2        = { eval = \env ->
+    bind Value Value (e1.eval env) (\v1 ->
+      bind Value Value (e2.eval env) (\v2 ->
+        just Value (boolV (fromNum v1 == fromNum v2))))
+  }
+  def le e1 e2        = { eval = \env ->
+    bind Value Value (e1.eval env) (\v1 ->
+      bind Value Value (e2.eval env) (\v2 ->
+        just Value (boolV (fromNum v1 < fromNum v2))))
+  }
+  def ifexpr e1 e2 e3 = { eval = \env ->
+    bind Value Value (e1.eval env) (\b ->
+      if fromBool b
+      then e2.eval env
+      else e3.eval env)
+  }
+}
+
+trait ppBoolArithAlg inherits ppArithAlg : BoolArithAlg[IPrint] { self =>
+  def eq e1 e2        = { print = "(" ++ e1.print ++ " == " ++ e2.print ++ ")" }
+  def le e1 e2        = { print = "(" ++ e1.print ++ " < " ++ e2.print ++ ")" }
+  def ifexpr e1 e2 e3 =
+    { print = "(if " ++ e1.print ++ " then " ++ e2.print ++ " else " ++ e3.print ++ ")" }
+}
+
+type BoolArith = {
+  accept : forall E. BoolArithAlg[E] -> E
+}
+
+def eg2 : BoolArith = {
+  accept = /\E. \f -> f.ifexpr (f.eq (f.num 3) (f.num 5)) (f.num 12) (f.add (f.num 12) (f.num 22))
 }
 
 
--- Untyped lambda calculus
+-----------------------------
+-- Add variable declarations
+-----------------------------
 
-type TermAlg [E] = ArithAlg [E] & {
+type VarArithAlg[E] = BoolArithAlg[E] & {
   var : String -> E,
-  abs : String -> E -> E,
-  app : E -> E -> E
+  decl : String -> E -> E -> E
 }
 
-type Term = {
-  accept : forall E . TermAlg [E] -> E
+trait evalVarArithAlg inherits evalBoolArithAlg : VarArithAlg[IEval] { self =>
+  def var n      = { eval = \env -> lookup n env }
+  def decl n e b = { eval = \env ->
+    bind Value Value (e.eval env) (\v ->
+      let newEnv : EnvF = insert n v env
+      in b.eval newEnv)
+  }
 }
 
-trait ppTermAlg inherits ppArithAlg : TermAlg [IPrint] { self =>
-  def var s = {print = s}
-  def abs s e = {print = "(lambda " ++ s ++ " . " ++ e.print ++ ")"}
-  def app e1 e2 = {print = "(" ++ e1.print ++ " " ++ e2.print ++ ")"}
-}
-
-
-
--- type Subst E = { subst : String -> E -> E }
-
-trait evalTermAlg inherits evalArithAlg : TermAlg [IEval] { self =>
-  def var s = { eval = 0 }
-  def abs s e = { eval = 0 }
-  def app e1 e2 = { eval = 0 }
+type VarArith = {
+  accept : forall E. VarArithAlg[E] -> E
 }
 
 
-
-
-
--- Test
-
-val e1 : Arith = {
-  accept = /\E . \f -> f.cif (f.isZero (f.lit 3)) (f.add (f.lit 3) (f.lit 4)) (f.lit 4)
+-- var x = 3; var y = 4; if (x < y) x + 2; else y + 1
+def eg3 : VarArith = {
+  accept = /\E. \f ->
+    f.decl "x" (f.num 3)
+      (f.decl "y" (f.num 4)
+        (f.ifexpr (f.le (f.var "x") (f.var "y"))
+          (f.add (f.var "x") (f.num 2))
+          (f.add (f.var "y") (f.num 1))))
 }
 
 
--- (\x -> x + 3) e1
-val e2 : Term = {
- accept = /\E . \f -> f.app (f.abs "x" (f.add (f.var "x") (f.lit 3))) (e1.accept E f)
-}
+main = fromNum (fromJust Value ((eg3.accept IEval (new[VarArithAlg[IEval]] evalVarArithAlg)).eval empty))
 
--- main = (e1.accept IPrint (new[ArithAlg[IPrint]] ppArithAlg)).print ++ " = " ++
---        (e1.accept IEval (new[ArithAlg[IEval]] evalArithAlg)).eval.toString
+-- trait combine A [B * A] (f : Trait[ArithAlg[A]], g : Trait[ArithAlg[B]]) inherits f & g
 
--- main = (e2.accept IPrint (new[TermAlg[IPrint]] ppTermAlg)).print
+-- def newAlg = combine IEval IPrint evalArithAlg ppArithAlg
+
+-- main = (e1.accept (IEval & IPrint) (new[ArithAlg[IEval & IPrint]] newAlg)).print
