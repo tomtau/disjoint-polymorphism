@@ -2,11 +2,12 @@
 
 Mainstream statically-typed Object-Oriented Programming (OOP) languages (such as Java,
 C++ C\# or Scala) all use a similar programming model based on
-classes. We refer to this as the \emph{covariant model} for the
-remainder of this paper. The covariant model has its roots on the
+classes. This programming model has its roots on the
 origins of OOP in the 1960's in the Simula~\cite{} language. 
-We call this model covariant because the following basic properties are expected:
-\bruno{are the two below essentially the same?}
+We will refer to this model as the \emph{covariant model} for the
+remainder of this paper, because in this model inheritance and
+subtyping vary in the same way. More concretely
+the following is expected in the covariant model:
 
 \begin{itemize}
 
@@ -21,19 +22,47 @@ subtyping always go along together.
 
 \end{itemize}
 
-The covariant model has been sucessefully being used for over 50 years,
-so it clearly has demonstrated its value in practice. In our personal
-opinion this success can be attributed to a few things. Firstly,
-subtyping and inheritance enable forms of reusability and modularity 
-that are not easily or naturally available in languages without such
-mechanisms. Secondly, the model is relatively simple and intuitive 
-to grasp for programmers. \bruno{more?}
+The covariant model has been sucessefully used for over 50 years,
+so it clearly has demonstrated its value in practice. 
+A large part of the success of this model can probably be attributed 
+to its relative simplicity. In particular, programmers do not have to think carefully 
+about the difference between subtyping and inheritance (indeed many
+programmers confuse the two concepts). \bruno{more?}
 
 Unfortunatelly the study of the theoretical foundations has
 taught us that the story about OOP is not quite so simple. Since the
 earliest works on the theory of OOP and subtyping, we have known that 
-the covariant view of objects is somewhat simplified. 
+the covariant view of objects is somewhat simplified. Already in
+Cardelli's~\cite{} earliest work on the theoretic foundations of OOP,
+we knew that functions do not behave in a strictly covariant way. 
+However it was only until Cook et al.~\cite{} famous paper on
+``\emph{Inheritance is not Subtyping}'' that the issues were discussed 
+in more detail. As Cook et al. argued inheritance and
+subtyping are different relations: subtyping being a relation on types 
+and inheritance being a relation on objects. In the standard model 
+the subtype relation is based on the inheritance hierarchy. This 
+works very well if extensions produce 
+subtypes. However, as Cook et al.'s work famously demonstrated 
+this is not always the case. The essential implication of this is that
+the covariant model cannot express well programs where inheritance 
+and subtyping do not go along together. Following their observations about 
+inheritance and subtyping, Cook et al. suggest a more general and 
+flexible programing model with the following properties:
 
+\begin{itemize}
+
+\item {\bf Inheritance and subtyping should be decoupled:} 
+That is, there should be different mechanisms for class inheritance 
+and class/interface subtyping. 
+
+\item {\bf Extensions do not always produce subtypes:} 
+There are cases where classes can inherit from other classes without 
+producing subtypes. 
+
+\end{itemize}
+
+
+\begin{comment}
 Cardelli's work on calculi for OOP has shown, for example, that
 functions are not strictly covariant.  A function of type $A \to B$ is
 a subtype of another function $C \to D$ when $B$ is a subtype of $D$
@@ -77,22 +106,157 @@ producing subtypes.
 
 \end{itemize}
 
+\end{comment}
+
 Despite being proposed almost 30 years ago, and one of the most
 famous papers in OOP, Cook et al.'s paper has not had much impact 
-on the design of mainstream OOP languages. 
+on the design of mainstream OOP languages.
 %Certainly this is not because
 %researchers or designer of OOP language are unaware of the subtleties 
 %of covariance and contravariance. Indeed over the years, and for other
 %reasons various features have been added to programming languages to 
 We believe that there are two primary reasons for the lack of adoption
-of Cook et al.'s model.  Firstly, the mental programming model is not
-as simple as the standard (covariant) model. In Cook's model programmers have to
+of their model.  Firstly, the mental programming model is not
+as simple as the covariant model. In Cook's model programmers have to
 think more carefully on whether extensions produce subtypes or not,
-for example.  Secondly, there are not many compelling applications in
+for example.  Thus, it is crutial for programmers to understand the
+difference between subtyping and inheritance.
+Secondly, and perhaps more importantly, there are not many compelling applications in
 the literature where the need for a more flexible OOP model is
 necessary. Thus language designers may argue that the costs outweight 
 the benefits, and may decide to stick instead to the covariant 
 model, which is simple, and well-understood by programmers. 
+
+This paper has three primary goals. The first goal is to argue that the
+covariant model significantly restricts statically-typed OOP
+programming in terms of modularity and reuse for important practical
+applications. The second goal to identify additional desirable
+features that improve flexibility of OOP and are needed in practice.
+In particular we argue that supporting a more \emph{dynamic}
+form of inheritance (where concrete implementations of the inherited
+code are possibly unknown) is highly desirable in practice. 
+Finally, we present \name: a programming language that puts these 
+ideas into practice using a type system based on 
+\emph{disjoint intersection types}~\cite{} and \emph{disjoint
+polymorphism}~\cite{}.
+
+In this paper we argue that the covariant model significantly
+restricts statically-typed OOP programming in terms of modularity and
+reuse for important practical applications. 
+Concretely there are at least two applications areas where the
+inflexibility of type systems of mainstream statically-typed OOP
+languages is problematic.
+
+\paragraph{\bf JavaScript-style Mixin-Based Programming}
+A common programming pattern in JavaScript is based variant of Mixins. 
+However, mixins in JavaScript fundamentally rely on an \emph{object-level composition}
+operator for inheritance. This requires a very dynamic form of
+inheritance/delegation that is not available in most class-based 
+statically-typed OO languages. Ideally the essence of such 
+form of mixins should be capturable in statically-typed languages. 
+
+\paragraph{\bf Extensibility/Modularity Patterns for OOP}
+There has been a remarkable number of works aimed at improving support
+for extensibility in programming languages
+~\cite{Prehofer97,Tarr99ndegrees,Harrison93subject,McDirmid01Jiazzi,Aracic06CaesarJ,Smaragdakis98mixin,nystrom2006j,togersen:2004,Zenger-Odersky2005,oliveira09modular,oliveira2012extensibility}. 
+Some of the more recent work on extensibility is focused on design
+patterns such as Extensible
+Visitorss~\cite{togersen:2004,oliveira09modular} or Object Algebras \cite{oliveira2012extensibility}.
+Although such design patterns give practical benefits in terms of
+extensibility, they also expose limitations in existing mainstream OOP
+languages. In particular there are three pressing limitations: 
+1) lack of good mechanisms for
+  \emph{object-level} composition; 2) \emph{conflation of 
+    (type) inheritance with subtyping}; 3) \emph{heavy reliance on generics}.
+
+It turns out that the same composition operator that is required for 
+object-level composition in JavaScript, is also needed for the
+composition of Object Algebras.
+The first limitation shows up, for example, in encodings of Feature-Oriented
+Programming~\cite{Prehofer97} or Attribute Grammars~\cite{Knuth1968} using Object
+Algebras~\cite{oliveira2013feature,rendel14attributes}. These programs are best
+expressed using a form of \emph{type-safe}, \emph{dynamic},
+\emph{delegation}-based composition. Although such form of
+composition can be encoded in languages like Scala, it requires the
+use of low-level reflection techniques, such as dynamic proxies,
+reflection or other forms of meta-programming. It is clear
+that better language support would be desirable.
+
+
+Visitors/Object Algebras --> {\bf extensions produce supertypes}
+composition requires {\bf dynamic inheritance}. 
+
+
+\begin{comment}
+There has been a remarkable number of works aimed at improving support
+for extensibility in programming languages. The motivation behind this
+line of work is simple, and it is captured quite elegantly by the
+infamous \emph{Expression Problem~}\cite{wadler1998expression}: there
+are \emph{two} common and desirable forms of extensibility, but most
+mainstream languages can only support one form well. Unfortunately
+the lack of support in the other form has significant
+consequences in terms of code maintenance and software evolution.  As a
+result researchers proposed various approaches to address the problem,
+including: visions of new programming
+models~\cite{Prehofer97,Tarr99ndegrees,Harrison93subject}; new
+programming languages or language
+extensions~\cite{McDirmid01Jiazzi,Aracic06CaesarJ,Smaragdakis98mixin,nystrom2006j},
+and \emph{design patterns} that can be used with existing mainstream
+languages~\cite{togersen:2004,Zenger-Odersky2005,oliveira09modular,oliveira2012extensibility}.
+
+Some of the more recent work on extensibility is focused on design
+patterns. Examples include \emph{Object
+  Algebras}~\cite{oliveira2012extensibility}, \emph{Modular Visitors}~\cite{oliveira09modular,togersen:2004} or
+Torgersen's~\cite{togersen:2004} four design patterns using generics. In those
+approaches the idea is to use some advanced (but already available)
+features, such as \emph{generics}~\cite{Bracha98making}, in combination with conventional
+OOP features to model more extensible designs.  Those designs work in
+modern OOP languages such as Java, C\#, or Scala.
+
+Although such design patterns give practical benefits in terms of
+extensibility, they also expose limitations in existing mainstream OOP
+languages. In particular there are three pressing limitations: 
+1) lack of good mechanisms for
+  \emph{object-level} composition; 2) \emph{conflation of 
+    (type) inheritance with subtyping}; 3) \emph{heavy reliance on generics}.
+\end{comment}
+
+
+The first limitation shows up, for example, in encodings of Feature-Oriented
+Programming~\cite{Prehofer97} or Attribute Grammars~\cite{Knuth1968} using Object
+Algebras~\cite{oliveira2013feature,rendel14attributes}. These programs are best
+expressed using a form of \emph{type-safe}, \emph{dynamic},
+\emph{delegation}-based composition. Although such form of
+composition can be encoded in languages like Scala, it requires the
+use of low-level reflection techniques, such as dynamic proxies,
+reflection or other forms of meta-programming. It is clear
+that better language support would be desirable.
+
+The second limitation shows up in designs for modelling
+modular or extensible visitors~\cite{togersen:2004,oliveira09modular}.  The vast majority of modern
+OOP languages combines type inheritance and subtyping. 
+That is, a type extension induces a subtype. However
+as Cook et al.~\cite{cook1989inheritance} famously argued there are programs where
+``\emph{subtyping is not inheritance}''. Interestingly 
+not many programs have been previously reported in the literature
+where the distinction between subtyping and inheritance is
+relevant in practice. However, as shown in this paper, it turns out that this
+difference does show up in practice when designing modular
+(extensible) visitors.  We believe that modular visitors provide a
+compelling example where inheritance and subtyping should
+not be conflated!
+
+Finally, the third limitation is prevalent in many extensible
+designs~\cite{togersen:2004,Zenger-Odersky2005,oliveira09modular,oliveira2013feature,rendel14attributes}.
+Such designs rely on advanced features of generics,
+such as \emph{F-bounded polymorphism}~\cite{Canning89f-bounded}, \emph{variance
+annotations}~\cite{Igarashi06variant}, \emph{wildcards}~\cite{Torgersen04wildcards} and/or \emph{higher-kinded
+types}~\cite{Moors08generics} to achieve type-safety. Sadly, the amount of
+type-annotations, combined with the lack of understanding of these
+features, usually deters programmers from using such designs.
+
+
+
 
 
 There are multiple flavours of inheritance. To avoid confusion, since 
