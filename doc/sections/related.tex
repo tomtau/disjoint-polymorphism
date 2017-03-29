@@ -1,7 +1,56 @@
 \section{Related Work}
 
+\subsection{(Disjoint) Intersection Types, Merge Operator}
+
+Including some others' work
+
+
+\subsection{Mainstream Languages with Delegation Mechanism}
+
 \begin{itemize}
-\item Clojure Protocols: http://www.ibm.com/developerworks/library/j-clojure-protocols/
+\item Clojure Protocols
+  % http://www.ibm.com/developerworks/library/j-clojure-protocols/
 \item Ruby mixin
 \item JS mixin
 \end{itemize}
+
+They are all dynamically typed.
+
+\subsection{Statically typed Delegation-based Languages}
+
+\begin{itemize}
+\item read ``Inheritance is not subtyping'', notice their ``with'' construct can
+  only merge records, problematic to encode the extend operator used in JS style
+  mixin, it's also a biased operation.
+
+\item ``mixin-based inheritance''
+\item ``Dynamically composable collaborations with delegation layers''
+
+\item ``Type-safe delegation for run-time component adaptation''
+
+\item ``A delegation-based object calculus with subtyping''
+
+\item ``Big Bang Designing a Statically-Typed Scripting Language''
+
+\item ``Building a Typed Scripting Language''
+  % https://jscholarship.library.jhu.edu/bitstream/handle/1774.2/39502/PALMER-DISSERTATION-2015.pdf?sequence=1&isAllowed=y
+
+\item ``An imperative, first-order calculus with object extension''
+
+\item ``Object-Oriented Multi-Methods in Cecil''
+
+\end{itemize}
+
+Do they have polymorphic type systems? Do they support mutable self reference?
+
+\subsection{Class-based Languages with More Advanced Form of Inheritance}
+
+\begin{itemize}
+\item Eiffel
+
+\item ``Nominal and Structural Subtyping in Component-Based Programming''
+\item ``Object-Oriented Composition Untangled''
+% \item https://pdfs.semanticscholar.org/7a0a/b7ffce1c1e1195832502d6cb7ace0646596e.pdf
+\item ``Engineering a programming language: The type and class system of Sather ''
+\end{itemize}
+
