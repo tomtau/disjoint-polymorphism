@@ -43,7 +43,9 @@ def insert A (s1 : String) (v1 : A) (f : EnvF[A]) : EnvF[A] =
 -- Evaluation interface
 -----------------------------
 
-type IEval = {eval : EnvF[Value] -> Maybe[Value]}
+type Env = EnvF[Value]
+
+type IEval = {eval : Env -> Maybe[Value]}
 
 type ValAlg[E] = {
   numV : Double -> E,
@@ -329,7 +331,54 @@ def eg3 : VarArith = {
       (f.decl "y" (f.num 4)
         (f.ifexpr (f.le (f.var "x") (f.var "y"))
           (f.add (f.var "x") (f.num 2))
-          (f.add (f.var "y") (f.num 1))))
+          (f.add (f.var "y") (f.num 3))))
+}
+
+
+-----------------------------
+-- Add top-level functions
+-----------------------------
+
+type ExprAlg[E] = VarArithAlg[E] & {
+  call : String -> E -> E
+}
+
+type Expr = {
+  accept : forall E. ExprAlg[E] -> E
+}
+
+type FnAlg[E] = {
+  fnAlg : String -> Type -> Expr -> E
+}
+
+type Function = {
+  accept : forall E. FnAlg[E] -> E
+}
+
+def caseFn E (x : Function) (f : String -> Type -> Expr -> E) : E =
+  x.accept E { fnAlg = f }
+
+type FEnv = EnvF[Function]
+
+type PgmAlg[E] = {
+  pgmAlg : FEnv -> Expr -> E
+}
+
+type Program = {
+  accept : forall E. PgmAlg[E] -> E
+}
+
+-- Evaluator
+trait evalExprAlg(fenv : FEnv) inherits evalVarArithAlg : ExprAlg[IEval] { self =>
+  def call f arg = { eval = \env ->
+    bind Function Value (lookup Function f fenv) (\fn ->
+      caseFn Maybe[Value] fn
+        (\param typ body ->
+          bind Value Value (arg.eval env)
+            (\v -> undefined Maybe[Value]) -- need recursive trait?
+        )
+    )
+  }
 }
 
 
@@ -347,7 +396,5 @@ def evalAndPrint (e : VarArith) : String  =
   in if isJust Type (inst.tcheck (empty Type))
      then inst.print ++ " = " ++ (fromNum (fromJust Value (inst.eval (empty Value)))).toString
      else "Type error!"
-
-
 
 main = evalAndPrint eg3
