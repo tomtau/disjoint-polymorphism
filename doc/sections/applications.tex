@@ -7,4 +7,130 @@ This section shows the expressiveness of \name. We show that features of \name
 parametric polymorphism and disjoint quantification) enable extensible designs
 that have been presented in mainstream languages. In particular, \name address
 limitations of those languages, making the designs significantly simpler. In
-what follows, we preset...
+what follows, we preset a case study modularizing several orthogonal features of
+a variant of JavaScript, called mini-JS. The case study illustrates that how
+various features and operations can be modularly developed and later composed to
+assembly a complete language with various operations baked in.
+
+\subsection{The Base Language}
+
+We start with a very simple language of arithmetic expressions.
+\lstinputlisting[linerange=111-120]{../examples/visitor2.txt}% APPLY:linerange=BASE_DEF
+
+The base language has features such as literals, addition, subtraction among
+others. As with examples in Section~\ref{sec:extensibility}, we use visitors to
+encode datatypes. Next we define three useful operations on top of this simple
+language.
+
+\subsubsection{Evaluator}
+
+The evaluation interface is shown below:
+\lstinputlisting[linerange=47-55]{../examples/visitor2.txt}% APPLY:linerange=EVALUATION
+Two points worth mentioning: 1) Boolean values (\lstinline{boolV}) in the
+\lstinline{Value} datatype is not needed yet, but it will be useful later when
+we extend the base language; 2) the \lstinline{eval} method is a function from
+an evaluation environment (\lstinline{Env}) to \lstinline{Maybe[Value]}, again
+at this stage, the evaluation environment is not used, but will be useful when
+we have variables.
+
+Here is the full code of the evaluator.
+\lstinputlisting[linerange=126-148]{../examples/visitor2.txt}% APPLY:linerange=BASE_EVALUATOR
+To reduce boilerplate code when dealing with \lstinline{Maybe} values, like in
+Haskell, we encode the bind operator \lstinline{bind} of the \lstinline{Maybe}
+monad. The code is rather boring, with \lstinline{numV} and \lstinline{fromNum}
+as constructor and destructor of the \lstinline{Value} type.
+
+\subsubsection{Pretty printer}
+
+The pretty printer is constructed in a similar manner.
+\lstinputlisting[linerange=75-75]{../examples/visitor2.txt}% APPLY:linerange=PRETTY_PRINTER
+\lstinputlisting[linerange=153-159]{../examples/visitor2.txt}% APPLY:linerange=PRETTY_BASE
+
+\subsubsection{Type checker}
+
+The type checker interface is shown below:
+\lstinputlisting[linerange=85-93]{../examples/visitor2.txt}% APPLY:linerange=TYPECHEKER
+Like in the evalutor, Boolean type (\lstinline{tbool}) and the typing
+environment (\lstinline{TEnv}) are not used for now.
+
+Here is the full code of the type checker:
+\lstinputlisting[linerange=164-202]{../examples/visitor2.txt}% APPLY:linerange=TYPECHECKER_BASE
+It looks quite similar with the evaluator. \lstinline{caseType} is like doing
+case analysis of the \lstinline{Type} values. Again the code is unremarkable, as
+would be done in a functional language like Haskell.
+
+
+\subsection{Adding Conditional Expressions}
+
+Now we extend the base language with conditional expressions.
+\lstinputlisting[linerange=216-223]{../examples/visitor2.txt}% APPLY:linerange=CONDITIONAL
+The augmented language now has comparison features (\lstinline{eq} and
+\lstinline{le}) and if expressions. Again we emphasize that
+\lstinline{BoolArith} inherits features of \lstinline{Arith}, and is a
+\textit{supertype} of \lstinline{Arith}.
+
+Here is the extended evaluator. Now we need Boolean values.
+\lstinputlisting[linerange=228-245]{../examples/visitor2.txt}% APPLY:linerange=EVALUATOR_CONDITIONAL
+Note that we didn't touch anything from \lstinline{evalArithAlg} but extend it
+to from a new evaluator. Now because the language can produce two kinds of
+values, it is worth noting that \lstinline{fromNum} (or \lstinline{fromBool}) is
+partial, meaning that it can diverge at run-time if the value is not a number
+(or Boolean). This is why we need a type checker to make sure such things cannot
+happen at run-time.
+
+Same goes for the pretty printer and the type checker.
+\lstinputlisting[linerange=250-255]{../examples/visitor2.txt}% APPLY:linerange=PRETTY_CONDITIONAL
+\lstinputlisting[linerange=261-294]{../examples/visitor2.txt}% APPLY:linerange=TYPECHECKER_CONDITIONAL
+\jeremy{too long and boring, can we omit it}
+
+
+
+\subsection{Adding Variable Declarations}
+
+Next we extend our language again with local variables and variable
+declarations. We add two new constructors (\lstinline{var} and
+\lstinline{decl}).
+\lstinputlisting[linerange=308-314]{../examples/visitor2.txt}% APPLY:linerange=VARIABLE
+For simplicity, we encode variables using strings. \lstinline{decl} takes three
+arguments, the first is the variable to be declared, the second is the
+expression bound with the variable, and the third is the body within which the
+declared variable is in scope. Now the language is interesting enough to express
+something like \lstinline{var x = 3; x + 1}.
+
+The evaluator finally makes use of the evaluation environment, which is a
+mapping from variables to values.
+\lstinputlisting[linerange=319-325]{../examples/visitor2.txt}% APPLY:linerange=EVALUATOR_VARIABLE
+For the variable case, we look it up in the environment to find its bound value.
+For the declaration case, we evaluate the body expression in the augmented
+environment.
+
+Here are the pretty printer and the type checker.
+\lstinputlisting[linerange=330-333]{../examples/visitor2.txt}% APPLY:linerange=PRETTY_VARIABLE
+\lstinputlisting[linerange=338-344]{../examples/visitor2.txt}% APPLY:linerange=TYPECHECKER_VARIABLE
+
+
+\subsection{Putting All Together}
+
+We hope by now the reader can share our feeling that this is indeed a modular
+way to cook a language incrementally. We can of course continue in the same
+fashion with more features and operations. We now stop to use the language to
+make sure everything works as we expected.
+
+First let us create an expression that uses all the features the language
+supports now.
+\lstinputlisting[linerange=349-357]{../examples/visitor2.txt}% APPLY:linerange=FEATURES
+The concrete syntax of the expression is shown in the comment above.
+
+Now we can of course apply the operations to the expression individually.
+Instead of doing this, we go a step further -- we merge those three operations
+into one, and apply the combined operation to the expression.
+\lstinputlisting[linerange=412-414]{../examples/visitor2.txt}% APPLY:linerange=COMBINED
+\lstinline{superAlgInst} is the combined operation that has the ability to type
+check, evaluate, and print a given expression.
+
+Here is a function that makes sure ``well-typed programs cannot go wrong'':
+\lstinputlisting[linerange=418-422]{../examples/visitor2.txt}% APPLY:linerange=SUPER_FN
+
+We use it on the expression as follows:
+\lstinputlisting[linerange=426-427]{../examples/visitor2.txt}% APPLY:linerange=VARIABLE_TEST
+Everything works as expected!

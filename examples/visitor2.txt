@@ -1,4 +1,4 @@
---> "var x = 3.0; var y = 4.0; (if (x < y) then (x + 2.0) else (y + 1.0)) = 5.0"
+--> "var x = 3.0; var y = 4.0; (if (x < y) then (x + 2.0) else (y + 3.0)) = 5.0"
 
 
 -----------------------------
@@ -43,18 +43,17 @@ def insert A (s1 : String) (v1 : A) (f : EnvF[A]) : EnvF[A] =
 -- Evaluation interface
 -----------------------------
 
-type Env = EnvF[Value]
-
-type IEval = {eval : Env -> Maybe[Value]}
-
+-- BEGIN_EVALUATION
 type ValAlg[E] = {
   numV : Double -> E,
   boolV : Bool -> E
 }
-
 type Value = {
   match : forall C. ValAlg[C] -> C
 }
+type Env = EnvF[Value]
+type IEval = {eval : Env -> Maybe[Value]}
+-- END_EVALUATION
 
 def numV (n : Double) : Value = { match = /\C. \f -> f.numV n }
 
@@ -72,7 +71,9 @@ def fromBool (v : Value) : Bool =
 -- Pretty printer interface
 -----------------------------
 
+-- BEGIN_PRETTY_PRINTER
 type IPrint = { print : String }
+-- END_PRETTY_PRINTER
 
 
 
@@ -80,15 +81,17 @@ type IPrint = { print : String }
 -- Type checker interface
 -----------------------------
 
+-- BEGIN_TYPECHEKER
 type TypeAlg[E] = {
   tnum : E,
   tbool : E
 }
-
 type Type = {
   match : forall E. TypeAlg[E] -> E
 }
-
+type TEnv = EnvF[Type]
+type ITCheck = { tcheck : TEnv -> Maybe[Type] }
+-- END_TYPECHEKER
 
 def tnum : Type = { match = /\E. \f -> f.tnum }
 
@@ -97,8 +100,6 @@ def tbool : Type = { match = /\E. \f -> f.tbool }
 def caseType A (t : Type) (x : A) (y : A) : A =
   t.match A {tnum = x, tbool = y}
 
-type ITCheck = { tcheck : EnvF[Type] -> Maybe[Type] }
-
 
 
 
@@ -106,6 +107,7 @@ type ITCheck = { tcheck : EnvF[Type] -> Maybe[Type] }
 -- Base arithmetic expression
 -----------------------------
 
+-- BEGIN_BASE_DEF
 type ArithAlg[E] = {
   num : Double -> E,
   add : E -> E -> E,
@@ -113,12 +115,14 @@ type ArithAlg[E] = {
   mul : E -> E -> E,
   div : E -> E -> E
 }
-
 type Arith = {
   accept : forall E. ArithAlg[E] -> E
 }
+-- END_BASE_DEF
+
 
 -- Evaluator
+-- BEGIN_BASE_EVALUATOR
 trait evalArithAlg : ArithAlg[IEval] { self =>
   def num n     = { eval = \_ -> just Value (numV n) }
   def add e1 e2 = { eval = \env ->
@@ -142,8 +146,10 @@ trait evalArithAlg : ArithAlg[IEval] { self =>
         just Value (numV (fromNum v1 / fromNum v2))))
   }
 }
+-- END_BASE_EVALUATOR
 
 -- Pretty pinter
+-- BEGIN_PRETTY_BASE
 trait ppArithAlg : ArithAlg[IPrint] { self =>
   def num n     = { print = n.toString }
   def add e1 e2 = { print = "(" ++ e1.print ++ " + " ++ e2.print ++ ")"}
@@ -151,8 +157,10 @@ trait ppArithAlg : ArithAlg[IPrint] { self =>
   def mul e1 e2 = { print = "(" ++ e1.print ++ " * " ++ e2.print ++ ")"}
   def div e1 e2 = { print = "(" ++ e1.print ++ " / " ++ e2.print ++ ")"}
 }
+-- END_PRETTY_BASE
 
 -- Type checker
+-- BEGIN_TYPECHECKER_BASE
 trait tcArithAlg : ArithAlg[ITCheck] { self =>
   def num n     = { tcheck = \_ -> just Type tnum }
   def add e1 e2 = { tcheck = \env ->
@@ -192,6 +200,7 @@ trait tcArithAlg : ArithAlg[ITCheck] { self =>
         (nothing Type))
   }
 }
+-- END_TYPECHECKER_BASE
 
 
 def eg1 : Arith = {
@@ -203,13 +212,19 @@ def eg1 : Arith = {
 -- Add conditional expression
 -----------------------------
 
+-- BEGIN_CONDITIONAL
 type BoolArithAlg[E] = ArithAlg[E] & {
   eq  : E -> E -> E,
   le  : E -> E -> E,
   ifexpr : E -> E -> E -> E
 }
+type BoolArith = {
+  accept : forall E. BoolArithAlg[E] -> E
+}
+-- END_CONDITIONAL
 
 -- Evaluator
+-- BEGIN_EVALUATOR_CONDITIONAL
 trait evalBoolArithAlg inherits evalArithAlg : BoolArithAlg[IEval] { self =>
   def eq e1 e2        = { eval = \env ->
     bind Value Value (e1.eval env) (\v1 ->
@@ -228,17 +243,21 @@ trait evalBoolArithAlg inherits evalArithAlg : BoolArithAlg[IEval] { self =>
       else e3.eval env)
   }
 }
+-- END_EVALUATOR_CONDITIONAL
 
 -- Pretty printer
+-- BEGIN_PRETTY_CONDITIONAL
 trait ppBoolArithAlg inherits ppArithAlg : BoolArithAlg[IPrint] { self =>
   def eq e1 e2        = { print = "(" ++ e1.print ++ " == " ++ e2.print ++ ")" }
   def le e1 e2        = { print = "(" ++ e1.print ++ " < " ++ e2.print ++ ")" }
   def ifexpr e1 e2 e3 =
     { print = "(if " ++ e1.print ++ " then " ++ e2.print ++ " else " ++ e3.print ++ ")" }
 }
+-- END_PRETTY_CONDITIONAL
 
 
 -- Type checker
+-- BEGIN_TYPECHECKER_CONDITIONAL
 trait tcBoolArithAlg inherits tcArithAlg : BoolArithAlg[ITCheck] { self =>
   def eq e1 e2 = { tcheck = \env ->
     bind Type Type (e1.tcheck env) (\t1 ->
@@ -273,11 +292,8 @@ trait tcBoolArithAlg inherits tcArithAlg : BoolArithAlg[ITCheck] { self =>
                 (just Type t2)))))))
   }
 }
+-- END_TYPECHECKER_CONDITIONAL
 
-
-type BoolArith = {
-  accept : forall E. BoolArithAlg[E] -> E
-}
 
 def eg2 : BoolArith = {
   accept = /\E. \f -> f.ifexpr (f.eq (f.num 3) (f.num 5)) (f.num 12) (f.add (f.num 12) (f.num 22))
@@ -288,12 +304,18 @@ def eg2 : BoolArith = {
 -- Add variable declarations
 -----------------------------
 
+-- BEGIN_VARIABLE
 type VarArithAlg[E] = BoolArithAlg[E] & {
   var : String -> E,
   decl : String -> E -> E -> E
 }
+type VarArith = {
+  accept : forall E. VarArithAlg[E] -> E
+}
+-- END_VARIABLE
 
 -- Evaluator
+-- BEGIN_EVALUATOR_VARIABLE
 trait evalVarArithAlg inherits evalBoolArithAlg : VarArithAlg[IEval] { self =>
   def var n      = { eval = \env -> lookup Value n env }
   def decl n e b = { eval = \env ->
@@ -301,30 +323,30 @@ trait evalVarArithAlg inherits evalBoolArithAlg : VarArithAlg[IEval] { self =>
       b.eval (insert Value n v env))
   }
 }
+-- END_EVALUATOR_VARIABLE
 
 -- Pretty printer
+-- BEGIN_PRETTY_VARIABLE
 trait ppVarArithAlg inherits ppBoolArithAlg : VarArithAlg[IPrint] { self =>
   def var n      = { print = n }
   def decl n e b = { print = "var " ++ n ++ " = " ++ e.print ++ "; " ++ b.print }
 }
+-- END_PRETTY_VARIABLE
 
 -- Type checker
+-- BEGIN_TYPECHECKER_VARIABLE
 trait tcVarArithAlg inherits tcBoolArithAlg : VarArithAlg[ITCheck] { self =>
   def var n      = { tcheck = \env -> lookup Type n env }
   def decl n e b = { tcheck = \env ->
     bind Type Type (e.tcheck env) (\t ->
-      b.tcheck (insert Type n t env)
-    )
+      b.tcheck (insert Type n t env))
   }
 }
+-- END_TYPECHECKER_VARIABLE
 
 
-
-type VarArith = {
-  accept : forall E. VarArithAlg[E] -> E
-}
-
--- var x = 3; var y = 4; if (x < y) x + 2; else y + 1
+-- BEGIN_FEATURES
+-- var x = 3; var y = 4; if x < y then x + 2 else y + 3
 def eg3 : VarArith = {
   accept = /\E. \f ->
     f.decl "x" (f.num 3)
@@ -333,6 +355,7 @@ def eg3 : VarArith = {
           (f.add (f.var "x") (f.num 2))
           (f.add (f.var "y") (f.num 3))))
 }
+-- END_FEATURES
 
 
 -----------------------------
@@ -385,16 +408,21 @@ trait evalExprAlg(fenv : FEnv) inherits evalVarArithAlg : ExprAlg[IEval] { self 
 
 -- Put all together
 
+-- BEGIN_COMBINED
 trait superAlg inherits evalVarArithAlg & ppVarArithAlg & tcVarArithAlg
-
 type SuperAlg = IEval & IPrint & ITCheck
-
 def superAlgInst = new[VarArithAlg[SuperAlg]] superAlg
+-- END_COMBINED
 
+-- BEGIN_SUPER_FN
 def evalAndPrint (e : VarArith) : String  =
-  let inst : SuperAlg = e.accept SuperAlg superAlgInst
-  in if isJust Type (inst.tcheck (empty Type))
-     then inst.print ++ " = " ++ (fromNum (fromJust Value (inst.eval (empty Value)))).toString
-     else "Type error!"
+  let inst : SuperAlg = e.accept SuperAlg superAlgInst in
+  if isJust Type (inst.tcheck (empty Type))
+  then inst.print ++ " = " ++ (fromNum (fromJust Value (inst.eval (empty Value)))).toString
+  else "Type error!"
+-- END_SUPER_FN
 
+-- BEGIN_VARIABLE_TEST
 main = evalAndPrint eg3
+-- Output: "var x = 3.0; var y = 4.0; (if (x < y) then (x + 2.0) else (y + 3.0)) = 5.0"
+-- END_VARIABLE_TEST
