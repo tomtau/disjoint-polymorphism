@@ -362,8 +362,8 @@ That's it. No more boilerplate necessary. Two points worth noting: 1) \name
 supports \textit{dynamic inheritance}. Notice how we let \lstinline{combine1}
 ``inherits'' \lstinline{f & g}, for which the implementation is unknown
 statically. 2) \name supports multiple inheritance of traits with the same type:
-both \lstinline{f} and \lstinline{g} are traits of the subtraction algebra.
-Mainstream OO languages cannot even imagine being such dynamic and flexible.
-\name hits a sweet spot in the design space of being how much dynamic, where we
-retain as much flexibility as in a dynamic language without sacrificing the
-type-safety guarantee we always love from a static type system.
+both \lstinline{f} and \lstinline{g} are traits of the subtraction algebra. Type
+systems for many OO languages are too inflexible to express this kind of dynamic
+inheritance. \name hits a sweet spot in the design space of being how much
+dynamic, where we retain as much flexibility as in a dynamic language without
+sacrificing the type-safety guarantee we always love from a static type system.
