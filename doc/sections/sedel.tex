@@ -1,14 +1,10 @@
 \section{A Tour of \name}
 
 This section showcases the novel features of \name, notably its native support
-for dynamically composable traits. We demonstrate that \name overcomes all those
-limitations mentioned in Section~\ref{sec:critique}.
+for dynamically composable traits. We demonstrate by two examples that \name
+overcomes all those limitations mentioned in Section~\ref{sec:critique}.
 
-Our running example is a representation of graphical objects such as circles,
-ovals, or buttons. The example is adapted from a blog
-post\footnote{\url{https://javascriptweblog.wordpress.com/2011/05/31/a-fresh-look-at-javascript-mixins/}}.
-We will use traits to structure the representation and factor out reusable
-components. All code snippets in this section are runnable in our prototype
+All code snippets in this section are runnable in our prototype
 implementation.
 
 
@@ -26,6 +22,14 @@ demonstrate various trait features in \name. A comparison with the traditional
 trait model can be found in Section~\ref{sec:discuss}. The desugaring process
 from traits to \bname is discussed in Section~\ref{sec:desugar}.
 
+We describe a representation of graphical objects such as circles, ovals, or
+buttons as our first running example. The example is adapted from a blog
+post\footnote{\url{https://javascriptweblog.wordpress.com/2011/05/31/a-fresh-look-at-javascript-mixins/}}.
+We will use traits to structure the representation and factor out reusable
+components. Along the way, we also explain briefly how various features in \name
+are encoded behind the scene.
+
+
 \subsubsection{Specifying Traits}
 
 A Trait is, in essential, a collection of related methods that characterize only
@@ -37,8 +41,8 @@ easier than with classes, since traits are usually shorter and can be
 appealing language feature: two traits can be freely ``added'' together (which
 is an symmetric operation); and trait systems provide conflict detection, etc.
 
-The first example shows a simple trait \lstinline{point} with its two
-coordinates \lstinline{x} and \lstinline{y}.
+Here is a simple trait \lstinline{point} with its two coordinates \lstinline{x}
+and \lstinline{y}.
 \lstinputlisting[linerange=4-8]{../examples/box.txt}% APPLY:linerange=POINT_DEF
 The syntax is very similar to Scala's, with the \lstinline{def} keyword
 beginning a term declaration.
@@ -65,21 +69,35 @@ languages.
 
 \subsubsection{Inheriting Traits}
 
-Traits in \name are extensible. A trait can be extended by inheriting all
-members of other traits, and defining additional members. This is, in some
-sense, similar to class inheritance in traditional OO languages. However, one
-difference is that, a trait can inherit one or more traits without any problems,
-provided that there are no conflicts arising (cf. Section~\ref{sec:conflicts}).
+Traits are extensible. A trait can be extended by inheriting all members of
+other traits, and defining additional members. This is, in some sense, similar
+to class inheritance in traditional OO languages. However, one difference is
+that, a trait can inherit one or more traits without any problems, provided that
+there are no conflicts arising (cf. Section~\ref{sec:conflicts}).
 
 To demonstrate that, we create another trait \lstinline$circle$ extending
 \lstinline{point} with an extra method \lstinline{radius}.
 \lstinputlisting[linerange=18-21]{../examples/box.txt}% APPLY:linerange=CIRCLE_DEF
-Notice how we let \lstinline{circle} inherit \lstinline{point} and define
-additional method \lstinline{radius}. Intersection types are used to model the
-natural extension of \lstinline{Point} to \lstinline{Circle}.
 
-Next we represent buttons in the same way as points. Here is the trait of
-buttons:
+Note here we use the intersection of type \lstinline{Point} and a record type to
+model type \lstinline{Circle}. An intersection
+type~\cite{dunfield2014elaborating} such as \lstinline{A & B} contains exactly
+those values which can be used as values of type \lstinline{A} and of type
+\lstinline{B}. As such, \lstinline{A & B} immediately introduces a subtyping
+relation between itself and its two component types \lstinline{A} and
+\lstinline{B}. Back to the above example, \lstinline{Circle} is a subtype of
+\lstinline{Point}, unsurprisingly.
+
+The keyword \lstinline{inherits} is one of the two options in \name to introduce
+inheritance. In the above example, trait \lstinline{circle} inherits from trait
+\lstinline{point} two methods \lstinline{x} and \lstinline{y} plus its own
+method \lstinline{radius}. Now it is clear that, unlike the common covariant
+model, \name separates the concept of subtyping from inheritance -- those two
+concepts are not necessarily entangled, though in this particular example,
+inheritance goes along with subtyping.
+
+Next we represent buttons in the same way as points. Here are the trait of
+buttons and its type:
 \lstinputlisting[linerange=47-52]{../examples/box.txt}% APPLY:linerange=BUTTON_DEF
 
 \subsubsection{Traits with Dependencies}
@@ -99,11 +117,18 @@ composed with other traits, they must be composed with an implementation of
 \lstinline$Circle$.
 \lstinputlisting[linerange=42-42]{../examples/box.txt}% APPLY:linerange=CIRCLE_FULL
 
-The above line also shows that we can create an object from multiple traits.
-More precisely, the object is created from the \textit{composition} of those
-traits. Therefore, we are able to call methods from different traits on a single
-object, such as \lstinline{circleWithFns.area()} and
-\lstinline{circleWithFns.radius}.
+The above line also shows the second option to introduce inheritance, namely by
+\textit{composition} of traits. In other words, we can either compose beforehand
+when declaring traits (using \lstinline{inherits}), or compose at object
+creation point (using \lstinline{new} and \lstinline{&} operator).
+
+Under the hood, inheritance is accomplished by using the \textit{merge operator}
+(denoted by \lstinline{,,}). The merge operator~\cite{dunfield2014elaborating}
+allows two arbitrary values to be merged, with the resulting type being an
+intersection type. For example the type of \lstinline{2 ,, true} is
+\lstinline{Int & Bool}. Back to the example, the use of merge enables us to call
+methods from different traits on a single object, such as
+\lstinline{circleWithFns.area()} and \lstinline{circleWithFns.radius}.
 
 Similarly we define functions for buttons as well.
 \lstinputlisting[linerange=56-63]{../examples/box.txt}% APPLY:linerange=BUTTON_FNS
@@ -136,10 +161,19 @@ The following trait gets rejected because both \lstinline{asOval} and
 \lstinline{circle} have a conflicting \lstinline{radius} method.
 \lstinputlisting[linerange=82-83]{../examples/box.txt}% APPLY:linerange=CONFLICT_DEF
 
+Conflict detecting is one of the selling points of traits. In \name this feature
+comes for free because of the requirement that intersection types are
+\textit{disjoint}~\cite{oliveira2016disjoint}. Disjointness, in its simplest
+form, means that the set of values of both types are disjoint. The above
+problematic program fails at passing type checking precisely because both of the
+traits (\lstinline{circle} and \lstinline{asOval}) have the same type of the
+\lstinline{radius} method, thus violating the disjointness constraint.
+
 To resolve the conflict, the programmer needs to explicitly state which
-\lstinline{radius} gets to stay. In \name, trait composition supports
-\textit{exclusion}, which allows one to avoid a conflict before it occurs. The
-following is one choice, and is accepted by \name again.
+\lstinline{radius} gets to stay. \name provides such a means , the so-called
+\textit{exclusion} operator (denoted by \lstinline{\}), which allows one to
+avoid a conflict before it occurs. The following is one choice, and is accepted
+by \name again.
 \lstinputlisting[linerange=89-90]{../examples/box.txt}% APPLY:linerange=CONFLICT_RESOLVE
 
 
@@ -192,9 +226,9 @@ datatypes. Indeed, variants of the same idea keep appearing in different
 programming languages, because the encoding of the idea needs to exploit the
 particular features of the programming language (or theorem prover).
 Unfortunately language-specific constructs obscure the key ideas behind those
-solutions. In this subsection, we presents \name's solution to the Expression
-Problem that intends to capture the key ideas of various solutions in the
-literature.
+solutions. As our second running example, we presents \name's solution to the
+Expression Problem that intends to capture the key ideas of various solutions in
+the literature.
 
 To start, we begin with a very simple system modeling arithmetic expressions and
 evaluation. The initial system constitutes expressions with two variants
@@ -208,7 +242,7 @@ over the type of addition expression (\lstinline{E -> E -> E}).
 
 The second part, which is the actual type of the arithmetic expression, is:
 \lstinputlisting[linerange=11-11]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
-An attentive reader may immediately recognize this is exactly the visitor
+An attentive reader may immediately recognize this is exactly the VISITOR
 pattern: the method \lstinline{accept} takes an internal visitor as argument.
 
 % \paragraph{Data constructors.} Using \lstinline{Exp} the two data constrcutors
@@ -241,18 +275,18 @@ as argument.
 
 \paragraph{Inheritance is not subtyping.} In the presence of subtyping, there
 are interesting subtyping relations between datatypes and their
-extensions~\cite{oliveira09modular}. The interesting aspect about subtyping in
+extensions~\cite{oliveira09modular}. An interesting aspect about subtyping in
 the new system is that subtyping follows the opposite direction of the
 extension. In other words, subtyping is contravariant with respect to the
 extension. First note that \lstinline{SubExpAlg[E]} appears in parameter
-position of \lstinline{accept} and function parameters are natually
+position of \lstinline{accept} and function parameters are naturally
 contravariant: \lstinline{ExtExp} should be a \textit{supertype} of
 \lstinline{Exp}. By contrast, in common OO languages, type inheritance and
 subtyping always go along together. For example, Scala forbids any kind of
 type-refinement on method parameter types. The consequence of this is that in
-those languages, it is simply impossible to express that \lstinline{ExtExp} is
-both an extension and a supertype of \lstinline{Exp}. Such kind of phenomena is
-an example where ``inheritance is not subtyping''~\cite{cook1989inheritance}.
+those languages, it is impossible to express that \lstinline{ExtExp} is both an
+extension and a supertype of \lstinline{Exp}. Such kind of phenomena is an
+example where ``inheritance is not subtyping''~\cite{cook1989inheritance}.
 
 \paragraph{Add a new operation.} The second type of extension is adding a new
 operation, such as pretty printing. Similar to evaluation, the interface of the
@@ -275,11 +309,6 @@ Notice that we are able to pass \lstinline{lit 5}, which is of type
 
 \subsection{How much dynamic is too much}
 \label{sec:dynamic}
-
-
-\jeremy{ A composition operator combining two algebras at run-time,
-  demonstrating the dynamic nature of trait inheritance, also show we can do
-  multiple inheritance of things with the same type}
 
 The solution to the Expression Problem presented in
 Section~\ref{sec:extensibility} has one wrinkle in its usage. To be able to call
@@ -305,11 +334,13 @@ behaviours in each component algebra to the combined algebra.
 
 \lstinputlisting[linerange=49-54]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_DEF
 
-Note how \lstinline{combine} requires all the interesting features of \name.
-Parametric polymorphism is need because \lstinline{combine} must compose algebras
-with arbitrary type parameters. Intersection types are needed because the
-resulting algebra will have an intersection type. The merge operator is needed
-to compose the input algebras dynamically. Finally, a disjointness constraint is
+Something new is in the above trait declaration. \name supports parametric
+polymorphism. In \name, type variables use uppercase letters. Following the work
+of~\citet{alpuimdisjoint}, \name uses an extension to universal quantification
+called \textit{disjoint quantification}, where a type variable can be
+constrained so that it is disjoint with a given type (\lstinline{B * A} for
+example). Parametric polymorphism is need because \lstinline{combine} must
+compose algebras with arbitrary type parameters. A disjointness constraint is
 needed to ensure that two input algebras build values of disjoint types
 (otherwise ambiguity could arise).
 
