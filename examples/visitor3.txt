@@ -46,11 +46,10 @@ def sub (e1 : ExtExp) (e2 : ExtExp) : ExtExp = {
 
 
 -- BEGIN_COMBINE1_DEF
-trait combine A [B * A] (f : Trait[SubExpAlg[A]] , g : Trait[SubExpAlg[B]])
-  : SubExpAlg[A & B] { self =>
-  def lit x   = (new[SubExpAlg[A]] f).lit x   ,, (new[SubExpAlg[B]] g).lit x
-  def add x y = (new[SubExpAlg[A]] f).add x y ,, (new[SubExpAlg[B]] g).add x y
-  def sub x y = (new[SubExpAlg[A]] f).sub x y ,, (new[SubExpAlg[B]] g).sub x y
+trait combine A [B * A] (f : Trait[SubExpAlg[A]] , g : Trait[SubExpAlg[B]]) { self =>
+  def lit (x : Double)   = (new[SubExpAlg[A]] f).lit x   ,, (new[SubExpAlg[B]] g).lit x
+  def add (x : A & B) (y : A & B) = (new[SubExpAlg[A]] f).add x y ,, (new[SubExpAlg[B]] g).add x y
+  def sub (x : A & B) (y : A & B) = (new[SubExpAlg[A]] f).sub x y ,, (new[SubExpAlg[B]] g).sub x y
 }
 -- END_COMBINE1_DEF
 

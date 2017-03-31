@@ -31,7 +31,7 @@ type CircleFns = {
   grow   : T -> Double,
   shrink : T -> Double
 }
-trait circleFns : CircleFns { self : Circle =>
+trait circleFns { self : Circle =>
   def area()   = self.radius * self.radius * 3.14
   def grow()   = self.radius + 1
   def shrink() = self.radius - 1
@@ -47,7 +47,7 @@ def circleWithFns = new[Circle & CircleFns] circle(pointTest, 3) & circleFns
 type Button = {
   label : String
 }
-trait button(label : String) : Button { self  =>
+trait button(label : String) { self  =>
   def label = label
 }
 -- END_BUTTON_DEF
@@ -57,9 +57,9 @@ type ButtonFns = {
   hover : Bool -> String,
   press : Bool -> String
 }
-trait buttonFns : ButtonFns { self : Button =>
-  def hover bool = if bool then "hoverring..." else "no hoverring"
-  def press bool = if bool then "pressing..." else "no pressing"
+trait buttonFns { self : Button =>
+  def hover (b : Bool) = if b then "hoverring..." else "no hoverring"
+  def press (b : Bool) = if b then "pressing..." else "no pressing"
 }
 -- END_BUTTON_FNS
 
@@ -92,18 +92,19 @@ trait oval(shortRadius : Double, longRadius : Double, center: Point)
 
 -- BEGIN_NORM_DEF
 type Norm = { norm : Double -> Double -> Double }
-trait euclideanNorm : Norm { self : Point =>
-  def norm x y  = ((self.x - x) * (self.x - x) + (self.y - y) * (self.y - y)).sqrt
+trait euclideanNorm { self : Point =>
+  def norm (x : Double) (y : Double) =
+    ((self.x - x) * (self.x - x) + (self.y - y) * (self.y - y)).sqrt
 }
-trait manhattanNorm : Norm { self : Point =>
-  def norm x y = abs((self.x - x)) + abs((self.y - y))
+trait manhattanNorm { self : Point =>
+  def norm (x : Double) (y : Double) = abs((self.x - x)) + abs((self.y - y))
 }
 -- END_NORM_DEF
 
 -- BEGIN_CIRCLE_FNS2
 type CircleFns2 = CircleFns & { inCircle : Double -> Double -> Bool}
-trait circleFns2 inherits circleFns : CircleFns2 { self : Circle & Norm =>
-  def inCircle x y = self.norm x y < self.radius
+trait circleFns2 inherits circleFns { self : Circle & Norm =>
+  def inCircle (x : Double) (y : Double) = self.norm x y < self.radius
 }
 -- END_CIRCLE_FNS2
 

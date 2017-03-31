@@ -118,7 +118,7 @@ The combinator is defined by the \lstinline{combine} trait, which takes two
 algebras to create a combined algebra. It does so by appropriately delegating
 behaviours in each component algebra to the combined algebra.
 
-\lstinputlisting[linerange=49-54]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_DEF
+\lstinputlisting[linerange=49-53]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_DEF
 
 Something new appears the above trait declaration. \name supports parametric
 polymorphism. In \name, type variables use uppercase letters. Following the work
@@ -133,7 +133,7 @@ needed to ensure that two input algebras build values of disjoint types
 With \lstinline{combine} at hand, we can finally have a object \lstinline{o}
 print and evaluate at the same time:
 
-\lstinputlisting[linerange=72-75]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_TEST
+\lstinputlisting[linerange=71-74]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_TEST
 
 An acute reader may have smelled some boilerplate code in the definition of
 \lstinline{combine}. After all, \lstinline{combine} just invokes the
@@ -142,7 +142,7 @@ the two input algebras and the resulting algebra. It turns out that the type
 system behind \name is powerful enough to derive such definition for us:
 \lstinline{combine} is no more than just the merge of two algebras!
 
-\lstinputlisting[linerange=60-60]{../examples/visitor3.txt}% APPLY:linerange=COMBINE_DEF
+\lstinputlisting[linerange=59-59]{../examples/visitor3.txt}% APPLY:linerange=COMBINE_DEF
 
 That's it. No more boilerplate necessary. Two points worth noting: 1) \name
 supports \textit{dynamic inheritance}. Notice how we let \lstinline{combine1}
