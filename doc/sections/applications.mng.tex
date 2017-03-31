@@ -1,18 +1,37 @@
 \section{Applications}
 
-% Report on various applications encoded with \name. Conduct a larger case study with visitors.
-
-\jeremy{don't dump all the code}
-
 This section shows the expressiveness of \name. We show that features of \name
 (dynamically composable traits, intersection types, the merge operator,
 parametric polymorphism and disjoint quantification) enable extensible designs
 that have been presented in mainstream languages. In particular, \name address
 limitations of those languages, making the designs significantly simpler. In
 what follows, we preset a case study modularizing several orthogonal features of
-a variant of JavaScript, called mini-JS. The case study illustrates that how
-various features and operations can be modularly developed and later composed to
-assembly a complete language with various operations baked in.
+a subset of JavaScript, used by~\citet{poplcook} in his undergraduate textbook
+on programming languages. The case study illustrates that how various features
+and operations can be modularly developed and later composed to assembly a
+complete language with various operations baked in.
+
+Figure~\ref{fig:mini-js} presents the syntax of the expressions, values and
+types provided by the features with each line annotated with the corresponding
+feature. For each feature, we also define three operations: evaluator, pretty
+printer, and type checker.
+
+\begin{figure}[t]
+\centering
+% \begin{small}
+\begin{tabular}{lrclr}
+  Expressions & $e$ & ::= & $[[N]] \mid [[e1 + e2]] \mid [[e1 - e2]] \mid [[e1 * e2]] \mid [[e1 / e2]] $ & $\mathit{Arith}$ \\
+              && $\mid$ & $[[B]] \mid [[e1 == e2]] \mid [[e1 < e2]] \mid$ $[[if e1 then e2 else e3]] $ & $\mathit{Bool}$\\
+              && $\mid$ & $[[x]] \mid [[var x = e1 ; e2]]$  &  $\mathit{Var}$ \\
+  Program & $[[pgm]]$ & ::= & $[[<< decl >> ; e]]$  &  \\
+  Function & $[[decl]]$ & ::= & $[[function F ( x : t ) { e }]]$ & \\
+  Values & $v$ & ::= & $[[N]] \mid [[B]]$ & \\
+  Types  & $t$ & ::= & $[[nat]] \mid [[bool]]$ &
+\end{tabular}
+% \end{small}
+\caption{Mini-JS expressions, values, and types}
+\label{fig:mini-js}
+\end{figure}
 
 \subsection{The Base Language}
 
@@ -21,13 +40,17 @@ We start with a very simple language of arithmetic expressions.
 
 The base language has features such as literals, addition, subtraction among
 others. As with examples in Section~\ref{sec:extensibility}, we use visitors to
-encode datatypes. Next we define three useful operations on top of this simple
-language.
+encode datatypes. Figure shows the interfaces of the three operations we are
+going to define.
+
+
+
+
 
 \subsubsection{Evaluator}
 
 The evaluation interface is shown below:
-\lstinputlisting[linerange=69-77]{../examples/visitor2.txt}% APPLY:linerange=EVALUATION
+% \lstinputlisting[linerange=69-77]{../examples/visitor2.txt}% APPLY:linerange=EVALUATION
 Two points worth mentioning: 1) Boolean values (\lstinline{boolV}) in the
 \lstinline{Value} datatype is not needed yet, but it will be useful later when
 we extend the base language; 2) the \lstinline{eval} method is a function from

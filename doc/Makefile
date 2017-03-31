@@ -4,7 +4,8 @@ SCRIPT = script
 
 all: $(MAIN).pdf
 
-$(MAIN).pdf: $(wildcard ../examples/*.txt)  $(wildcard sections/*.tex) $(MAIN).tex paper.bib
+$(MAIN).pdf: $(wildcard ../examples/*.txt) $(wildcard sections/*.ott) $(wildcard sections/*.tex) $(MAIN).tex paper.bib
+	make -C sections
 	@ruby $(SCRIPT).rb
 	@latexmk -pdf $(@:.pdf=.tex)
 

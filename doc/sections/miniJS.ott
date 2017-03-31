@@ -1,0 +1,52 @@
+
+embed {{ tex-preamble
+  \newcommand{\kw}[1]{\mathbf{#1} }
+}}
+
+
+metavar x, F ::= {{ com Variable names }}
+
+
+grammar
+
+pgm                                         :: Pgm ::=      {{ com Program }}
+  | << decl >> ; e                          ::   :: Decl
+
+decl                                        :: Decl ::=     {{ com Top-level function }}
+  | function F ( x : t ) { e }  ::   :: Fun
+
+
+e :: Tm ::=                                                    {{ com terms: }}
+  | x                              ::   :: Var                 {{ com Variable }}
+  | N                              ::   :: Arith               {{ com Literal }}
+  | B                              ::   :: Bool                {{ com Bool }}
+  | e1 + e2                        ::   :: Add                 {{ com Add }}
+  | e1 - e2                        ::   :: Sub                 {{ com Sub }}
+  | e1 * e2                        ::   :: Mult                {{ com Mult }}
+  | e1 / e2                        ::   :: Div                 {{ com Division }}
+  | e1 == e2                       ::   :: Eq                  {{ com Equality }}
+  | e1 < e2                        ::   :: Lt                  {{ com Comparison }}
+  | if e1 then e2 else e3          ::   :: If                  {{ com Conditional }}
+  | var x = e1 ; e2                 ::   :: Decl                {{ com Local Def }}
+
+
+
+v :: Va ::=                                          {{ com values: }}
+  | N                             ::   :: Arith      {{ com Literal }}
+  | B                             ::   :: Bool       {{ com Bool }}
+
+t :: Ty ::=                                              {{ com types: }}
+  | nat                           ::   :: Arith          {{ com Arith }}
+  | bool                          ::   :: Bool           {{ com Bool }}
+
+%%% Terminals
+terminals :: 'terminals_' ::=
+  | N        ::  :: Arith      {{ tex \mathbb{N} }}
+  | B        ::  :: Bool       {{ tex \mathbb{B} }}
+  | /        ::  :: Div       {{ tex \div }}
+  | *        ::  :: Time       {{ tex \times }}
+  | <<       ::  :: vecl      {{ tex \,\overline{ }}
+  | >>       ::  :: vecr      {{ tex }\, }}
+
+subrules
+v <:: e
