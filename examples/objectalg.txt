@@ -8,7 +8,7 @@
 -- Use object algebra
 
 
-type ExpAlg[Repr[_]] = {
+type ExpAlg Repr[_] = {
   lit : Double -> Repr[Double],
   add : Repr[Double] -> Repr[Double] -> Repr[Double],
   lam : forall A B. (Repr[A] -> Repr[B]) -> Repr[A -> B],
@@ -16,7 +16,7 @@ type ExpAlg[Repr[_]] = {
 }
 
 
-type IEval[E] = { eval : E }
+type IEval E = { eval : E }
 
 trait evalAlg : ExpAlg[IEval] { self =>
   def lit x  = { eval = x }
@@ -26,7 +26,7 @@ trait evalAlg : ExpAlg[IEval] { self =>
 }
 
 
-type IPrint[E] = { print : Double -> String }
+type IPrint E = { print : Double -> String }
 
 trait printAlg : ExpAlg[IPrint] { self =>
   def lit x = { print = \_ -> x.toString }
@@ -40,7 +40,7 @@ trait printAlg : ExpAlg[IPrint] { self =>
 }
 
 
-type MulExpAlg[Repr[_]] = ExpAlg[Repr] & {
+type MulExpAlg Repr[_] = ExpAlg[Repr] & {
   mul : Repr[Double] -> Repr[Double] -> Repr[Double]
 }
 

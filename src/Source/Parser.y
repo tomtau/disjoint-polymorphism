@@ -156,7 +156,7 @@ recbind :: { TmBind }
 
 
 typebind :: { TypeBind }
-  : UPPER_IDENT  typaram_list '=' type     { TypeBind $1 $2 $4 }
+  : UPPER_IDENT  typarams '=' type     { TypeBind $1 $2 $4 }
 
 traitConstrs :: { [Expr] }
   : traitConstr                      { [$1] }

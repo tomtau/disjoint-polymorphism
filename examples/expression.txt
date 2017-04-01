@@ -2,7 +2,7 @@
 
 type IEval = {eval : Double}
 
-type ExpAlg[E] = {
+type ExpAlg E = {
   lit : Double -> E,
   add : E -> E -> E
 }
@@ -12,7 +12,7 @@ def evalAlg : ExpAlg[IEval] = {
   add = \x y -> {eval = x.eval + y.eval}
 }
 
-type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E }
+type SubExpAlg E = ExpAlg[E] & { sub : E -> E -> E }
 
 def subEvalAlg : SubExpAlg[IEval] = evalAlg ,, {
   sub = \x y -> { eval = x.eval - y.eval }

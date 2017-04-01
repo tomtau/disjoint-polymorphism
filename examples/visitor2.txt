@@ -7,12 +7,12 @@
 
 def undefined : forall E. E = /\E. let x : E = x in x
 
-type MaybeAlg[B, A] = {
+type MaybeAlg B A = {
   nothing : B,
   just : A -> B
 }
 
-type Maybe[A] = {
+type Maybe A = {
    match : forall C. MaybeAlg[C,A] -> C
 }
 
@@ -29,7 +29,7 @@ def fromJust A (x : Maybe[A]) : A =
 def isJust A (x : Maybe[A]) : Bool =
   x.match Bool { nothing = false, just = \_ -> true }
 
-type EnvF[E] = String -> Maybe[E]
+type EnvF E = String -> Maybe[E]
 
 def empty A : EnvF[A] = \_ -> {match = /\C. \f -> f.nothing}
 
@@ -39,11 +39,11 @@ def insert A (s1 : String) (v1 : A) (f : EnvF[A]) : EnvF[A] =
   \s2 -> if s1 == s2 then just A v1 else f s2
 
 
-type PairAlg[A,B,C] = {
+type PairAlg A B C = {
   pairAlg : A -> B -> C
 }
 
-type Pair[A,B] = {
+type Pair A B = {
   match : forall C. PairAlg[A,B,C] -> C
 }
 
@@ -66,7 +66,7 @@ def casePair A B C (p : Pair[A,B]) (f: A -> B -> C) : C =
 -----------------------------
 
 -- BEGIN_EVALUATION
-type ValAlg[E] = {
+type ValAlg E = {
   numV : Double -> E,
   boolV : Bool -> E
 }
@@ -93,7 +93,7 @@ def fromBool (v : Value) : Bool =
 -----------------------------
 
 -- BEGIN_TYPECHEKER
-type TypeAlg[E] = {
+type TypeAlg E = {
   tnum : E,
   tbool : E
 }
@@ -138,7 +138,7 @@ type ITC = { tcheck : TEnv -> Maybe[Type] }
 -----------------------------
 
 -- BEGIN_BASE_DEF
-type ArithAlg[E] = {
+type ArithAlg E = {
   num : Double -> E,
   add : E -> E -> E,
   sub : E -> E -> E,
@@ -243,7 +243,7 @@ def eg1 : Arith = {
 -----------------------------------
 
 -- BEGIN_CONDITIONAL
-type BoolArithAlg[E] = ArithAlg[E] & {
+type BoolArithAlg E = ArithAlg[E] & {
   bool : Bool -> E,
   eq   : E -> E -> E,
   le   : E -> E -> E,
@@ -341,7 +341,7 @@ def eg2 : BoolArith = {
 -----------------------------
 
 -- BEGIN_VARIABLE
-type VarArithAlg[E] = BoolArithAlg[E] & {
+type VarArithAlg E = BoolArithAlg[E] & {
   var : String -> E,
   decl : String -> E -> E -> E
 }
@@ -388,7 +388,7 @@ trait tcVarArithAlg inherits tcBoolArithAlg : VarArithAlg[ITC] { self =>
 -----------------------------
 
 -- BEGIN_TOP_LEVEL
-type ExpAlg[E] = VarArithAlg[E] & {
+type ExpAlg E = VarArithAlg[E] & {
   call : String -> E -> E
 }
 type Exp = {
@@ -396,7 +396,7 @@ type Exp = {
 }
 -- END_TOP_LEVEL
 
-type FnAlg[E] = {
+type FnAlg E = {
   fnAlg : String -> Type -> Type -> Exp -> E
 }
 
@@ -409,7 +409,7 @@ def caseFn E (x : Function) (f : String -> Type -> Type -> Exp -> E) : E =
 
 type FEnv = EnvF[Function]
 
-type PgmAlg[E] = {
+type PgmAlg E = {
   pgmAlg : FEnv -> Exp -> E
 }
 
