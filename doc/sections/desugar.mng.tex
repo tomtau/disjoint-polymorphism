@@ -9,6 +9,25 @@ setting. However, our translation is done in the context of a statically-typed
 programming language, which is exactly why conflicts can be \textit{statically}
 detected in traits.
 
+The syntax of \bname is shown in Figure~\ref{fig:synax-fi}.
+
+\begin{figure}[t]
+\centering
+% \begin{small}
+\begin{tabular}{lrcl}
+  Types  & $[[A]], [[B]]$ & ::= & $[[top]] \mid [[Int]] \mid [[Bool]] \mid [[String]] \mid [[A -> B]] \mid [[a]] \mid [[A & B]] \mid [[forall ( a ** A ) . B]] \mid [[{ l : A }]]$ \\
+  Expressions & $[[E]]$ & ::= & $[[top]] \mid [[N]] \mid [[S]] \mid [[E1 + E2]] \mid [[E1 - E2]] \mid [[E1 * E2]] \mid [[E1 / E2]] \mid [[E1 ,, E2]] $ \\
+         && $\mid$ & $[[BL]] \mid [[E1 == E2]] \mid [[E1 /= E2]] \mid [[E1 < E2]] \mid [[E1 > E2]] \mid [[if E1 then E2 else E3]] $ \\
+         && $\mid$ & $[[x]] \mid [[\ x . E]] \mid [[E1 E2]] \mid [[blam ( a ** A ) . E]] \mid [[E A]]$ \\
+         && $\mid$ & $[[{ l = E }]] \mid [[E . l]] \mid [[E -- l]] \mid [[let x : A = E1 in E2]]$ \\
+  Programs & $[[pgm]]$ & ::= & $[[<< decl >> ; E]]$ \\
+  Declarations & $[[decl]]$ & ::= & $[[def f << ( x : A ) >> : B = E]] \mid [[type T [ << a >> ] = A]]$
+\end{tabular}
+% \end{small}
+\caption{Syntax of \bname }
+\label{fig:synax-fi}
+\end{figure}
+
 \subsection{Trait Declarations}
 
 Essentially traits are translated into term declarations, with methods becoming

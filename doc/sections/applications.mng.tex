@@ -21,12 +21,12 @@ printer, and type checker.
 % \begin{small}
 \begin{tabular}{lrclr}
   Expressions & $e$ & ::= & $[[N]] \mid [[e1 + e2]] \mid [[e1 - e2]] \mid [[e1 * e2]] \mid [[e1 / e2]] $ & $\mathit{Arith}$ \\
-              && $\mid$ & $[[B]] \mid [[e1 == e2]] \mid [[e1 < e2]] \mid$ $[[if e1 then e2 else e3]] $ & $\mathit{Bool}$\\
+              && $\mid$ & $[[BL]] \mid [[e1 == e2]] \mid [[e1 < e2]] \mid$ $[[if e1 then e2 else e3]] $ & $\mathit{Bool}$\\
               && $\mid$ & $[[x]] \mid [[var x = e1 ; e2]]$  &  $\mathit{Var}$ \\
-  Program & $[[pgm]]$ & ::= & $[[<< decl >> ; e]]$  &  $\mathit{Function}$ \\
-  Function & $[[decl]]$ & ::= & $[[function F ( x : t ) { e }]]$ & \\
-  Values & $v$ & ::= & $[[N]] \mid [[B]]$ & \\
-  Types  & $t$ & ::= & $[[nat]] \mid [[bool]]$ &
+  Program & $[[jpgm]]$ & ::= & $[[<< jdecl >> ; e]]$  &  $\mathit{Function}$ \\
+  Function & $[[jdecl]]$ & ::= & $[[function f ( x : t ) { e }]]$ & \\
+  Values & $v$ & ::= & $[[N]] \mid [[BL]]$ & \\
+  Types  & $t$ & ::= & $[[int]] \mid [[bool]]$ &
 \end{tabular}
 % \end{small}
 \caption{Mini-JS expressions, values, and types}

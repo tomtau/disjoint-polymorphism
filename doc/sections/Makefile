@@ -1,6 +1,6 @@
-OTT_FILES = miniJS.ott
+OTT_FILES = miniJS.ott fi.ott
 OTT_OPTS  = -tex_show_meta false
-TARGETS   = applications.tex
+TARGETS   = applications.tex desugar.tex
 
 WARN_MSG = "%%% !!! WARNING: AUTO GENERATED. DO NOT MODIFY !!! %%%\n"
 

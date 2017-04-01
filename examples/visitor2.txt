@@ -489,9 +489,9 @@ type SuperAlg = IEval & IPrint & ITC
 def evalPgm (p : Program) : String =
   casePgm String p (\fenv m ->
     let ftenv : FTEnv = checkFEnv fenv in
-    let op1: ExpAlg[IEval]  = new[ExpAlg[IEval]] evalExpAlg(fenv) in
+    let op1 : ExpAlg[IEval]  = new[ExpAlg[IEval]] evalExpAlg(fenv) in
     let op2 : ExpAlg[IPrint] = new[ExpAlg[IPrint]] ppExpAlg in
-    let op3 : ExpAlg[ITC] = new[ExpAlg[ITC]] tcExpAlg(ftenv) in
+    let op3 : ExpAlg[ITC]    = new[ExpAlg[ITC]] tcExpAlg(ftenv) in
     let superAlg : ExpAlg[SuperAlg] = op1 ,, op2 ,,  op3 in
     let inst : SuperAlg = m.accept SuperAlg superAlg in
     if isJust Type (inst.tcheck (empty Type))

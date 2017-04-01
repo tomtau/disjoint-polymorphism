@@ -4,22 +4,22 @@ embed {{ tex-preamble
 }}
 
 
-metavar x, F ::= {{ com Variable names }}
+metavar x, f, T, l, a {{ tex \alpha }} ::= {{ com Variable names }}
 
 
 grammar
 
-pgm                                         :: Pgm ::=      {{ com Program }}
-  | << decl >> ; e                          ::   :: Decl
+jpgm {{ tex pgm }}                      :: 'jpgm_' ::=      {{ com Program }}
+  | << jdecl >> ; e                          ::   :: Decl
 
-decl                                        :: Decl ::=     {{ com Top-level function }}
-  | function F ( x : t ) { e }  ::   :: Fun
+jdecl {{ tex decl }}                           :: 'jdecl_' ::=     {{ com Top-level function }}
+  | function f ( x : t ) { e }  ::   :: Fun
 
 
-e :: Tm ::=                                                    {{ com terms: }}
+e :: 'e_' ::=                                                    {{ com Term }}
   | x                              ::   :: Var                 {{ com Variable }}
   | N                              ::   :: Arith               {{ com Literal }}
-  | B                              ::   :: Bool                {{ com Bool }}
+  | BL                              ::   :: Bool                {{ com Bool }}
   | e1 + e2                        ::   :: Add                 {{ com Add }}
   | e1 - e2                        ::   :: Sub                 {{ com Sub }}
   | e1 * e2                        ::   :: Mult                {{ com Mult }}
@@ -31,22 +31,37 @@ e :: Tm ::=                                                    {{ com terms: }}
 
 
 
-v :: Va ::=                                          {{ com values: }}
+v :: 'v_' ::=                                          {{ com Value }}
   | N                             ::   :: Arith      {{ com Literal }}
-  | B                             ::   :: Bool       {{ com Bool }}
+  | BL                             ::   :: Bool       {{ com Bool }}
 
-t :: Ty ::=                                              {{ com types: }}
+t :: 't_' ::=                                              {{ com Type }}
   | nat                           ::   :: Arith          {{ com Arith }}
   | bool                          ::   :: Bool           {{ com Bool }}
 
 %%% Terminals
 terminals :: 'terminals_' ::=
   | N        ::  :: Arith      {{ tex \mathbb{N} }}
-  | B        ::  :: Bool       {{ tex \mathbb{B} }}
+  | S        ::  :: String      {{ tex \mathbb{S} }}
+  | BL        ::  :: Bool       {{ tex \mathbb{B} }}
+  | int        ::  :: int       {{ tex \mathsf{int} }}
+  | bool        ::  :: bool       {{ tex \mathsf{bool} }}
+  | Int        ::  :: int2       {{ tex \mathsf{Int} }}
+  | Bool        ::  :: bool2       {{ tex \mathsf{Bool} }}
+  | String        ::  :: String2       {{ tex \mathsf{String} }}
   | /        ::  :: Div       {{ tex \div }}
   | *        ::  :: Time       {{ tex \times }}
   | <<       ::  :: vecl      {{ tex \,\overline{ }}
   | >>       ::  :: vecr      {{ tex }\, }}
+  | \        ::  :: lambda    {{ tex \lambda }}
+  | --        ::  :: rem    {{ tex \,\backslash\, }}
+  | blam       ::  :: blam        {{ tex \Lambda }}
+  | top       ::  :: Top        {{ tex \top }}
+  | ,,       ::  :: Merge        {{ tex \,,,\, }}
+  | **       ::  :: Dis        {{ tex * }}
+  | ->       ::  :: to        {{ tex \rightarrow }}
+  | forall       ::  :: forall        {{ tex \forall }}
+  | &       ::  :: And        {{ tex \,\&\, }}
 
 subrules
 v <:: e
