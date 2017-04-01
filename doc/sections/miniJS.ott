@@ -5,12 +5,13 @@ embed {{ tex-preamble
 
 
 metavar x, f, T, l, a {{ tex \alpha }} ::= {{ com Variable names }}
+indexvar i, j, n, m ::= {{ com Index variables }}
 
 
 grammar
 
 jpgm {{ tex pgm }}                      :: 'jpgm_' ::=      {{ com Program }}
-  | << jdecl >> ; e                          ::   :: Decl
+  | jdecl1 .. jdecln e                          ::   :: Decl
 
 jdecl {{ tex decl }}                           :: 'jdecl_' ::=     {{ com Top-level function }}
   | function f ( x : t ) { e }  ::   :: Fun
@@ -51,8 +52,6 @@ terminals :: 'terminals_' ::=
   | String        ::  :: String2       {{ tex \mathsf{String} }}
   | /        ::  :: Div       {{ tex \div }}
   | *        ::  :: Time       {{ tex \times }}
-  | <<       ::  :: vecl      {{ tex \,\overline{ }}
-  | >>       ::  :: vecr      {{ tex }\, }}
   | \        ::  :: lambda    {{ tex \lambda }}
   | --        ::  :: rem    {{ tex \,\backslash\, }}
   | blam       ::  :: blam        {{ tex \Lambda }}
@@ -62,6 +61,8 @@ terminals :: 'terminals_' ::=
   | ->       ::  :: to        {{ tex \rightarrow }}
   | forall       ::  :: forall        {{ tex \forall }}
   | &       ::  :: And        {{ tex \,\&\, }}
+  | ]        ::  :: bracketr  {{ tex \ottsym{]} \, }}
+  | [        ::  :: bracketl  {{ tex \, \ottsym{[} }}
 
 subrules
 v <:: e

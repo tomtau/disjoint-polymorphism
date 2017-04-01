@@ -7,12 +7,12 @@ grammar
 
 %% Declarations
 pgm                                         :: 'pgm_' ::=      {{ com Program }}
-  | << decl >> ; E                          ::   :: Decl
+  | decl1 .. decln E                          ::   :: Decl
 
 
 decl                                        :: 'decl_' ::=     {{ com Declaration }}
-  | def f << ( x : A ) >> : B = E  ::   :: TermDecl   {{ com Term Declaration }}
-  | type T [ << A >> ] = B             ::   :: TypeDecl              {{ com Type Declaration }}
+  | def f ( x1 : A1 ) .. ( xn : An ) : B = E  ::   :: TermDecl   {{ com Term Declaration }}
+  | type T a1 ... an  = A             ::   :: TypeDecl              {{ com Type Declaration }}
 
 
 E {{ tex e }} :: 'E_' ::=                                                    {{ com Terms }}
@@ -50,3 +50,4 @@ A, B :: 'T_' ::=                                              {{ com Type }}
   | a                          ::   :: Var           {{ com Var }}
   | forall ( a ** A ) . B      ::   :: Forall           {{ com Forall }}
   | { l : A }      ::   :: RecdT           {{ com Record }}
+  | A [ B1 ... Bn ]   ::   :: TApp    {{ com TApp }}
