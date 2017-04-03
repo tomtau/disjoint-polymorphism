@@ -1,15 +1,18 @@
 \section{Desugaring}
 \label{sec:desugar}
 
+\name is built upon a thin-layer of sugar on top of \bname. The section unveils
+the procedures for translating traits . The idea behind trait translation is
+inspired by the functional mixin semantics using open recursion, which is
+proposed by~\citet{cook1989denotational} in an untyped setting. However, our
+translation is done in the context of a statically-typed programming language,
+which is exactly why conflicts can be \textit{statically} detected in traits.
 
-The section provides the procedures of desugaring traits to \bname. The idea
-behind trait translation is inspired by the functional mixin semantics using
-open recursion, which is proposed by~\citet{cook1989denotational} in an untyped
-setting. However, our translation is done in the context of a statically-typed
-programming language, which is exactly why conflicts can be \textit{statically}
-detected in traits.
-
-The syntax of \bname is shown in Figure~\ref{fig:synax-fi}.
+The syntax of our core language \bname is shown in Figure~\ref{fig:synax-fi}. It
+is mostly based on the calculus proposed by~\citet{alpuimdisjoint}, with several
+extensions (e.g., term and type declarations, more primitive types,
+etc\footnote{We have very limited support for higher-kinded types, for which we
+  haven't worked out the meta-theory yet.}.)
 
 \begin{figure}[t]
 \centering
@@ -47,30 +50,71 @@ becomes
   , y = \_ -> self.x()
   }
 \end{lstlisting}
-
 Now it is clear that \lstinline{self} is not a special keyword: it can
 have any name.
 
-More formally, a trait of the form
-\begin{lstlisting}[mathescape=true]
-  trait m [$A_1$, ..., $A_n$] ($x_1 : A_1$, ..., $x_n : A_n$) inherits $a_1$ & ... & $a_n$ { s : $A_0$ =>
-    def $m_1$(...) = $e_1$
-    ...
-    def $m_n$(...) = $e_n$
-  }
-\end{lstlisting}
-is translated into a term declaration of the form
-\begin{lstlisting}[mathescape=true]
-  def m $A_1$ ... $A_n$ $(x_1 : A_1)$ ... $(x_n : A_n)$ $(s : A_0)$ = $a_1$(s) ,, ... ,, $a_n$(s) ,,
-  {
-    $m_1$ = \(...) -> $e_1$
-  , ...
-  , $m_n$ = \(...) -> $e_n$
-  }
-\end{lstlisting}
+Figure~\ref{fig:trans-trait} presents the translation of trait declarations.
 
 
-\subsection{Instantiations of Traits}
+\begin{figure}[t]
+  \centering
+  \begin{tabular}{l}
+
+\begin{lstlisting}[mathescape=true]
+trait m ($x_1 : A_1$, .., $x_n : A_n$) inherits $a_1$ & .. & $a_m$ { s : $A_0$ =>
+  def $m_1$(..) = $e_1$
+  ..
+  def $m_s$(..) = $e_s$
+}
+\end{lstlisting} \\
+
+    $\rightsquigarrow$ \\
+
+\begin{lstlisting}[mathescape=true]
+def m $(x_1 : A_1)$ .. $(x_n : A_n)$ $(s : A_0)$ = $a_1$(s) ,, .. ,, $a_m$(s) ,, {
+  $m_1$ = \(..) -> $e_1$
+, ..
+, $m_s$ = \(..) -> $e_s$
+}
+\end{lstlisting}
+  \end{tabular}
+\caption{Translating trait declaration}
+\label{fig:trans-trait}
+
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \begin{tabular}{l|l}
+
+\begin{lstlisting}[mathescape=true]
+new[$A_1$ & ... & $A_n$] $a_1$ & ... & $a_n$
+\end{lstlisting} &
+
+\begin{lstlisting}[mathescape=true]
+Trait[$T_1, T_2$]
+\end{lstlisting} \\
+
+    $\rightsquigarrow$ & $\rightsquigarrow$ \\
+
+\begin{lstlisting}[mathescape=true]
+let self : $A_1$ & ... & $A_n$ =
+  $a_1$(self) ,, ... ,, $a_n$(self) in self
+\end{lstlisting} &
+
+\begin{lstlisting}[mathescape=true]
+$T_1$ -> $T_2$
+\end{lstlisting} \\
+
+
+  \end{tabular}
+\caption{Translations of trait instantiation (left) and trait type (right) }
+\label{fig:trans-trait-inst}
+
+\end{figure}
+
+
+\subsection{Trait Instantiation}
 
 \name allows creating a single object from one or more traits. Specifically,
 \lstinline{new} instantiates a trait by taking the fixpoint of its
@@ -104,14 +148,8 @@ is turned into
   let self : Point & Norm = (point 3 4 self) ,, (euclideanNorm () self) in self
 \end{lstlisting}
 
-Formally, a \lstinline{new} expression of the form
-\begin{lstlisting}[mathescape=true]
-  new[$A_1$ & ... & $A_n$] $a_1$ & ... & $a_n$
-\end{lstlisting}
-is translated into a let expression of the form
-\begin{lstlisting}[mathescape=true]
-  let self : $A_1$ & ... & $A_n$ = $a_1$(self) ,, ... ,, $a_n$(self) in self
-\end{lstlisting}
+The left hand side of Figure~\ref{fig:trans-trait-inst} presents the translation
+of trait instantiations.
 
 \subsection{The Type for Traits}
 
@@ -121,7 +159,8 @@ In fact, it is just like a type constructor except for the fact that it is
 built-in in the language, and that the encoding is not exposed to the
 programmers.
 
-Formally, a trait type of the form \lstinline[mathescape=true]{Trait[$T_1, T_2$]} becomes \lstinline[mathescape=true]{$T_1$ -> $T_2$}.
+The right hand side of Figure~\ref{fig:trans-trait-inst} presents the
+translation of trait types.
 
 \subsection{Record System}
 
@@ -132,56 +171,22 @@ multi-record types as intersections. Therefore in \name, there are only
 single-field record constructs. As such, record operations in \name can occur on
 \textit{any} type.
 
-\subsubsection{Record Operations}
-
-To illustrate the various operations on records, we consider a record with three
-fields:
+\paragraph{Operations}
+We define three operations with records: construction, selection, and exclusion.
+The construction operation builds a record literal such as
 \begin{lstlisting}
-  {open : Int, high : Int, low : Int}
+  {x = 3, y = true}
 \end{lstlisting}
-Note that this type is just syntactic sugar for:
+Internally, this is just a merge of two single-field records:
 \begin{lstlisting}
-  {open : Int} & {high : Int} & {low : Int}
+  {x = 3} ,, {y = true}
 \end{lstlisting}
-That is, a multi-field record type is desugared as intersections of single-field
-record types.
-
-\name supports three primitive operations related to records:
-\textit{construction} \textit{selection} and \textit{restriction}.
-\textit{Extension}, described in many other record systems, is delegated to the
-merge operator. Working with records is type-safe: the type system prevents
-accessing a field that does not exist.
-
-\paragraph{Record construction.} The usual notation for constructing records
+The exclusion operation, denoted by a backslash, removes a field from a record.
+For example, the following code
 \begin{lstlisting}
-  {open = 192, high = 195, low = 189}
+  {x = 3, y = true} \ y
 \end{lstlisting}
-is a shorthand for merges of single-field records
-\begin{lstlisting}
-  {open = 192} ,, {high = 195} ,, {low = 189}
-\end{lstlisting}
-
-\paragraph{Record selection.} Fields are extracted using the dot notation. For
-example,
-\begin{lstlisting}
-  {open = 192, high=195, low= 189}.open
-\end{lstlisting}
-selects the value of the field labelled \lstinline{open} from the record. Since
-records are just merges of terms, we can even select a field that is buried deep
-inside a merge, so long as it is present.
-\begin{lstlisting}
-  ({open = 192} ,, 3 ,, {low = 189}).open
-\end{lstlisting}
-
-\jeremy{say something about record restriction}
-
-\paragraph{Record extension} Extension, just like construction, is implemented
-with the merge operator. The following example adds a \lstinline{close} field to
-the record:
-\begin{lstlisting}
-  {open = 192, high=195, low=189} ,, {close = 195}
-\end{lstlisting}
-
+shows the removal of \lstinline{y} label from the record.
 
 \begin{comment}
 \subsubsection{Restriction via Subtyping}
@@ -199,8 +204,7 @@ shows removing the \lstinline{low} field:
 \lstinputlisting[linerange=10-11]{../examples/record.txt}% APPLY:linerange=RCD_EG
 \end{comment}
 
-
-\subsubsection{Disjointness of Records}
+\paragraph{Disjointness of Records}
 
 Most record calculi forbid duplicate labels in the declarations of record types.
 Some allow labels coincide but the last field overrides the previous ones.
@@ -209,17 +213,10 @@ approach to record disjointness~\cite{alpuimdisjoint}. Of course records with
 distinct fields are disjoint naturally. \name accepts duplicate labels as long
 as the types of the overlapping fields are disjoint. For example,
 \begin{lstlisting}
-  {open = 192, high = 195, open = true}
+  {x = 3, y = true, x = "hello" }
 \end{lstlisting}
-is allowed in \name. An interesting question arises when we try to select a
-duplicate label, say \lstinline{open}. What should be the result? Should it be
-192 or \lstinline{true}? Neither choice is satisfying, as with the coherence
-problem for merges. Instead \name rejects such expression, and asks for more
-type information from the context. Thus the following is accepted because there
-is only one \lstinline{open} associated with \lstinline{Int}.
-\begin{lstlisting}
-  {open = 192, high = 195, open = true}.open + 3
-\end{lstlisting}
+is allowed in \name because \lstinline${x : Int}$ and \lstinline${x : String}$ are
+disjoint.
 
 \section{Implementation}
 
