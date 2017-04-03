@@ -17,8 +17,7 @@ subclass \emph{extends} a class it automatically becomes a
 
 \item{\bf Inheritance and subtyping go along together:}
 Class extension does two things at once: it inherits code from the
-superclass; and it creates a subtype. In other words inheritance and
-subtyping always go along together. 
+superclass; and it creates a subtype. 
 
 \end{itemize}
 
@@ -29,7 +28,7 @@ to its relative simplicity. In particular, programmers do not have to think care
 about the difference between subtyping and inheritance (indeed many
 programmers confuse the two concepts). \bruno{more?}
 
-Unfortunatelly the study of the theoretical foundations has
+Nevertheless the study of the theoretical foundations has
 taught us that the story about OOP is not quite so simple. Since the
 earliest works on the theory of OOP and subtyping, we have known that 
 the covariant view of objects is somewhat simplified. Already in
@@ -110,7 +109,8 @@ producing subtypes.
 
 Despite being proposed almost 30 years ago, and one of the most
 famous papers in OOP, Cook et al.'s paper has not had much impact 
-on the design of mainstream OOP languages.
+on the design of mainstream OOP languages (although it has influenced 
+the design of several academic languages~\cite{}).
 %Certainly this is not because
 %researchers or designer of OOP language are unaware of the subtleties 
 %of covariance and contravariance. Indeed over the years, and for other
@@ -126,6 +126,7 @@ the literature where the need for a more flexible OOP model is
 necessary. Thus language designers may argue that the costs outweight 
 the benefits, and may decide to stick instead to the covariant 
 model, which is simple, and well-understood by programmers. 
+%Indeed a famous instance of this is the design of DART
 
 This paper has three primary goals. The first goal is to argue that the
 covariant model significantly restricts statically-typed OOP
@@ -134,34 +135,39 @@ applications. The second goal to identify additional desirable
 features that improve flexibility of OOP and are needed in practice.
 In particular we argue that supporting a more \emph{dynamic}
 form of inheritance (where concrete implementations of the inherited
-code are possibly unknown) is highly desirable in practice. 
+code are possibly unknown) is highly desirable in practice. Thus 
+we are naturally led to a OO language design using \emph{delegation} (or \emph{dynamic inheritance}).
 Finally, we present \name: a programming language that puts these 
 ideas into practice using a type system based on 
 \emph{disjoint intersection types}~\cite{} and \emph{disjoint
 polymorphism}~\cite{}.
 
-In this paper we argue that the covariant model significantly
-restricts statically-typed OOP programming in terms of modularity and
-reuse for important practical applications. 
-Concretely there are at least two applications areas where the
-inflexibility of type systems of mainstream statically-typed OOP
-languages is problematic.
+Regarding the first goal, we argue that there are at least two
+applications areas where the inflexibility of type systems of
+mainstream statically-typed OOP languages is problematic.
 
 \paragraph{\bf JavaScript-style Mixin-Based Programming}
-A common programming pattern in JavaScript is based variant of Mixins. 
+A common programming pattern in JavaScript is based variant of
+Mixins. This programming style is very flexible and enables forms 
+of reuse not usually available in more statically typed languages like Java.
 However, mixins in JavaScript fundamentally rely on an \emph{object-level composition}
-operator for inheritance. This requires a very dynamic form of
+operator for inheritance~\cite{}. This requires a very dynamic form of
 inheritance/delegation that is not available in most class-based 
 statically-typed OO languages. Ideally the essence of such 
 form of mixins should be capturable in statically-typed languages. 
+Languages such as TypeScript do attempt to provide better static
+type-checking support for those patterns. However, as recently illustrated 
+by the work of Alpuim et al.~\cite{}, there are several issues with such an 
+approach, including type-unsoundness! 
 
-\paragraph{\bf Extensibility/Modularity Patterns for OOP}
+\paragraph{\bf Extensible Visitors and First-Class Values for Object Algebras}
 There has been a remarkable number of works aimed at improving support
 for extensibility in programming languages
 ~\cite{Prehofer97,Tarr99ndegrees,Harrison93subject,McDirmid01Jiazzi,Aracic06CaesarJ,Smaragdakis98mixin,nystrom2006j,togersen:2004,Zenger-Odersky2005,oliveira09modular,oliveira2012extensibility}. 
 Some of the more recent work on extensibility is focused on design
 patterns such as Extensible
-Visitorss~\cite{togersen:2004,oliveira09modular} or Object Algebras \cite{oliveira2012extensibility}.
+Visitors~\cite{togersen:2004,oliveira09modular} or Object Algebras
+\cite{oliveira2012extensibility}. 
 Although such design patterns give practical benefits in terms of
 extensibility, they also expose limitations in existing mainstream OOP
 languages. In particular there are three pressing limitations: 
