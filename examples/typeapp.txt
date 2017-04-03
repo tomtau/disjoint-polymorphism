@@ -1,6 +1,6 @@
 --> 3.0
 
-type IdType B = B -> B
+type IdType [B] = B -> B
 
 def id : IdType [Double] = \x -> x
 

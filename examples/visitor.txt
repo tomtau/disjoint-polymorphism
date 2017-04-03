@@ -1,7 +1,7 @@
 --> "(5.0 - (3.0 + 2.0)) = 0.0"
 
 -- BEGIN_ALGEBRA_DEF
-type ExpAlg E = {
+type ExpAlg[E] = {
   lit : Double -> E,
   add : E -> E -> E
 }
@@ -24,7 +24,7 @@ trait evalAlg { self =>
 
 
 -- BEGIN_SUB_DEF
-type SubExpAlg E = ExpAlg[E] & { sub : E -> E -> E }
+type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E }
 trait subEvalAlg inherits evalAlg { self =>
   def sub (x : IEval) (y : IEval) = { eval = x.eval - y.eval }
 }
