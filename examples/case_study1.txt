@@ -65,7 +65,6 @@ def casePair A B C (p : Pair[A,B]) (f: A -> B -> C) : C =
 -- Evaluation
 -----------------------------
 
--- BEGIN_EVALUATION
 type ValAlg[E] = {
   numV : Double -> E,
   boolV : Bool -> E
@@ -73,7 +72,6 @@ type ValAlg[E] = {
 type Value = {
   match : forall C. ValAlg[C] -> C
 }
--- END_EVALUATION
 
 def numV (n : Double) : Value = { match = /\C. \f -> f.numV n }
 
@@ -92,7 +90,6 @@ def fromBool (v : Value) : Bool =
 -- Type checker
 -----------------------------
 
--- BEGIN_TYPECHEKER
 type TypeAlg[E] = {
   tnum : E,
   tbool : E
@@ -100,7 +97,6 @@ type TypeAlg[E] = {
 type Type = {
   match : forall E. TypeAlg[E] -> E
 }
--- END_TYPECHEKER
 
 def tnum : Type = { match = /\E. \f -> f.tnum }
 
@@ -149,6 +145,26 @@ type Arith = {
   accept : forall E. ArithAlg[E] -> E
 }
 -- END_BASE_DEF
+
+def numA (n : Double) : Arith = {
+  accept = /\E. \f -> f.num n
+}
+
+def addA (e1 : Arith) (e2 : Arith) : Arith = {
+  accept = /\E. \f -> f.add (e1.accept E f) (e2.accept E f)
+}
+
+def subA (e1 : Arith) (e2 : Arith) : Arith = {
+  accept = /\E. \f -> f.sub (e1.accept E f) (e2.accept E f)
+}
+
+def mulA (e1 : Arith) (e2 : Arith) : Arith = {
+  accept = /\E. \f -> f.mul (e1.accept E f) (e2.accept E f)
+}
+
+def divA (e1 : Arith) (e2 : Arith) : Arith = {
+  accept = /\E. \f -> f.div (e1.accept E f) (e2.accept E f)
+}
 
 
 -- Evaluator
@@ -233,8 +249,7 @@ trait tcArithAlg { self =>
 }
 
 
-def eg1 : Arith = {
-  accept = /\E. \f -> f.add (f.mul (f.num 3) (f.num 4)) (f.num 5) }
+def eg1 : Arith = addA (mulA (numA 3) (numA 4)) (numA 5)
 
 
 
@@ -255,9 +270,24 @@ type BoolArith = {
   accept : forall E. BoolArithAlg[E] -> E
 }
 
+def boolB (b : Bool) : BoolArith = {
+  accept = /\E. \f -> f.bool b
+}
+
+def eqB (e1 : BoolArith) (e2 : BoolArith) : BoolArith = {
+  accept = /\E. \f -> f.eq (e1.accept E f) (e2.accept E f)
+}
+
+def leB (e1 : BoolArith) (e2 : BoolArith) : BoolArith = {
+  accept = /\E. \f -> f.le (e1.accept E f) (e2.accept E f)
+}
+
+def ifB (e1 : BoolArith) (e2 : BoolArith) (e3 : BoolArith) : BoolArith = {
+  accept = /\E. \f -> f.iff (e1.accept E f) (e2.accept E f) (e3.accept E f)
+}
+
 
 -- Evaluator
--- BEGIN_EVALUATOR_CONDITIONAL
 trait evalBoolArithAlg inherits evalArithAlg : BoolArithAlg[IEval] { self =>
   def bool b          = { eval = \_ -> just Value (boolV b) }
   def eq e1 e2        = { eval = \env ->
@@ -277,10 +307,8 @@ trait evalBoolArithAlg inherits evalArithAlg : BoolArithAlg[IEval] { self =>
       else e3.eval env)
   }
 }
--- END_EVALUATOR_CONDITIONAL
 
 -- Pretty printer
--- BEGIN_PRETTY_CONDITIONAL
 trait ppBoolArithAlg inherits ppArithAlg : BoolArithAlg[IPrint] { self =>
   def bool b          = { print = b.toString }
   def eq e1 e2        = { print = "(" ++ e1.print ++ " == " ++ e2.print ++ ")" }
@@ -288,11 +316,9 @@ trait ppBoolArithAlg inherits ppArithAlg : BoolArithAlg[IPrint] { self =>
   def iff e1 e2 e3 =
     { print = "(if " ++ e1.print ++ " then " ++ e2.print ++ " else " ++ e3.print ++ ")" }
 }
--- END_PRETTY_CONDITIONAL
 
 
 -- Type checker
--- BEGIN_TYPECHECKER_CONDITIONAL
 trait tcBoolArithAlg inherits tcArithAlg : BoolArithAlg[ITC] { self =>
   def bool b   = { tcheck = \_ -> just Type tbool }
   def eq e1 e2 = { tcheck = \env ->
@@ -328,12 +354,9 @@ trait tcBoolArithAlg inherits tcArithAlg : BoolArithAlg[ITC] { self =>
                 (just Type t2)))))))
   }
 }
--- END_TYPECHECKER_CONDITIONAL
 
 
-def eg2 : BoolArith = {
-  accept = /\E. \f -> f.iff (f.eq (f.num 3) (f.num 5)) (f.num 12) (f.add (f.num 12) (f.num 22))
-}
+def eg2 : BoolArith = ifB (eqB (numA 3) (numA 5)) (numA 12) (addA (numA 12) (numA 22))
 
 
 -----------------------------
@@ -349,6 +372,14 @@ type VarArithAlg[E] = BoolArithAlg[E] & {
 
 type VarArith = {
   accept : forall E. VarArithAlg[E] -> E
+}
+
+def varV (n : String) : VarArith = {
+  accept = /\E. \f -> f.var n
+}
+
+def declV (n : String) (e1 : VarArith) (e2 : VarArith) : VarArith = {
+  accept = /\E. \f -> f.decl n (e1.accept E f) (e2.accept E f)
 }
 
 
@@ -395,6 +426,11 @@ type Exp = {
   accept : forall E. ExpAlg[E] -> E
 }
 -- END_TOP_LEVEL
+
+def callF (n : String) (e : Exp) : Exp = {
+  accept = /\E. \f -> f.call n (e.accept E f)
+}
+
 
 type FnAlg[E] = {
   fnAlg : String -> Type -> Type -> Exp -> E
@@ -472,16 +508,13 @@ def fenv : FEnv = insert Function "add1" add1 (empty Function)
 
 -- BEGIN_FINAL_TEST
 -- add1(var x = 3; var y = 4; if x < y then x + 2 else y + 3)
-def test : Program = {
-  accept = /\E. \f -> f.pgmAlg fenv { accept = /\E. \f ->
-    f.call "add1"
+def test : Program = {accept = /\E. \p -> p.pgmAlg fenv { accept = /\F. \f ->
+  f.call "add1"
     (f.decl "x" (f.num 3)
       (f.decl "y" (f.num 4)
         (f.iff (f.le (f.var "x") (f.var "y"))
           (f.add (f.var "x") (f.num 2))
-          (f.add (f.var "y") (f.num 3)))))
-  }
-}
+          (f.add (f.var "y") (f.num 3)))))}}
 -- END_FINAL_TEST
 
 -- BEGIN_SUPER_DEF
