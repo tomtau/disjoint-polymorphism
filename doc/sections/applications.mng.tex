@@ -23,13 +23,13 @@ printer, and type checker.
   Expressions & $e$ & ::= & $[[N]] \mid [[e1 + e2]] \mid [[e1 - e2]] \mid [[e1 * e2]] \mid [[e1 / e2]] $ & $\mathit{Arith}$ \\
               && $\mid$ & $[[BL]] \mid [[e1 == e2]] \mid [[e1 < e2]] \mid$ $[[if e1 then e2 else e3]] $ & $\mathit{Bool}$\\
               && $\mid$ & $[[x]] \mid [[var x = e1 ; e2]]$  &  $\mathit{Var}$ \\
-  Program & $[[jpgm]]$ & ::= & $[[jdecl1 .. jdecln e]]$ & $\mathit{Function}$ \\
-  Function & $[[jdecl]]$ & ::= & $[[function f ( x : t ) { e }]]$ & \\
+  Programs & $[[jpgm]]$ & ::= & $[[jdecl1 .. jdecln e]]$ & $\mathit{Function}$ \\
+  Functions & $[[jdecl]]$ & ::= & $[[function f ( x : t ) { e }]]$ & \\
   Values & $v$ & ::= & $[[N]] \mid [[BL]]$ & \\
   Types  & $t$ & ::= & $[[int]] \mid [[bool]]$ &
 \end{tabular}
 % \end{small}
-\caption{Mini-JS expressions, values, and types}
+\caption{mini-JS expressions, values, and types}
 \label{fig:mini-js}
 \end{figure}
 
