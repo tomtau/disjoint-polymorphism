@@ -2,7 +2,33 @@
 
 \subsection{(Disjoint) Intersection Types, Merge Operator}
 
-Including some others' work
+There is a large body of work on studying intersection types. Dating back to
+works as early as~\citet{coppo1981functional} and~\citet{pottinger1980type},
+their motivation was to use intersection types to characterize exactly all
+strongly normalizing lambda terms. Forsythe~\cite{reynolds1997design} is
+probably the first practical programming language based on intersection types.
+Since then various programming languages, including
+CDuce~\cite{benzaken2003cduce}, Stardust~\cite{Dunfield07:Stardust}, Microsoft's
+TypeScript, Redhat's Ceylon, Facebook's Flow, and Scala~\cite{scala-overview}
+have incorporated some notion of intersection types.
+
+The merge operator was first introduced in the Forsythe
+language~\cite{reynolds1997design}. Recent work
+by~\citet{dunfield2014elaborating} shows significant expressiveness of type
+systems with intersection types and a merge operator. However their languages
+all lack a important and desirable property of coherence. The limitation was
+addressed by~\citet{oliveira2016disjoint}, where they introduce the notion of
+disjointness to ensure coherence.
+
+Previous work on incorporating polymorphism with intersection types includes
+Pierce's $F_\wedge$~\cite{pierce1991programming2} and the recent work
+by~\citet{Castagna:2014}. The former supports intersection types, polymorphism
+and, as an extension, the merge operator. However $F_\wedge$ is incoherent due
+to the use of such an extension. The latter is a coherent calculus with a
+special merge operator that works on functions only. The \bname calculus,
+proposed by~\citet{alpuimdisjoint} in their latest work, is the first coherent
+calculus that includes parametric polymorphism, intersection types and a merge
+operator. \bname serves the theoretical foundation of \name.
 
 
 \subsection{Mainstream Languages with Delegation Mechanism}
@@ -17,6 +43,24 @@ Including some others' work
 They are all dynamically typed.
 
 \subsection{Statically typed Delegation-based Languages}
+
+\citet{cook1989inheritance} are the first to propose a typed model of
+inheritance where subtyping and inheritance are two separate concepts. In
+particular, they introduce the notion of \textit{type inheritance} and show that
+inherited objects have inherited types, not subtypes. An interesting aspect of
+their model is the \textbf{with} construct, used to join two records. This is
+somewhat similar to our merge construct. However two major differences are worth
+pointing out: 1) the \textbf{with} construct operates only on records, and 2) it
+is a biased operation, meaning the conflict is resolved by taking a biased
+choice. This is in sheer contrast with \name, where the merge construct allows
+merging two arbitrary terms of disjoint types. \jeremy{Cook's model uses
+  recursive types and F-bounded polymorphism to type object inheritance, while
+  we don't have recursive types.}
+
+
+
+
+
 
 \begin{itemize}
 \item read ``Inheritance is not subtyping'', notice their ``with'' construct can
