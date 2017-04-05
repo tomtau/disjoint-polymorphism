@@ -3,8 +3,6 @@
 -- features: embedding typed language
 -- operations: eval, pp
 -- different evaluation order
---
--- Issue: encode higher kinded polymorphism
 -- Use object algebra
 
 

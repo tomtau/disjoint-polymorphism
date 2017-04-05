@@ -51,11 +51,11 @@ inherited objects have inherited types, not subtypes. An interesting aspect of
 their model is the \textbf{with} construct, used to join two records. This is
 somewhat similar to our merge construct. However two major differences are worth
 pointing out: 1) the \textbf{with} construct operates only on records, and 2) it
-is a biased operation, meaning the conflict is resolved by taking a biased
-choice. This is in sheer contrast with \name, where the merge construct allows
-merging two arbitrary terms of disjoint types. \jeremy{Cook's model uses
-  recursive types and F-bounded polymorphism to type object inheritance, while
-  we don't have recursive types.}
+is a biased operation, meaning the conflict is resolved by favoring values from
+its right argument. This is in sheer contrast with \name, where the merge
+construct allows merging two arbitrary terms of disjoint types. \jeremy{Cook's
+  model uses recursive types and F-bounded polymorphism to type object
+  inheritance, while we don't have recursive types.}
 
 
 
