@@ -56,9 +56,9 @@ that {\bf Inheritance is not Subtyping}. \ldots
 
 \subsection{No Retroactive Super Types and Contravariant Subtyping Refinement}
 
-In the covariant model extensions are always subtypes. However, as we
-shall see, there are situations where extensions are actually
-\emph{supertypes}. Unfortunatelly this is not supported in the
+In the covariant model extensions are always subtypes. However, 
+there are situations where extensions are actually
+\emph{supertypes} (or can even have no relation to the extended type). Unfortunatelly this is not supported in the
 covariant model. Using some imaginary syntax for a Java-like language, 
 what we would like to express is:
 
@@ -94,13 +94,13 @@ also proposes a similar feature to retroactive super types.
 
 \paragraph{Contravariant Subtyping Refinement of Arguments}
 Another feature that is missing from mainstream OOP languages is 
-contravariant refinement of argument types. Most Java-like OOP language support covariant return type 
+contravariant refinement of argument types. Most Java-like OOP languages support covariant return type 
 refinement. That is:
 
 \begin{lstlisting}
 interface A  {A m();} 
 
-interface B  extends A {B m();} // B extends and refines the return type of m()
+interface B  extends A {B m();} // B extends and refines the return type of m() to a subtype
 \end{lstlisting}
 
 \noindent From the theory of OOP languages, we know that an equally
@@ -217,14 +217,95 @@ trait D extends C[Int] with C[Boolean]
 defining a method \lstinline{m}. Then the trait \lstinline{D} attempts 
 to inherit from \lstinline{C} twice: the first time with the type
 parameter instantiated to \lstinline{Int}, and the second time with
-the type 
+the type parameter instantiated to \lstinline{Boolean}. The intention 
+would be that the resulting class would have two \emph{overloaded}
+methods \lstinline{m}. Unfortunatelly this code is rejected for the
+same reason as the previous example: the trait \lstinline{C} is
+inherited twice. To overcome this problem, a possible solution would
+be to create two specialized versions of \lstinline{C}:
 
+\begin{lstlisting}
+trait CInt {def m(x : Int) = x}
 
-Example: composing Object Algebras (can relate to visitors).
+trait CBoolean {def m(x : Boolean) = x}
+	
+trait D extends CInt with CBoolean
+\end{lstlisting}
 
-\jeremy{addressed in \ref{sec:dynamic} }
+\noindent which works, but it is non-modular, as it requires changing 
+the original definition of \lstinline{C}. 
+
+In general, while for non-parametric classes/traits the restriction
+that inheriting the same class twice makes sense, for parametric
+classes there are situations where it would make sense to inherit 
+from the same class/trait twice. As it turns out similar situations 
+do arize in practice when defining composition operators for 
+Object Algebras. \jeremy{addressed in \ref{sec:dynamic} }
 
 \subsection{No Dynamic Inheritance}
+
+The final limitation is that statically typed maistream OOP use a
+class-based static inheritance model. This means that when inheritance 
+is used, the class and the 
+\begin{comment}
+Intersection types date back as early as Coppo et al.'s
+work~\cite{coppo1981functional}. Since then researchers have studied
+intersection types, and some languages have adopted them in one form or another.
+
+In Java, for example,
+\begin{lstlisting}[language=java]
+  interface AwithB extends A, B {}
+\end{lstlisting}
+introduces a new interface \lstinline$AwithB$ that satisfies the interface of
+both \lstinline{A} and \lstinline{B}. 
+\end{comment}
+In Scala, given two concrete traits, it is
+possible to use \textit{mixin composition} to create an object that implements
+both traits.
+\begin{lstlisting}[language=scala]
+  trait A
+  trait B
+  val newAB : A with B = new A with B
+\end{lstlisting}
+Scala also allows intersection of type parameters. For example,
+\begin{lstlisting}[language=scala]
+  def merge[A,B] (x: A) (y: B) : A with B = ...
+\end{lstlisting}
+uses the anonymous intersection of two type parameters \lstinline{A} and
+\lstinline{B}.
+
+However, in Scala it is not possible to dynamically compose two objects. For
+example, the following code:
+\begin{lstlisting}[language=scala]
+  // Invalid Scala code:
+  def merge[A,B] (x: A) (y: B) : A with B = x with y
+\end{lstlisting}
+is rejected by the Scala compiler. The problem is that the \lstinline$with$
+construct for Scala expression can only be used to mixin traits or classes, not
+arbitrary objects. This limitation essentially puts intersection types in Scala
+in a second-class status. Although \lstinline{merge} returns an intersection
+type, it is hard to build values with such types.
+
+To address the limitation of intersection types in language like Scala, \name
+takes the approach of a particular formulation, where intersection types are
+introduced by a \textit{merge operator} (denoted by \lstinline{,,}). As
+~\citet{dunfield2014elaborating} has argued, a merge operator adds considerable
+expressiveness to a calculus. With the merge operator, it is trivial to
+implement the \lstinline{merge} function in \name\footnote{Note that this is not
+  the correct definition in \name, see Section~\ref{sec:polymorphism} for
+  disjoint quantification.}:
+\begin{lstlisting}
+  def merge A B (x: A) (y: B) : A & B = x ,, y
+\end{lstlisting}
+In \name, type variables use capitalized names, while term variables use
+lowercase names. In contrast to Scala's expression-level \lstinline{with}
+construct, the merge operator \lstinline{,,} allows two arbitrary values to be
+merged. The resulting type is an intersection type (\lstinline{A & B} in this
+case).
+
+\begin{lstlisting}
+
+\end{lstlisting}
 
 Example: find good example? Design patterns? Dynamic Proxies?
 
