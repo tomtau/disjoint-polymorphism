@@ -1,15 +1,24 @@
-\section{Applications}
+\section{Case Studies}
 
-This section shows the expressiveness of \name. We show that features of \name
-(dynamically composable traits, intersection types, the merge operator,
-parametric polymorphism and disjoint quantification) enable extensible designs
-that have been presented in mainstream languages. In particular, \name addresses
-limitations of those languages, making the designs significantly simpler. In
-what follows, we preset a case study modularizing several orthogonal features of
+%This section shows the expressiveness of \name. 
+%We show that features of \name
+%(dynamically composable traits, intersection types, the merge operator,
+%parametric polymorphism and disjoint quantification) enable extensible designs
+%that have been presented in mainstream languages. 
+%In particular, \name addresses
+%limitations of those languages, making the designs significantly
+%simpler. 
+This section presents two larger case studies that illustrate the
+applicatbility of \name. The first case study is a larger case study
+based the approach to Object Algebras presented in Section~\ref{}.
+The case study modulares several orthogonal features of
 a subset of JavaScript, used by~\citet{poplcook} in his undergraduate textbook
 on programming languages. The case study illustrates that how various features
 and operations can be modularly developed and later composed to assembly a
 complete language with various operations baked in.
+\bruno{Say what the 2nd case study does.}
+
+\subsection{Modularizing Components in a Small Scripting Language}
 
 Figure~\ref{fig:mini-js} presents the syntax of the expressions, values and
 types provided by the features with each line annotated with the corresponding
@@ -29,10 +38,22 @@ printer, and type checker.
   Types  & $t$ & ::= & $[[int]] \mid [[bool]]$ &
 \end{tabular}
 % \end{small}
-\caption{mini-JS expressions, values, and types}
+\caption{Mini-JS expressions, values, and types}
 \label{fig:mini-js}
 \end{figure}
 
+\bruno{You should explain the four features.}
+
+\bruno{The next 4 subsection {\bf are not what we want to see in a
+    case study section}. Repeating the same ideas that were already
+  presented in Section~4 is pointless, and that's what you are doing
+  here. In a case study you want to measure, evaluate the benefits of
+  modularity. For example in terms of SLOC, or how many languages can
+  you recover from the components that we have; how many lines are
+  required to recover each languages, etc. Please go and have a look
+  at Case Study sections of other papers. I suggest ``Scrap your
+  Boilerplate as Object Algebras''; and "Meta-theory a la Carte". Also
+Weixin's case study on EVF is pretty good.}
 \subsection{The Base Language (Arith)}
 
 We start with a very simple language of arithmetic expressions, as shown on the
@@ -151,6 +172,9 @@ interested reader to the supplementary materials.
 
 
 \subsection{Putting All Together}
+\bruno{I think the part of the following is the only thing that should
+that could be mentioned here, in a discussion about what does it take 
+to assemble a language from components. }
 
 We hope by now the reader can share our feeling that this is indeed a modular
 way to cook a language incrementally. We can of course continue in the same
