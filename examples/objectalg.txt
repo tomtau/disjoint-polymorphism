@@ -6,69 +6,85 @@
 -- Use object algebra
 
 
-type ExpAlg[Repr[_]] = {
-  lit : Double -> Repr[Double],
-  add : Repr[Double] -> Repr[Double] -> Repr[Double],
-  lam : forall A B. (Repr[A] -> Repr[B]) -> Repr[A -> B],
-  app : forall A B. Repr[A -> B] -> Repr[A] -> Repr[B]
+type K[A, _] = A
+
+type I[A] = A
+
+type ExprAlg[Expr[_[_], _], F[_]] = {
+  lit : Double -> Expr[F, Double],
+  add : Expr[F, Double] -> Expr[F, Double] -> Expr[F, Double],
+  var : forall A. F[A] -> Expr[F, A],
+  lam : forall A B. (F[A] -> Expr[F, B]) -> Expr[F, A -> B],
+  app : forall A B. Expr[F, A -> B] -> Expr[F, A] -> Expr[F, B]
 }
 
+type IEval[_[_], E] = { eval : E }
 
-type IEval[E] = { eval : E }
+type IPrint[_[_], _] = { print : Double -> String }
 
-trait evalAlg : ExpAlg[IEval] { self =>
-  def lit x  = { eval = x }
-  def add x y = { eval = x.eval + y.eval }
-  def lam A B f = { eval = \x -> (f {eval = x}).eval }
+trait evalAlg : ExprAlg[IEval, I] { self =>
+  def lit x         = { eval = x }
+  def add x y       = { eval = x.eval + y.eval }
+  def var A x       = { eval = x }
+  def lam A B f     = { eval = \x -> (f x).eval }
   def app A B e1 e2 = { eval = e1.eval e2.eval }
 }
 
 
-type IPrint[E] = { print : Double -> String }
-
-trait printAlg : ExpAlg[IPrint] { self =>
+trait printAlg : ExprAlg[IPrint, K[String]] { self =>
   def lit x = { print = \_ -> x.toString }
   def add e1 e2 = { print = \h -> "(" ++ e1.print h ++ " + " ++ e2.print h ++ ")" }
+  def var A x = { print = \_ -> x }
   def lam A B e =
     { print = \h -> let x : String = "x" ++ h.toString
                     in "(\\" ++ x ++ " -> " ++
-                       (e {print = \_ -> x}).print (h + 1) ++ ")"
+                       (e x).print (h + 1) ++ ")"
     }
   def app A B e1 e2 = { print = \h -> "(" ++ e1.print h ++ " " ++ e2.print h ++ ")" }
 }
 
 
-type MulExpAlg[Repr[_]] = ExpAlg[Repr] & {
-  mul : Repr[Double] -> Repr[Double] -> Repr[Double]
+type MulExprAlg[Expr[_[_], _], F[_]] = ExprAlg[Expr, F] & {
+  mul : Expr[F, Double] -> Expr[F, Double] -> Expr[F, Double]
 }
 
-trait mulEvalAlg inherits evalAlg : MulExpAlg[IEval] { self =>
+trait mulEvalAlg inherits evalAlg : MulExprAlg[IEval, I] { self =>
   def mul x y = { eval = x.eval * y.eval }
 }
 
-trait mulPrintAlg inherits printAlg : MulExpAlg[IPrint] { self =>
+trait mulPrintAlg inherits printAlg : MulExprAlg[IPrint, K[String]] { self =>
   def mul e1 e2 = { print = \h -> "(" ++ e1.print h ++ " * " ++ e2.print h ++ ")" }
 }
 
 
-def e1 (f : MulExpAlg[IEval]) = f.mul (f.add (f.lit 7) (f.lit 2)) (f.lit 4)
+def e1 (f : MulExprAlg[IPrint, K[String]]) = f.add (f.lit 7) (f.lit 2)
 
-def e2 (f : MulExpAlg[IEval]) = f.lam Double Double (\x -> f.add x (e1 f))
+def e2 (f : MulExprAlg[IPrint, K[String]]) = f.lam String String (\x -> f.mul (f.var String x) (e1 f))
 
-def e3 (f : MulExpAlg[IEval]) =  f.add (f.app Double Double (e2 f) (f.lit 1)) (f.lit 2)
+def e3 (f : MulExprAlg[IPrint, K[String]]) =  f.add (f.app String String (e2 f) (f.lit 1)) (f.lit 2)
 
 
--- type IEvalAndPrint[A] = IEval[A] & IPrint[A]
+-- type IEvalAndPrint[E[_], F] = IEval[E, F] & IPrint[E, F]
 
--- trait newAlg(f : Trait[ExpAlg[IEval]], g : Trait[ExpAlg[IPrint]]) : ExpAlg[IEvalAndPrint] { self =>
---   def lit x = (new[ExpAlg[IEval]] f).lit x ,, (new[ExpAlg[IPrint]] g).lit x
+-- type CF[E] = I[E] & K[String, E]
 
---   def lam A B e = (new[ExpAlg[IEval]] f).lam A B (\x -> e (x ,, {print = \_ -> "ss"})) ,, (new[ExpAlg[IPrint]] g).lam A B (\x -> e ({eval = 0} ,, x))
+-- def undefined : forall E. E = /\E. let x : E = x in x
+
+-- trait newAlg(f : Trait[ExprAlg[IEval, I]], g : Trait[ExprAlg[IPrint, K[String]]])
+--   : ExprAlg[IEvalAndPrint, CF] { self =>
+
+--   def lit x = (new[ExprAlg[IEval, I]] f).lit x ,, (new[ExprAlg[IPrint, K[String]]] g).lit x
+
+--   def add x y =  (new[ExprAlg[IEval, I]] f).add x y ,, (new[ExprAlg[IPrint, K[String]]] g).add x y
+
+--   def var A x = (new[ExprAlg[IEval, I]] f).var A x ,, (new[ExprAlg[IPrint, K[String]]] g).var A x
+
+--   def lam A B e =
+--     (new[ExprAlg[IEval, I]] f).lam A B (\x -> e (x ,, undefined String)) ,,
+--     (new[ExprAlg[IPrint, K[String]]] g).lam A B (\x -> e  (undefined A ,, x))
+
+--   def app A B e1 e2 = (new[ExprAlg[IEval, I]] f).app A B e1 e2 ,, (new[ExprAlg[IPrint, K[String]]] g).app A B e1 e2
 
 -- }
 
--- trait newAlg inherits evalAlg & printAlg
-
--- def e11 (f : ExpAlg[IEvalAndPrint]) = f.lit 7
-
-main = e3 (new[MulExpAlg[IEval]] mulEvalAlg)
+main = (e3 (new[MulExprAlg[IPrint, K[String]]] mulPrintAlg)).print 0
