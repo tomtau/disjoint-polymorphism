@@ -1,18 +1,38 @@
 \section{Desugaring}
 \label{sec:desugar}
 
-\name is built upon a thin-layer of sugar on top of \bname. The section unveils
-the procedures for translating traits . The idea behind trait translation is
+\name is built upon a thin-layer of sugar on top of \bname~\cite{}.
+\bname is polymorphic language with subtyping, and it was developed as
+an alternative to languages such as System $F_{<:}$ to serve as a core
+languages for OO languages. The choice of \bname is due to its
+support for disjoint intersection types and disjoint polymorhism (used
+to model subtyping and conflict detection), and the so-called merged
+operator (which is used to model dynamic trait inheritance).  The theoretical
+aspects of \bname (including the formalization of the static and
+dynamic semantics, and the proofs of type-safety and coherence) were
+already studied in previous work. So they are not a contribution of
+this paper and are not necessary to understand the desugaring process.
+
+The novelty in this section is to explain how to build a high-level OO asbtractions
+on top of the the core constructs of \bname. In particular we focus on
+how the trait system presented in this paper is built. The key idea behind trait translation is
 inspired by the functional mixin semantics using open recursion, which is
 proposed by~\citet{cook1989denotational} in an untyped setting. However, our
 translation is done in the context of a statically-typed programming language,
 which is exactly why conflicts can be \textit{statically} detected in traits.
 
+\subsection{A Brief Introduction to \bname}
 The syntax of our core language \bname is shown in Figure~\ref{fig:synax-fi}. It
 is mostly based on the calculus proposed by~\citet{alpuimdisjoint}, with several
 extensions (e.g., term and type declarations, more primitive types,
 etc\footnote{We have very limited support for higher-kinded types, for which we
   haven't worked out the meta-theory yet.}.)
+\bruno{I think we can omit most of the primitive types and operations
+  from the formal syntax. You should present the syntactic sugar for
+  (multi-field) records and record types in the figure.} 
+\bruno{Briefly explain the key novel contructs: merge, big lambda }
+\bruno{Explain that declarations/programs are new, but we don't think
+  this will cause any programs to the meta-theory.}
 
 \begin{figure}[t]
 \centering
@@ -34,6 +54,8 @@ etc\footnote{We have very limited support for higher-kinded types, for which we
 
 \subsection{Trait Declarations}
 
+\bruno{You should put all desugarings in a single Figure.}
+
 Essentially traits are translated into term declarations, with methods becoming
 record fields. The self-reference is adjusted to be the last parameter of the
 declaration. For example,
@@ -53,7 +75,8 @@ becomes
 Now it is clear that \lstinline{self} is not a special keyword: it can
 have any name.
 
-Figure~\ref{fig:trans-trait} presents the translation of trait declarations.
+Figure~\ref{fig:trans-trait} presents the translation of trait
+declarations.\bruno{You should expand this a little bit. }
 
 
 \begin{figure}[t]
@@ -149,7 +172,7 @@ is turned into
 \end{lstlisting}
 
 The left hand side of Figure~\ref{fig:trans-trait-inst} presents the translation
-of trait instantiations.
+of trait instantiations.\bruno{expand!}
 
 \subsection{The Type for Traits}
 
@@ -157,12 +180,15 @@ of trait instantiations.
 which provide an interface described by the type $T_2$ with dependency on $T_1$.
 In fact, it is just like a type constructor except for the fact that it is
 built-in in the language, and that the encoding is not exposed to the
-programmers.
+programmers. 
 
 The right hand side of Figure~\ref{fig:trans-trait-inst} presents the
-translation of trait types.
+translation of trait types. Essentially trait types are just function
+types where the argument of the function corresponds to the requirements 
+of the traits, and the result corresponds to the type of the record
+implemented in the trait.
 
-\subsection{Record System}
+\subsection{Record System}\bruno{Should be discussed in 6.1 instead.}
 
 Following~\citet{reynolds1997design} and~\citet{castagna1995calculus}, \name
 leverages intersection types to type extensible records. The idea is that a
