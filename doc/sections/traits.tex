@@ -221,50 +221,53 @@ trait inheritance, consider adding buttons. The trait of buttons and its type is
 Similarly we define functions for buttons as well.
 \lstinputlisting[linerange=56-63]{../examples/box.txt}% APPLY:linerange=BUTTON_FNS
 
-It would be a shame if we cannot make a round button from the existing traits we
-have! So here it is, trait \lstinline{roundButton} just inherits everything from
+\noindent To make a round button from the existing traits the trait \lstinline{roundButton} just inherits everything from
 traits \lstinline{circle} and \lstinline{button}:
 \lstinputlisting[linerange=67-69]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_DEF
 
-Next we add abilities to the round button on the fly and test its functionality
+\noindent Finally we create a round button on the fly and test its functionality
 as follows:
 \lstinputlisting[linerange=125-128]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST
-
-
 
 \subsection{Detecting And Resolving Conflicts in Trait Composition}
 \label{sec:conflicts}
 
-A conflict arises if and only if we combine two traits that have identically
-named methods. The traditional approach to resolve conflicts is by method
-overriding, automatically done by the type system, whereas the trait-based
-approach enforces conflicts be resolved on the level of the composition by the
-programmers, otherwise the program is rejected by the type system. The following
-example shows how conflicting methods in two traits are detected and resolved.
+A common problem in multiple inheritance are conflicts. For example,
+when inheriting from two traits that have the same field, then it is
+unclear which implementation to chose. There are various approaches to
+deal with conflicts. The trait-based approach requires conflicts to be
+resolved at the level of the composition by the programmers, otherwise
+the program is rejected by the type system. 
 
-Let us introduce another shape: something oval.
+The following example
+shows how conflicting methods in two traits are detected and resolved.
+Let us introduce an oval shape.
 \lstinputlisting[linerange=74-77]{../examples/box.txt}% APPLY:linerange=ASOVAL_DEF
 
 The following trait gets rejected because both \lstinline{asOval} and
 \lstinline{circle} have a conflicting \lstinline{radius} method.
 \lstinputlisting[linerange=82-83]{../examples/box.txt}% APPLY:linerange=CONFLICT_DEF
 
-Conflict detecting is one of the selling points of traits. In \name this feature
-comes for free because of the requirement that intersection types are
-\textit{disjoint}~\cite{oliveira2016disjoint}. Disjointness, in its simplest
+\noindent As mentioned in Section~\ref{} \name's type system is based
+on intersection types. More concretely, \name uses a type system based
+on \emph{disjoint intersection types}~\cite{oliveira2016disjoint}. Disjointness, in its simplest
 form, means that the set of values of both types are disjoint. The above
 problematic program fails at passing type checking precisely because both of the
-traits (\lstinline{circle} and \lstinline{asOval}) have the same type of the
-\lstinline{radius} method, thus violating the disjointness constraint.
+traits (\lstinline{circle} and \lstinline{asOval}) have the same type for the
+\lstinline{radius} method, thus violating the disjointness conditions.
 
+\paragraph{Resolving conflicts}
 To resolve the conflict, the programmer needs to explicitly state which
 \lstinline{radius} gets to stay. \name provides such a means , the so-called
 \textit{exclusion} operator (denoted by \lstinline{\}), which allows one to
 avoid a conflict before it occurs. The following is one choice, and is accepted
 by \name again.
 \lstinputlisting[linerange=89-90]{../examples/box.txt}% APPLY:linerange=CONFLICT_RESOLVE
-
-
+\bruno{As I mentioned before, this exclusion operator is not very
+  adequate for a system with disjoint intersection types, since our
+  notion of disjointness is not purely based on names: we account for
+  types as well! So restriction should take into account the types of
+  the fields.}
 
 \subsection{Dynamic Instantiation}
 
@@ -291,13 +294,13 @@ To facilitate creating round buttons with different norms baked in, we define a
 factory that takes a trait \lstinline$norm$ and produces a round button:
 \lstinputlisting[linerange=112-114]{../examples/box.txt}% APPLY:linerange=POINT_FUNC
 
-Here \lstinline{Trait} is a built-in keyword, and \lstinline$Trait[Point, Norm]$
-is the type of traits that conforms to the \lstinline$Norm$ type with dependency
-on \lstinline{Point}. It is worth noting that this kind of dynamic composition
-and instantiation is impossible in traditional OO languages, such as Java,
-because the concrete implementation of \lstinline{norm} is unknown at
-compile-time, let alone compose it with other traits. This gives us the
-flexibility to choose different norms. For example, below is another version of
+Here \lstinline{norm}, which is a trait used in the object creation of
+\lstinline{roundButtonFac}, is \emph{parametrized}. To express the
+type of such unknown trait \name has a special 
+\lstinline{Trait} type constructor, and \lstinline$Trait[Point, Norm]$
+denotes the type of traits that conforms to the \lstinline$Norm$ type with dependency
+on \lstinline{Point}. This gives us the
+flexibility to choose different norms at \emph{runtime}. For example, below is another version of
 round button that provides \lstinline{inCircle} method with Euclidean norm baked
 in.
 \lstinputlisting[linerange=118-118]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST2
