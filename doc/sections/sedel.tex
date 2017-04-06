@@ -1,6 +1,86 @@
+\section{Object Algebras and Extensible Visitors in \name}
 
-\section{First-class Object Algebra Values: A Case for ``Inheritance is not
-  Subtyping''}
+This section shows that \name features are enough for encoding extensible designs that
+been presented in mainstream languages. Moreover \name addresses
+limitations of those languages, making those designs
+significantly simpler. There are two main advantages of \name
+over existing languages:
+\begin{enumerate}
+\item \name supports dynamic inheritance.
+\item \name does not couple type inheritance and subtyping. Moreover
+\name supports contravariant parameter types in the subtyping
+relation.
+\end{enumerate}
+
+These two features avoid the use of low-level programming
+techniques, and make the designs less reliant on advanced
+features of generics.
+
+\subsection{First-Class Object Algebras Values: A Case for Inheritance
+is not Subtyping}
+
+Oliveira and Cook~\cite{} proposed a design pattern that can
+solve the Expression Problem in languages like Java. An
+advantage of the pattern over previous solutions is that it is
+relatively lightweight in terms of type system features. However, 
+a problem with Object Algebras is that it is hard to pass 
+values built with Object Algebras around, since there are 
+no concrete expressions/AST types. This problem happens, not 
+because this is a fundamental limitation of Object Algebras, but 
+because the type systems of OO languages like Java or Scala 
+is too restricted to express the types of first-class Object Algebra
+values directly. Fortunally \name has no such restriction as
+illustrated next. 
+
+\begin{comment}
+In a
+latter paper, Oliveira et al.~\cite{} noted some limitations of the
+original design pattern and proposed some new techniques
+that generalized the original pattern, allowing it to express
+programs in a Feature-Oriented Programming~\cite{} style. Key
+to these techniques was the ability to dynamically compose
+object algebras.
+
+Unfortunatelly, dynamic composition of object algebras
+is non-trivial. At the type-level it is possible to express the
+resulting type of the composition using intersection types.
+Thus, it is still possible to solve that part problem nicely in a
+language like Scala (which has basic support for intersection
+types). However, the dynamic composition itself cannot be
+easily encoded in Scala. The fundamental issue is that Scala
+lacks a merge operator (see the discussion in Section~\ref{}).
+Although both Oliveira et al.~\cite{} and Rendell et al.~\cite{}
+have shown that such a merge operator can be encoded in
+Scala, the encoding fundamentally relies in low-level programming
+techniques such as dynamic proxies, reflection or
+meta-programming.
+
+Because \name supports a merge operator natively, dynamic
+object algebra composition becomes easy to encode. The
+remainder of this section shows how object algebras and
+object algebra composition can be encoded in \name. We will
+illustrate this point step-by-step by solving the Expression
+Problem~\cite{}.
+
+\name provides two main advantages:
+
+\begin{itemize}
+
+\item {\bf First-class object algebra values:} Due to the separation
+  of inheritance and subtyping, \name can express first-class Object
+  Algebra values. The key aspect is that AST extensions become
+  supertypes of the original ASTs. This is unexpressible in many
+  languages, but expressible in \name.
+
+\item {\bf Built-in composition for object algebras:} The inheritance
+  mechanisms of \name can express Object Algebra delegation-based composition operators~\cite{}
+  directly. This is in contrast to previous work, where such operators
+  have to be encoded, with significant amounts of boilerplate, with
+  either pairs or intersection types. Moreover, the built-in support
+  for composition operators \emph{guarantees} safe and unambigous
+  composition, which is not guaranteed in previous work. 
+
+\end{itemize}
 
 Various solutions to the Expression Problem~\cite{wadler1998expression} in the
 literature~\cite{finally-tagless,oliveira09modular,DelawareOS13,oliveira2012extensibility,
@@ -15,28 +95,35 @@ literature.
 
 \subsection{Extensibility and Subtyping}
 \label{sec:extensibility}
+\end{comment}
 
+\paragraph{Simple expressions}
 To start, we begin with a very simple system modeling arithmetic expressions and
 evaluation. The initial system constitutes expressions with two variants
 (literals and addition), as depicted below:
 \lstinputlisting[linerange=4-7]{../examples/visitor.txt}% APPLY:linerange=ALGEBRA_DEF
 
 The first part, captured by the type \lstinline{ExpAlg[E]}, constitutes the
-so-called algebra of the datatype. The first component abstracts over the type
+so-called object algebra interface. The first component abstracts over the type
 of literal expressions (\lstinline{Int -> E}). The second component abstracts
 over the type of addition expression (\lstinline{E -> E -> E}).
 
+\paragraph{An AST for expressions}
 The second part, which is the actual type of the arithmetic expression, is:
 \lstinputlisting[linerange=11-11]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
-An attentive reader may immediately recognize this is exactly the VISITOR
-pattern: the method \lstinline{accept} takes an internal visitor as argument.
+An attentive reader may immediately recognize this is a variant of the VISITOR
+pattern. Indeed, as already noted by Oliveira and Cook~\cite{}, Object
+Algebras are closely related internal visitors~\cite{}. Object
+Algebras in languages like Java or Scala do not define the type
+\lstinline{Exp} because this would preclude extensibility in those
+languages. However in \name it is still possible to define
+\lstinline{Exp} and retain extensibility, as illustrated next.
 
 % \paragraph{Data constructors.} Using \lstinline{Exp} the two data constrcutors
 % are defined as follows:
 % \lstinputlisting[linerange=52-61]{../examples/visitor.txt}% APPLY:linerange=DC_DEF
 % Note that the notation \lstinline{/\E} is type abstraction: it introduces a type
 % variable in the environment.
-
 
 \paragraph{Operations.} Defining operations over expressions requires
 implementing \lstinline{ExpAlg[E]}. An interesting operation over expressions is
@@ -72,7 +159,9 @@ subtyping always go along together. For example, Scala forbids any kind of
 type-refinement on method parameter types. The consequence of this is that in
 those languages, it is impossible to express that \lstinline{ExtExp} is both an
 extension and a supertype of \lstinline{Exp}. Such kind of phenomena is an
-example where ``inheritance is not subtyping''~\cite{cook1989inheritance}.
+example where ``inheritance is not
+subtyping''~\cite{cook1989inheritance}. In \name, however,
+\lstinline{ExtExp} is indeed a supertype of \lstinline{Exp}.
 
 \paragraph{Add a new operation.} The second type of extension is adding a new
 operation, such as pretty printing. Similar to evaluation, the interface of the
@@ -81,7 +170,11 @@ pretty printing feature is modeled as:
 The implementation is spelled out straightforwardly:
 \lstinputlisting[linerange=42-46]{../examples/visitor.txt}% APPLY:linerange=PRINT_IMPL
 
-
+\bruno{I though we discussed that data constructors as follows is a bad idea as
+they did not provide reuse. Please write code in the style we
+discussed previously. Present constructors written in that way for the
+basic expressions and present sub only here. Discuss the issue that we
+encountered to justify this alternative design!}
 \paragraph{Usage.} The last piece is to define convenient data constructors:
 \lstinputlisting[linerange=52-61]{../examples/visitor.txt}% APPLY:linerange=DC_DEF
 So now we can test the shiny new system:
@@ -92,8 +185,7 @@ Notice that we are able to pass \lstinline{lit 5}, which is of type
 \textit{subtype} of \lstinline{ExtExp}.
 
 
-
-\subsection{How much dynamic is too much}
+\subsection{Native Dynamic Object Algebra Composition Support}
 \label{sec:dynamic}
 
 The solution to the Expression Problem presented in
@@ -120,6 +212,8 @@ behaviours in each component algebra to the combined algebra.
 
 \lstinputlisting[linerange=49-53]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_DEF
 
+\bruno{Well, the previous subsection already introduces parametric
+  polymorphism, so this discussion comes too late!}
 Something new appears the above trait declaration. \name supports parametric
 polymorphism. In \name, type variables use uppercase letters. Following the work
 of~\citet{alpuimdisjoint}, \name uses an extension to universal quantification
@@ -151,5 +245,5 @@ statically. 2) \name supports multiple inheritance of traits with the same type:
 both \lstinline{f} and \lstinline{g} are traits of the subtraction algebra. Type
 systems for many OO languages are too inflexible to express this kind of dynamic
 inheritance. \name hits a sweet spot in the design space of being how much
-dynamic, where we retain as much flexibility as in a dynamic language without
-sacrificing the type-safety guarantee we always love from a static type system.
+dynamic, where we retain much of the flexibility of dynamic languages without
+sacrificing the type-safety guarantees.
