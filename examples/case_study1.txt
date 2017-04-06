@@ -5,10 +5,8 @@
 -- Infrastructure
 -----------------------------
 
-def undefined : forall E. E = /\E. let x : E = x in x
-
 type MaybeAlg[B, A] = {
-  nothing : B,
+  nothing : T -> B,
   just : A -> B
 }
 
@@ -16,22 +14,22 @@ type Maybe[A] = {
    match : forall C. MaybeAlg[C,A] -> C
 }
 
-def nothing A : Maybe[A] = { match = /\C. \f -> f.nothing }
+def nothing A : Maybe[A] = { match = /\C. \f -> f.nothing() }
 
 def just A (x : A) : Maybe[A] = { match = /\C. \f -> f.just x }
 
 def bind A B (x : Maybe[A]) (f : A -> Maybe[B]) : Maybe[B] =
-  x.match Maybe[B] { nothing = nothing B, just = \a -> f a }
+  x.match Maybe[B] { nothing = \_ -> nothing B, just = \a -> f a }
 
 def fromJust A (x : Maybe[A]) : A =
-  x.match A { nothing = undefined A, just = \b -> b }
+  x.match A { nothing = \_ -> undefined, just = \b -> b }
 
 def isJust A (x : Maybe[A]) : Bool =
-  x.match Bool { nothing = false, just = \_ -> true }
+  x.match Bool { nothing = \_ -> false, just = \_ -> true }
 
 type EnvF[E] = String -> Maybe[E]
 
-def empty A : EnvF[A] = \_ -> {match = /\C. \f -> f.nothing}
+def empty A : EnvF[A] = \_ -> {match = /\C. \f -> f.nothing()}
 
 def lookup A (s : String) (env : EnvF[A]) = env s
 
@@ -78,10 +76,10 @@ def numV (n : Double) : Value = { match = /\C. \f -> f.numV n }
 def boolV (b : Bool) : Value = { match = /\C. \f -> f.boolV b }
 
 def fromNum (v : Value) : Double =
-  v.match Double { numV = \n -> n, boolV = \_ -> undefined Double }
+  v.match Double { numV = \n -> n, boolV = \_ -> undefined}
 
 def fromBool (v : Value) : Bool =
-  v.match Bool { numV = \_ -> undefined Bool, boolV = \b -> b }
+  v.match Bool { numV = \_ -> undefined, boolV = \b -> b }
 
 
 

@@ -27,6 +27,7 @@ data UExpr = UVar UName
            | UIf UExpr UExpr UExpr
            | UToString UExpr
            | USqrt UExpr
+           | Bot
            deriving Show
 
 instance Alpha UExpr

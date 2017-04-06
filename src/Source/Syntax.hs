@@ -84,6 +84,7 @@ data Expr = Anno Expr Type
           | Top
           | LamA (Bind (TmName, Embed Type) Expr)
           -- ^ Not exposed to users, for internal use
+          | Bot
   deriving Show
 
 type Label = String
@@ -190,7 +191,8 @@ elet :: String -> Type -> Expr -> Expr -> Expr
 elet s t e b = Let (bind (s2n s, embed t) (e, b))
 
 transNew :: Type -> [Expr] -> Expr
-transNew t es = elet "self" t (foldl1 Merge es) (evar "self")
+transNew t es =
+  elet "self" (Arr TopT t) (elam "_" (foldl1 Merge es)) (App (evar "self") Top)
 
 
 {-

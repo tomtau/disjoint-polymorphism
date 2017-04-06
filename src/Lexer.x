@@ -29,6 +29,7 @@ $paren = [\(\)\[\]\{\}]
          | defrec | forall | trait
          | new | Trait | main
          | inherits | val
+         | undefined
 
 @compop = "==" | "/=" | \/\\ | "->" | ",," | "()" | "=>" | "++"
 
