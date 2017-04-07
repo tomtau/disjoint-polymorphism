@@ -175,7 +175,8 @@ The implementation is spelled out straightforwardly:
 \lstinline{ExtExp} are first-class, meaning they can be passed around or
 returned from other functions. We demonstrate that by defining two functions,
 one is the \lstinline{sub} constructor, the other is a true evaluator for
-\lstinline{ExtExp} (\lstinline{print} can be defined in a similar way).
+\lstinline{ExtExp} (\lstinline{print} for pretty printer can be defined in a
+similar way).
 \lstinputlisting[linerange=61-64]{../examples/visitor.txt}% APPLY:linerange=EVAL_PRINT
 We define two expressions, one of type \lstinline{Exp}, the other
 \lstinline{ExtExp}:
