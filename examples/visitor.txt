@@ -1,4 +1,4 @@
---> "(5.0 - (3.0 + 2.0)) = 0.0"
+--> "((5.0 - (2.0 + 3.0)) + 3.0) = 3.0"
 
 -- BEGIN_ALGEBRA_DEF
 type ExpAlg[E] = {
@@ -10,6 +10,16 @@ type ExpAlg[E] = {
 -- BEGIN_CHURCH_DEF
 type Exp = { accept : forall E . ExpAlg[E] -> E }
 -- END_CHURCH_DEF
+
+-- BEGIN_DC_DEF
+def lit (n : Double) : Exp = {
+  accept = /\E . \f -> f.lit n
+}
+def add (e1 : Exp) (e2 : Exp) : Exp = {
+  accept = /\E . \f -> f.add (e1.accept E f) (e2.accept E f)
+}
+-- END_DC_DEF
+
 
 -- BEGIN_EVAL_DEF
 type IEval = { eval : Double }
@@ -47,25 +57,32 @@ trait printAlg { self =>
 -- END_PRINT_IMPL
 
 
-
--- BEGIN_DC_DEF
-def lit (n : Double) : Exp = {
-  accept = /\E . \f -> f.lit n
-}
-def add (e1 : Exp) (e2 : Exp) : Exp = {
-  accept = /\E . \f -> f.add (e1.accept E f) (e2.accept E f)
-}
+-- BEGIN_EVAL_PRINT
 def sub (e1 : ExtExp) (e2 : ExtExp) : ExtExp = {
   accept = /\E . \f -> f.sub (e1.accept E f) (e2.accept E f)
 }
+def eval (e : ExtExp) : IEval = e.accept IEval (new[SubExpAlg[IEval]] subEvalAlg)
+-- END_EVAL_PRINT
+def print (e : ExtExp) : IPrint = e.accept IPrint (new[SubExpAlg[IPrint]] printAlg)
 
--- END_DC_DEF
+-- BEGIN_EXPRESSION_EG
+def e1 : Exp = add (lit 2) (lit 3)
+def e2 : ExtExp = sub (lit 5) e1
+-- END_EXPRESSION_EG
 
+{-
+-- BEGIN_EXPRESSION_WRONG
+def e3 : ExtExp = add e2 (lit 3)
+-- END_EXPRESSION_WRONG
+-}
+
+-- BEGIN_EXPRESSION_CORRECT
+def e3 : ExtExp = { accept = /\E. \f -> f.add (e2.accept E f) (f.lit 3) }
+-- END_EXPRESSION_CORRECT
 
 -- BEGIN_VISITOR_EG
-def e = sub (lit 5) (add (lit 3) (lit 2))
-def o1 = e.accept IPrint (new[SubExpAlg[IPrint]] printAlg)
-def o2 = e.accept IEval (new[SubExpAlg[IEval]] subEvalAlg)
-main = o1.print ++ " = " ++ o2.toString
--- Output: "(5 - (3 + 2)) = 0"
+def o1 = print e3
+def o2 = eval e3
+main = o1.print ++ " = " ++ o2.eval.toString
+-- Output: "((5.0 - (2.0 + 3.0)) + 3.0) = 3.0"
 -- END_VISITOR_EG
