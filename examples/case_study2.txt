@@ -8,27 +8,34 @@ with conditionals and constants) with a selectable evaluation order: Call-by-val
 -}
 
 
-type Arr[Expr[_], A, B] = Expr[A] -> Expr[B]
+-- type Arr[Expr[_], A, B] = Expr[A] -> Expr[B]
 
+
+-- BEGIN_ABSTRACTION
 type BindAlg[Expr[_]] = {
-  lam : forall A B. (Expr[A] -> Expr[B]) -> Expr[Arr[Expr,A,B]]
+  lam : forall A B. (Expr[A] -> Expr[B]) -> Expr[Expr[A] -> Expr[B]]
 }
+-- END_ABSTRACTION
 
 type IEval[E] = T -> E
 
+-- BEGIN_TYPED_LAMBDA
 type ExprAlg[Expr[_]] = {
   lit : Double -> Expr[Double],
   add : Expr[Double] -> Expr[Double] -> Expr[Double],
-  app : forall A B. Expr[Arr[Expr,A,B]] -> Expr[A] -> Expr[B],
+  app : forall A B. Expr[Expr[A] -> Expr[B]] -> Expr[A] -> Expr[B],
   bot : forall A. Expr[A]
 }
+-- END_TYPED_LAMBDA
 
+-- BEGIN_TYPED_EVAL
 trait evalAlg : ExprAlg[IEval] { self =>
   def lit n = \_ -> n
   def add e1 e2 = \_ -> e1() + e2()
   def app A B e1 e2 = \_ -> e1() e2()
   def bot A = \_ -> let x : A = x in x
 }
+-- END_TYPED_EVAL
 
 type MulAlg[Expr[_]] = ExprAlg[Expr] & {
   mul : Expr[Double] -> Expr[Double] -> Expr[Double]
@@ -56,17 +63,27 @@ trait evalBool inherits evalMul : BoolAlg[IEval] { self =>
 
 type TermAlg[Expr[_]] = BoolAlg[Expr] & BindAlg[Expr]
 
-trait evalBindCBV  : BindAlg[IEval] { self =>
-  def lam A B f = \_ -> \y -> let yv : A = y() in f (\_ -> yv)
-}
-
+-- BEGIN_CBN_CBV
 trait evalBindCBN : BindAlg[IEval] { self =>
   def lam A B f = \_ -> f
 }
+trait evalBindCBV  : BindAlg[IEval] { self =>
+  def lam A B f = \_ -> \y -> let yv : A = y() in f (\_ -> yv)
+}
+-- END_CBN_CBV
 
+
+-- BEGIN_MAKE_EVAL
 def makeEvaluator (o : Trait[BindAlg[IEval]]) = new[TermAlg[IEval]] evalBool & o
+-- END_MAKE_EVAL
 
-def ex1 (f : TermAlg[IEval]) = f.app Double Double (f.lam Double Double (\x -> f.lit 4)) (f.bot Double)
+
+-- BEGIN_CBN_TEST
+def ex1 (f : TermAlg[IEval]) =
+  f.app Double Double (f.lam Double Double (\x -> f.lit 4)) (f.bot Double)
+main = (ex1 (makeEvaluator evalBindCBN))()
+-- Output: 4.0
+-- END_CBN_TEST
 
 
 {-
@@ -74,4 +91,3 @@ def ex1 (f : TermAlg[IEval]) = f.app Double Double (f.lam Double Double (\x -> f
 main = (ex1 (makeEvaluator evalBindCBV))()
 -}
 
-main = (ex1 (makeEvaluator evalBindCBN))()
