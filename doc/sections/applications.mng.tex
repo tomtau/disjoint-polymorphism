@@ -14,7 +14,7 @@ presented in Section~\ref{sec:objectalgebra}. The case study modulares several
 orthogonal features of a subset of JavaScript, used by~\citet{poplcook} in his
 undergraduate textbook on programming languages. The case study illustrates that
 how various features and operations can be modularly developed and later
-composed to assembly a complete language with various operations baked in. The
+composed to assemble a complete language with various operations baked in. The
 second is a case study on embedding a higher-order domain-specific language
 (simply-typed lambda-calculus with conditional and constants) with a selectable
 evaluation order: CBN and CBV. The outcome is an evaluator parameterized over
@@ -36,7 +36,7 @@ expressions, containing numerical literals, addition, subtraction, among others.
 The second feature ($\mathit{Bool}$) introduces Boolean values, comparison, and
 if expressions. The third feature ($\mathit{Var}$) introduces local variables
 and variable declarations. And as the last feature ($\mathit{Function}$), we
-have top-level functions and functional calls. For each feature, we also define
+have top-level functions and function calls. For each feature, we also define
 three operations: evaluator, pretty printer, and type checker.
 
 \begin{figure}[t]
@@ -72,10 +72,16 @@ three operations: evaluator, pretty printer, and type checker.
 %   relations of the languages that you can assemble. Perhaps draw some
 % diagrams. }
 
-Figure gives an overview of the reusable components of the implementation, and
-the subtyping/inheritance relations of the languages we can assemble. We thus
-obtain 4 languages and 12 operations in total. \jeremy{explain
-  subtyping/inheritance relations}
+Figure~\ref{fig:dependency} gives an overview of the reusable components of the
+implementation, and the subtyping/inheritance relations of the languages we can
+assemble. The interactions between languages and features are revealed by the
+arrows. For example, the leftward arrow between \lstinline{BoolArith} and
+\lstinline{Arith} states that \lstinline{BoolArith} extends \lstinline{Arith},
+while the rightward dashed arrow between them states that \lstinline{Arith} is a
+subtype of \lstinline{BoolArith}. We can see that features are resued across
+different languages, directly or indirectly. For example, $\mathit{Arith}$ is
+the most used feature. We thus obtain 4 languages with 12 operations in total.
+
 
 Figure~\ref{fig:sloc} compares the number of source lines of code (SLOC, lines
 of code without counting empty lines and comments) for \name's implementation
@@ -85,11 +91,18 @@ implementation for all 4 languages in total reduces approximately 34\% in terms
 of SLOC, due to the modular development of the language components. In
 particular, the reduction for language \lstinline{VarArith} can be up to 93\%.
 
-The reason is that, the more frequently a feature is reused by other languages,
-the more reduction we see in the total SLOC. For example, feature
-$\mathit{Arith}$ is used across all 4 languages. Even though itself alone has a
-lot more SLOC than that of Haskell (82 vs 47), we still get a huge gain when
-implementing other languages.
+The reason is that, the more frequently a feature is reused by other languages
+directly or indirectly, the more reduction we see in the total SLOC. For
+example, feature $\mathit{Arith}$ is used across all 4 languages. Even though
+itself alone has a lot more SLOC than that of Haskell (82 vs 47), we still get a
+huge gain when implementing other languages.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics{dependency.eps}
+  \caption{Overview of the language components.}
+  \label{fig:dependency}
+\end{figure}
 
 
 \begin{figure}[t]
