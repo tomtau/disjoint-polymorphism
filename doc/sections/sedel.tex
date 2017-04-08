@@ -40,9 +40,9 @@ original design pattern and proposed some new techniques
 that generalized the original pattern, allowing it to express
 programs in a Feature-Oriented Programming~\cite{} style. Key
 to these techniques was the ability to dynamically compose
-object algebras.
+Object Algebras.
 
-Unfortunatelly, dynamic composition of object algebras
+Unfortunatelly, dynamic composition of Object Algebras
 is non-trivial. At the type-level it is possible to express the
 resulting type of the composition using intersection types.
 Thus, it is still possible to solve that part problem nicely in a
@@ -57,9 +57,9 @@ techniques such as dynamic proxies, reflection or
 meta-programming.
 
 Because \name supports a merge operator natively, dynamic
-object algebra composition becomes easy to encode. The
-remainder of this section shows how object algebras and
-object algebra composition can be encoded in \name. We will
+Object Algebra composition becomes easy to encode. The
+remainder of this section shows how Object Algebras and
+Object Algebra composition can be encoded in \name. We will
 illustrate this point step-by-step by solving the Expression
 Problem~\cite{}.
 
@@ -67,13 +67,13 @@ Problem~\cite{}.
 
 \begin{itemize}
 
-\item {\bf First-class object algebra values:} Due to the separation
+\item {\bf First-class Object Algebra values:} Due to the separation
   of inheritance and subtyping, \name can express first-class Object
   Algebra values. The key aspect is that AST extensions become
   supertypes of the original ASTs. This is unexpressible in many
   languages, but expressible in \name.
 
-\item {\bf Built-in composition for object algebras:} The inheritance
+\item {\bf Built-in composition for Object Algebras:} The inheritance
   mechanisms of \name can express Object Algebra delegation-based composition operators~\cite{}
   directly. This is in contrast to previous work, where such operators
   have to be encoded, with significant amounts of boilerplate, with
@@ -114,11 +114,20 @@ The second part, which is the actual type of the arithmetic expression, is:
 \lstinputlisting[linerange=11-11]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
 An attentive reader may immediately recognize this is a variant of the VISITOR
 pattern. Indeed, as already noted by Oliveira and Cook~\cite{}, Object
-Algebras are closely related internal visitors~\cite{}. Object
+Algebras are closely related internal visitors~\cite{}. \emph{Object
 Algebras in languages like Java or Scala do not define the type
 \lstinline{Exp} because this would preclude extensibility in those
-languages. However in \name it is still possible to define
-\lstinline{Exp} and retain extensibility, as illustrated next.
+languages}. However in \name it is still possible to define
+\lstinline{Exp} and retain extensibility.
+
+\bruno{I think what what we want to do here is to say that data
+  constructions are a bad idea. Instead if we want to define Object
+  Algebra values we should define them directly through the accept
+  method (see code below). You should explain what's the advantage of doing so.}
+
+\begin{lstlisting}
+def e1 : Exp = {accept = /\E . \f -> f.add E (f.lit E 2) (f.lit E 3)}
+\end{lstlisting}
 
 \paragraph{Data constructors.} Using \lstinline{Exp} the two data constrcutors
 are defined as follows:
@@ -142,13 +151,13 @@ variant, such as subtraction is added. To do so, we need to extend both
 \lstinputlisting[linerange=37-41]{../examples/visitor.txt}% APPLY:linerange=SUB_DEF
 Firstly, \lstinline{SubExpAlg[E]} defines an extended algebra that contains the
 variants of the original plus the new subtraction variant. Intersection types
-are used to model \textit{type inheritance}. Secondly, a new type of expressions
+are used to model subtyping. Secondly, a new type of expressions
 (\lstinline{ExtExp}) with subtraction is needed. It is important to note that
 the \lstinline{accept} method now takes the new algebra \lstinline{SubExpAlg[E]}
 as argument.
 
 \paragraph{Inheritance is not subtyping.} In the presence of subtyping, there
-are interesting subtyping relations between datatypes and their
+are interesting subtyping relations between ASTs and their
 extensions~\cite{oliveira09modular}. An interesting aspect about subtyping in
 the new system is that subtyping follows the opposite direction of the
 extension. In other words, subtyping is contravariant with respect to the
@@ -198,8 +207,8 @@ cumbersome. Finally we can test the shiny new system:
 they did not provide reuse. Please write code in the style we
 discussed previously. Present constructors written in that way for the
 basic expressions and present sub only here. Discuss the issue that we
-encountered to justify this alternative design!} \jeremy{done}
-
+encountered to justify this alternative design!}
+\jeremy{done}\bruno{not yet. see previous comment.}
 
 \subsection{Native Dynamic Object Algebra Composition Support}
 \label{sec:dynamic}
@@ -208,11 +217,11 @@ The solution to the Expression Problem presented in
 Section~\ref{sec:extensibility} has one wrinkle in its usage. To be able to call
 different operations from the same expression \lstinline{e}, we need to make two
 copies \lstinline{o1} and \lstinline{o2}: one is used for printing, while the
-other is used for evaluation. An ideal approach would be allowing a single object
+other is used for evaluation. A better approach is to allow a single object
 to be created that supports both the printing and evaluation features.
 Unfortunately, dynamic composition of algebras is non-trivial.
 \citet{oliveira2012extensibility} addressed this problem by proposing
-\textit{object algebra combinators} that combine multiple algebras into one.
+\textit{Object Algebra combinators} that combine multiple algebras into one.
 However, as they noted, such combinators written in Java are difficult to use in
 practice. A version of this combinator has been encoded in Scala using
 intersection types and an encoding of the merge
@@ -222,6 +231,26 @@ type-unsafe programming features such as dynamic proxies, reflection or other
 meta-programming techniques. In \name there is no need for such complex
 encoding, as the merge operator is natively supported.
 
+\paragraph{Merge in \name} Section~\cite{} points out that in Scala 
+intersection types are not completely first class, since it is hard to 
+build values of intersections with unknown components. In \name,
+however, this is trivial. The \lstinline{merge} operation discussed 
+in Section~\ref{} can be written as:
+   
+\bruno{Fix syntax, type-check}
+\begin{lstlisting}
+def merge T (U * T) (first : T, second : U) : T & U = first & second 
+\end{lstlisting}
+
+\noindent From the typing point of view, the difference between
+\lstinline{merge} in Scala and \name is that the type variable
+\lstinline{U} now has a \emph{disjointness constraint}. The notation
+\lstinline{U * T} means that the type variable U can be instantiated
+to any types that is disjoint to the type \lstinline{T}. This is
+crutial to ensure that the composition between first and second 
+is well-formed. That is, there are no conflicts between the two objects. 
+
+\begin{comment}
 The combinator is defined by the \lstinline{combine} trait, which takes two
 algebras to create a combined algebra. It does so by appropriately delegating
 behaviours in each component algebra to the combined algebra.
@@ -239,12 +268,9 @@ example). Parametric polymorphism is need because \lstinline{combine} must
 compose algebras with arbitrary type parameters. A disjointness constraint is
 needed to ensure that two input algebras build values of disjoint types
 (otherwise ambiguity could arise).
+\end{comment}
 
-With \lstinline{combine} at hand, we can finally have a object \lstinline{o}
-print and evaluate at the same time:
-
-\lstinputlisting[linerange=71-74]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_TEST
-
+\paragraph{Boilerplate-free composition of Object Algebras} 
 An acute reader may have smelled some boilerplate code in the definition of
 \lstinline{combine}. After all, \lstinline{combine} just invokes the
 corresponding method on the arguments, which is solely driven by the types of
@@ -263,3 +289,8 @@ systems for many OO languages are too inflexible to express this kind of dynamic
 inheritance. \name hits a sweet spot in the design space of being how much
 dynamic, where we retain much of the flexibility of dynamic languages without
 sacrificing the type-safety guarantees.
+
+With \lstinline{combine} at hand, we can finally have a object \lstinline{o}
+print and evaluate at the same time:
+
+\lstinputlisting[linerange=71-74]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_TEST
