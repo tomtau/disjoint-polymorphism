@@ -73,22 +73,28 @@ trait evalBindCBV  : BindAlg[IEval] { self =>
 }
 -- END_CBN_CBV
 
+type Term = {
+  accept : TermAlg[IEval] -> IEval[Double]
+}
+
 
 -- BEGIN_MAKE_EVAL
-def makeEvaluator (o : Trait[BindAlg[IEval]]) = new[TermAlg[IEval]] evalBool & o
+def evaluator (o : Trait[BindAlg[IEval]]) (e : Term)  =
+  e.accept (new[TermAlg[IEval]] evalBool & o)
 -- END_MAKE_EVAL
 
 
 -- BEGIN_CBN_TEST
-def ex1 (f : TermAlg[IEval]) =
-  f.app Double Double (f.lam Double Double (\x -> f.lit 4)) (f.bot Double)
-main = (ex1 (makeEvaluator evalBindCBN))()
+-- (\x -> 4) bot
+def ex : Term = {
+  accept = \f -> f.app Double Double (f.lam Double Double (\x -> f.lit 4)) (f.bot Double)
+}
+main = (evaluator evalBindCBN ex)()
 -- Output: 4.0
 -- END_CBN_TEST
 
 
 {-
 -- Infinite loop
-main = (ex1 (makeEvaluator evalBindCBV))()
+main = (evaluator evalBindCBV ex)()
 -}
-
