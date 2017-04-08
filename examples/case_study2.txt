@@ -3,17 +3,18 @@
 {-
 
 Embedding a higher-order domain-specific language (simply-typed lambda-calculus
-with conditionals and constants) with a selectable evaluation order: Call-by-value, call-by-name.
+with conditionals and constants) with a selectable evaluation order: CBV and CBN
+
+http://okmij.org/ftp/tagless-final/call_by_any.ml
 
 -}
 
 
--- type Arr[Expr[_], A, B] = Expr[A] -> Expr[B]
-
+type Arr[A, B] = (T -> A) -> (T -> B)
 
 -- BEGIN_ABSTRACTION
 type BindAlg[Expr[_]] = {
-  lam : forall A B. (Expr[A] -> Expr[B]) -> Expr[Expr[A] -> Expr[B]]
+  lam : forall A B. (Expr[A] -> Expr[B]) -> Expr[Arr[A,B]]
 }
 -- END_ABSTRACTION
 
@@ -23,7 +24,7 @@ type IEval[E] = T -> E
 type ExprAlg[Expr[_]] = {
   lit : Double -> Expr[Double],
   add : Expr[Double] -> Expr[Double] -> Expr[Double],
-  app : forall A B. Expr[Expr[A] -> Expr[B]] -> Expr[A] -> Expr[B],
+  app : forall A B. Expr[Arr[A,B]] -> Expr[A] -> Expr[B],
   bot : forall A. Expr[A]
 }
 -- END_TYPED_LAMBDA
