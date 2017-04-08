@@ -14,12 +14,10 @@ presented in Section~\ref{sec:objectalgebra}. The case study modulares several
 orthogonal features of a subset of JavaScript, used by~\citet{poplcook} in his
 undergraduate textbook on programming languages. The case study illustrates that
 how various features and operations can be modularly developed and later
-composed to assembly a complete language with various operations baked in. The
+composed to assemble a complete language with various operations baked in. The
 second is a case study on embedding a higher-order domain-specific language
 (simply-typed lambda-calculus with conditional and constants) with a selectable
-evaluation order: CBN and CBV. The embedding of typed languages is directly
-inspired by Kiselyov's lecture notes~\cite{kiselyov2012typed} on the final
-approach to embedding languages. The outcome is an evaluator parameterized over
+evaluation order: CBN and CBV. The outcome is an evaluator parameterized over
 the evaluation order. This case study shows that features of \name are
 sufficient for such a seemingly impossible task, which usually require fancy
 types (in particular, GADTs).
@@ -38,10 +36,8 @@ expressions, containing numerical literals, addition, subtraction, among others.
 The second feature ($\mathit{Bool}$) introduces Boolean values, comparison, and
 if expressions. The third feature ($\mathit{Var}$) introduces local variables
 and variable declarations. And as the last feature ($\mathit{Function}$), we
-have top-level functions and functional calls.
-
-For each feature, we also define three operations: evaluator, pretty
-printer, and type checker.
+have top-level functions and function calls. For each feature, we also define
+three operations: evaluator, pretty printer, and type checker.
 
 \begin{figure}[t]
 \centering
@@ -60,30 +56,73 @@ printer, and type checker.
 \label{fig:mini-js}
 \end{figure}
 
-\bruno{You should explain the four features.} \jeremy{done}
+% \bruno{You should explain the four features.} \jeremy{done}
 
-\bruno{The next 4 subsection {\bf are not what we want to see in a
-    case study section}. Repeating the same ideas that were already
-  presented in Section~4 is pointless, and that's what you are doing
-  here. In a case study you want to measure, evaluate the benefits of
-  modularity. For example in terms of SLOC, or how many languages can
-  you recover from the components that we have; how many lines are
-  required to recover each languages, etc. Please go and have a look
-  at Case Study sections of other papers. I suggest ``Scrap your
-  Boilerplate as Object Algebras''; and "Meta-theory a la Carte". Also
-Weixin's case study on EVF is pretty good.}
-\bruno{Also I think you could talk about the subtyping/inheritance
-  relations of the languages that you can assemble. Perhaps draw some 
-diagrams. }
+% \bruno{The next 4 subsection {\bf are not what we want to see in a
+%     case study section}. Repeating the same ideas that were already
+%   presented in Section~4 is pointless, and that's what you are doing
+%   here. In a case study you want to measure, evaluate the benefits of
+%   modularity. For example in terms of SLOC, or how many languages can
+%   you recover from the components that we have; how many lines are
+%   required to recover each languages, etc. Please go and have a look
+%   at Case Study sections of other papers. I suggest ``Scrap your
+%   Boilerplate as Object Algebras''; and "Meta-theory a la Carte". Also
+% Weixin's case study on EVF is pretty good.}
+% \bruno{Also I think you could talk about the subtyping/inheritance
+%   relations of the languages that you can assemble. Perhaps draw some
+% diagrams. }
 
-Figure gives an overview of the reusable components of the implementation, and
-the subtyping/inheritance relations of the languages we can assemble. We thus
-obtain 4 languages with 12 operations. \jeremy{explain subtyping/inheritance
-  relations}
+Figure~\ref{fig:dependency} gives an overview of the reusable components of the
+implementation, and the subtyping/inheritance relations of the languages we can
+assemble. The interactions between languages and features are revealed by the
+arrows. For example, the leftward arrow between \lstinline{BoolArith} and
+\lstinline{Arith} states that \lstinline{BoolArith} extends \lstinline{Arith},
+while the rightward dashed arrow between them states that \lstinline{Arith} is a
+subtype of \lstinline{BoolArith}. We can see that features are resued across
+different languages, directly or indirectly. For example, $\mathit{Arith}$ is
+the most used feature. We thus obtain 4 languages with 12 operations in total.
 
-Figure compares the number of source lines of code (SLOC) for \name
-implementation with the non-modular implementation in Haskell. The results show
-that...
+
+Figure~\ref{fig:sloc} compares the number of source lines of code (SLOC, lines
+of code without counting empty lines and comments) for \name's implementation
+with the vanilla AST-based implementation in Haskell. Although \name is
+considerably more verbose than a functional language like Haskell, \name's
+implementation for all 4 languages in total reduces approximately 34\% in terms
+of SLOC, due to the modular development of the language components. In
+particular, the reduction for language \lstinline{VarArith} can be up to 93\%.
+
+The reason is that, the more frequently a feature is reused by other languages
+directly or indirectly, the more reduction we see in the total SLOC. For
+example, feature $\mathit{Arith}$ is used across all 4 languages. Even though
+itself alone has a lot more SLOC than that of Haskell (82 vs 47), we still get a
+huge gain when implementing other languages.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics{dependency.eps}
+  \caption{Overview of the language components.}
+  \label{fig:dependency}
+\end{figure}
+
+
+\begin{figure}[t]
+  \centering
+  \begin{tabular}{lc|lccc}
+    \hline
+  \bf{Component} & \name & \bf{Language} & \name & \bf{Haskell} & \bf{\% Reduced}  \\
+    \hline
+    $\mathit{Arith}$ & 76 & \lstinline$Arith$ & 82 & 47 & N/A  \\
+   $\mathit{Bool}$ & 67 & \lstinline$BoolArith$ & 10 & 86 & 88\% \\
+   $\mathit{Var}$ & 22 & \lstinline$VarArith$ & 7 & 99 & 93\% \\
+    $\mathit{Function}$ & 24 & \lstinline$MiniJS$ & 22 & 120 & 82\% \\
+    \hline
+    \bf{Total} & & & 234 & 352 & 34\% \\
+    \hline
+
+  \end{tabular}
+  \caption{SLOC statistics: \name implementation vs vanilla AST implementation.}
+  \label{fig:sloc}
+\end{figure}
 
 
 \begin{comment}
@@ -102,12 +141,12 @@ operations.
   \begin{tabular}{cc}
     \begin{subfigure}[t]{0.45\textwidth}
       \centering
-      \lstinputlisting[linerange=135-144]{../examples/case_study1.txt}% APPLY:linerange=BASE_DEF
+      \lstinputlisting[linerange=-]{}% APPLY:linerange=BASE_DEF
     \end{subfigure}
     &
     \begin{subfigure}[t]{0.45\textwidth}
       \centering
-      \lstinputlisting[linerange=116-125]{../examples/case_study1.txt}% APPLY:linerange=INTERFACE
+      \lstinputlisting[linerange=-]{}% APPLY:linerange=INTERFACE
     \end{subfigure}
   \end{tabular}
   \caption{The base language (left) and the interfaces of the operations (right)}
@@ -121,7 +160,7 @@ method, which is a function from an evaluation environment (\lstinline{Env}) to
 \lstinline{Maybe[Value]}. At this stage, the evaluation environment is not used,
 but will be useful when we have variables. The evaluation of the base language
 is quite straightforward, so we only show part of the code below:
-\lstinputlisting[linerange=170-176]{../examples/case_study1.txt}% APPLY:linerange=BASE_EVALUATOR
+\lstinputlisting[linerange=-]{}% APPLY:linerange=BASE_EVALUATOR
 To reduce boilerplate code when dealing with \lstinline{Maybe} values, like in
 Haskell, we encode the bind operator \lstinline{bind} of the \lstinline{Maybe}
 monad.
@@ -133,14 +172,14 @@ in Figure~\ref{fig:printer} and~\ref{fig:checker}.
 
 \begin{figure}[t]
   \centering
-  \lstinputlisting[linerange=197-203]{../examples/case_study1.txt}% APPLY:linerange=PRETTY_BASE
+  \lstinputlisting[linerange=-]{}% APPLY:linerange=PRETTY_BASE
   \caption{An object algebra for pretty printing. }
   \label{fig:printer}
 \end{figure}
 
 \begin{figure}[t]
   \centering
-  \lstinputlisting[linerange=208-218]{../examples/case_study1.txt}% APPLY:linerange=TYPECHECKER_BASE
+  \lstinputlisting[linerange=-]{}% APPLY:linerange=TYPECHECKER_BASE
   \caption{An object algebra for type checking. }
   \label{fig:checker}
 \end{figure}
@@ -149,7 +188,7 @@ in Figure~\ref{fig:printer} and~\ref{fig:checker}.
 \subsection{Adding Conditional Expressions (Bool)}
 
 Now we extend the base language with conditional expressions.
-\lstinputlisting[linerange=259-264]{../examples/case_study1.txt}% APPLY:linerange=CONDITIONAL
+\lstinputlisting[linerange=-]{}% APPLY:linerange=CONDITIONAL
 The augmented language now has Boolean literals, comparison features
 (\lstinline{eq} and \lstinline{le}) and if expressions.
 
@@ -175,7 +214,7 @@ described in Section~\ref{sec:extensibility}.
 
 Next we extend our language again with local variables and variable
 declarations. We add two new constructors \lstinline{var} and \lstinline{decl}.
-\lstinputlisting[linerange=365-368]{../examples/case_study1.txt}% APPLY:linerange=VARIABLE
+\lstinputlisting[linerange=-]{}% APPLY:linerange=VARIABLE
 For simplicity, we encode variables using strings. \lstinline{decl} takes three
 arguments, the first is the variable to be declared, the second is the
 expression bound with the variable, and the third is the body within which the
@@ -184,7 +223,7 @@ something like \lstinline{var x = 3; x + 1}.
 
 The evaluator finally makes use of the evaluation environment, which is a
 mapping from variables to values.
-\lstinputlisting[linerange=386-392]{../examples/case_study1.txt}% APPLY:linerange=EVALUATOR_VARIABLE
+\lstinputlisting[linerange=-]{}% APPLY:linerange=EVALUATOR_VARIABLE
 For the variable case, we look it up in the environment to find its bound value.
 For the declaration case, we evaluate the body expression in the augmented
 environment.
@@ -197,7 +236,7 @@ We add, as the final piece, top-level functions to the language. The only
 extension is a call expression that takes a function name and an actual
 argument expression\footnote{For simplicity, we only allow functions with one
   argument.}.
-\lstinputlisting[linerange=420-425]{../examples/case_study1.txt}% APPLY:linerange=TOP_LEVEL
+\lstinputlisting[linerange=-]{}% APPLY:linerange=TOP_LEVEL
 
 Top-level functions are collected into a function environment, a list of
 bindings of function names to function definitions. A program is then a function
@@ -206,32 +245,37 @@ interested reader to the supplementary materials.
 
 \end{comment}
 
+
+\bruno{I think the part of the following is the only thing that should
+that could be mentioned here, in a discussion about what does it take
+to assemble a language from components. } \jeremy{done}
+
 \paragraph{Putting all together}
 
-% \bruno{I think the part of the following is the only thing that should
-% that could be mentioned here, in a discussion about what does it take
-% to assemble a language from components. }
+With all the components ready, we can assemble them at will to cook a language
+with whatever features we want. For example, here is the glue code that is
+needed to make the \lstinline{BoolArith} language that combines $\mathit{Arith}$
+and $\mathit{Bool}$ features together, along with the combined operations.
+\lstinputlisting[linerange=376-389]{../examples/case_study1.txt}% APPLY:linerange=BOOLARITH
+We hope by now the reader can share our feeling that this is indeed a simple and
+modular way to cook a language incrementally.
 
-To demonstrate the usage of the final language, we first create a program that
-uses all the features the language supports now.
-\lstinputlisting[linerange=508-515]{../examples/case_study1.txt}% APPLY:linerange=FINAL_TEST
-The concrete syntax of the program is shown in the comment above. We assume a
-pre-defined function environment (\lstinline{fenv}) containing the definition of
-the \lstinline{add1} function.
-
-Now we can of course apply the operations to the program individually. Instead
-of doing this, we go a step further -- we merge those three operations into one,
-and apply the combined operation to the program. Here is a function that makes
+To demonstrate the usage of the final language, here is a function that makes
 sure ``well-typed programs cannot go wrong'':
-\lstinputlisting[linerange=519-530]{../examples/case_study1.txt}% APPLY:linerange=SUPER_DEF
-Note that \lstinline{superAlg} is the combined operation that has the ability to
-type check, evaluate, and print a given program. We hope by now the reader can
-share our feeling that this is indeed a simple and modular way to cook a
-language incrementally.
+\lstinputlisting[linerange=515-521]{../examples/case_study1.txt}% APPLY:linerange=SUPER_DEF
+It type checks the program before passing it to the evaluator and pretty
+printer.
 
-Finally we apply it to the program we have just created:
-\lstinputlisting[linerange=534-535]{../examples/case_study1.txt}% APPLY:linerange=TEST_TEST
-Everything works as expected!
+% we first create a program that
+% uses all the features the language supports now.
+% \lstinputlisting[linerange=-]{}% APPLY:linerange=FINAL_TEST
+% The concrete syntax of the program is shown in the comment above. We assume a
+% pre-defined function environment (\lstinline{fenv}) containing the definition of
+% the \lstinline{add1} function.
+
+% Finally we apply it to the program we have just created:
+% \lstinputlisting[linerange=525-526]{../examples/case_study1.txt}% APPLY:linerange=TEST_TEST
+% Everything works as expected!
 
 
 \subsection{Parameterizing Expressions by the Evaluation Order}
@@ -243,7 +287,9 @@ the embedding not only demonstrates the extensibility, as is shown in the first
 case study, but also object types, expressed in the meta-language (\name) and
 manifestly ensuring well-scoped and well-typed expressions in the object
 language. What is more, the evaluator over the object expressions is type
-preserving by construction.
+preserving by construction. The embedding of typed languages is directly
+inspired by Kiselyov's lecture notes~\cite{kiselyov2012typed} on the
+"tagless-final" approach to embedding languages.
 
 \paragraph{Well-typed object expressions} One important issue with such
 embedding is how to deal with binders in the object language. In general there
@@ -253,7 +299,7 @@ particular case study, we find HOAS convenient. HOAS represents object language
 abstractions as \name abstractions and object variables as \name variables. By
 utilizing the infrastructure of the meta-language, we are free of issues such as
 variable capture. Here is the interface of the object language.
-\lstinputlisting[linerange=23-28]{../examples/case_study2.txt}% APPLY:linerange=TYPED_LAMBDA
+\lstinputlisting[linerange=24-29]{../examples/case_study2.txt}% APPLY:linerange=TYPED_LAMBDA
 Embedded object expressions of type \lstinline{A} are represented as \name
 values of the type \lstinline{Expr[A]}. The \lstinline{bot} constructor, which
 represents non-terminating computation, is there for the purpose of illustrating
@@ -264,12 +310,12 @@ abstractions. This is intentional! Evaluators with different evaluation
 strategies only differ in the interpretation for abstractions, as will be shown
 later on. For this reason, \lstinline{lam} is moved to a separate interface of
 its own.
-\lstinputlisting[linerange=15-17]{../examples/case_study2.txt}% APPLY:linerange=ABSTRACTION
+\lstinputlisting[linerange=16-18]{../examples/case_study2.txt}% APPLY:linerange=ABSTRACTION
 
 
 \paragraph{Well-typed evaluator}
 The benefit of typeful embedding shows up when defining the evaluator.
-\lstinputlisting[linerange=32-37]{../examples/case_study2.txt}% APPLY:linerange=TYPED_EVAL
+\lstinputlisting[linerange=33-38]{../examples/case_study2.txt}% APPLY:linerange=TYPED_EVAL
 Unlike the evaluator in the first case study, there is no need for a separate
 \lstinline{Value} datatype for values, as they are directly modeled by \name
 values. Note that the resulting evaluator is \textit{type preserving} by
@@ -280,7 +326,7 @@ Our evaluator defined in the first case study inherits the evaluation strategy
 from the meta-language. We now show call-by-name and call-by-value evaluators.
 The two evaluators are quite alike, sharing most of the code. As said before,
 the only difference is the interpretation for \lstinline{lam}.
-\lstinputlisting[linerange=67-72]{../examples/case_study2.txt}% APPLY:linerange=CBN_CBV
+\lstinputlisting[linerange=68-73]{../examples/case_study2.txt}% APPLY:linerange=CBN_CBV
 The call-by-name \lstinline{lam}, when applied, will receive an unevaluated
 argument expression, use it as it is. The call-by-value \lstinline{lam}, as in
 the call-by-name evaluator, receives an unevaluated argument expression,
@@ -289,8 +335,13 @@ evaluates it before passing its result to the abstraction body \lstinline{f}.
 Now to make an evaluator parameterized over the evaluation order, we just take a
 trait \lstinline{o} with unknown implementation, compose it with other language
 features.
-\lstinputlisting[linerange=77-77]{../examples/case_study2.txt}% APPLY:linerange=MAKE_EVAL
+\lstinputlisting[linerange=82-83]{../examples/case_study2.txt}% APPLY:linerange=MAKE_EVAL
 Here is the call-by-name evaluator at work:
-\lstinputlisting[linerange=82-85]{../examples/case_study2.txt}% APPLY:linerange=CBN_TEST
-The complete code with several examples can be found in the supplementary
-materials.
+\lstinputlisting[linerange=88-93]{../examples/case_study2.txt}% APPLY:linerange=CBN_TEST
+On the other hand, \lstinline{(evaluator evalBindCBV ex)()} would result in a
+infinite loop. The complete code with several examples can be found in the
+supplementary materials.
+
+\jeremy{I am afraid we don't seem to have many advantages over OCaml's version,
+  because we don't really have higher-kinded types, we cannot make a AST type
+  for this example, though \lstinline{makeEvaluator} seems to be one advantage }

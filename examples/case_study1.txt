@@ -60,7 +60,7 @@ def casePair A B C (p : Pair[A,B]) (f: A -> B -> C) : C =
 
 
 -----------------------------
--- Evaluation
+-- Values
 -----------------------------
 
 type ValAlg[E] = {
@@ -82,10 +82,8 @@ def fromBool (v : Value) : Bool =
   v.match Bool { numV = \_ -> undefined, boolV = \b -> b }
 
 
-
-
 -----------------------------
--- Type checker
+-- Types
 -----------------------------
 
 type TypeAlg[E] = {
@@ -112,7 +110,6 @@ def eqTypes (a : Type) (b : Type) : Bool =
 -- Interfaces
 ----------------
 
--- BEGIN_INTERFACE
 -- Evaluator
 type Env = EnvF[Value]
 type IEval = {eval : Env -> Maybe[Value]}
@@ -123,15 +120,19 @@ type IPrint = { print : String }
 -- Type checker
 type TEnv = EnvF[Type]
 type ITC = { tcheck : TEnv -> Maybe[Type] }
--- END_INTERFACE
 
 
 
------------------------------
--- Base arithmetic expression
------------------------------
 
--- BEGIN_BASE_DEF
+--------------------------------------
+-- Components
+--------------------------------------
+
+
+----------------
+-- Arith feature
+----------------
+
 type ArithAlg[E] = {
   num : Double -> E,
   add : E -> E -> E,
@@ -139,42 +140,15 @@ type ArithAlg[E] = {
   mul : E -> E -> E,
   div : E -> E -> E
 }
-type Arith = {
-  accept : forall E. ArithAlg[E] -> E
-}
--- END_BASE_DEF
 
-def numA (n : Double) : Arith = {
-  accept = /\E. \f -> f.num n
-}
-
-def addA (e1 : Arith) (e2 : Arith) : Arith = {
-  accept = /\E. \f -> f.add (e1.accept E f) (e2.accept E f)
-}
-
-def subA (e1 : Arith) (e2 : Arith) : Arith = {
-  accept = /\E. \f -> f.sub (e1.accept E f) (e2.accept E f)
-}
-
-def mulA (e1 : Arith) (e2 : Arith) : Arith = {
-  accept = /\E. \f -> f.mul (e1.accept E f) (e2.accept E f)
-}
-
-def divA (e1 : Arith) (e2 : Arith) : Arith = {
-  accept = /\E. \f -> f.div (e1.accept E f) (e2.accept E f)
-}
-
-
--- Evaluator
--- BEGIN_BASE_EVALUATOR
+-- Evaluator algebra
 trait evalArithAlg { self =>
   def num (n : Double) : IEval = { eval = \_ -> just Value (numV n) }
   def add (e1 : IEval) (e2 : IEval) : IEval = { eval = \env ->
     bind Value Value (e1.eval env) (\v1 ->
       bind Value Value (e2.eval env) (\v2 ->
         just Value (numV (fromNum v1 + fromNum v2))))
-  } -- The rest omitted...
--- END_BASE_EVALUATOR
+  }
   def sub (e1 : IEval) (e2 : IEval) : IEval = { eval = \env ->
     bind Value Value (e1.eval env) (\v1 ->
       bind Value Value (e2.eval env) (\v2 ->
@@ -192,8 +166,7 @@ trait evalArithAlg { self =>
   }
 }
 
--- Pretty pinter
--- BEGIN_PRETTY_BASE
+-- Pretty pinter algebra
 trait ppArithAlg { self =>
   def num (n : Double)                = { print = n.toString }
   def add (e1 : IPrint) (e2 : IPrint) = { print = "(" ++ e1.print ++ " + " ++ e2.print ++ ")"}
@@ -201,10 +174,8 @@ trait ppArithAlg { self =>
   def mul (e1 : IPrint) (e2 : IPrint) = { print = "(" ++ e1.print ++ " * " ++ e2.print ++ ")"}
   def div (e1 : IPrint) (e2 : IPrint) = { print = "(" ++ e1.print ++ " / " ++ e2.print ++ ")"}
 }
--- END_PRETTY_BASE
 
--- Type checker
--- BEGIN_TYPECHECKER_BASE
+-- Type checker algebra
 trait tcArithAlg { self =>
   def num (n : Double) : ITC = { tcheck = \_ -> just Type tnum }
   def add (e1 : ITC) (e2 : ITC) : ITC = { tcheck = \env ->
@@ -215,8 +186,7 @@ trait tcArithAlg { self =>
             (just Type tnum)
             (nothing Type)))
         (nothing Type))
-  } -- The rest omitted...
--- END_TYPECHECKER_BASE
+  }
   def sub (e1 : ITC) (e2 : ITC) : ITC = { tcheck = \env ->
     bind Type Type (e1.tcheck env) (\t1 ->
       caseType Maybe[Type] t1
@@ -247,53 +217,28 @@ trait tcArithAlg { self =>
 }
 
 
-def eg1 : Arith = addA (mulA (numA 3) (numA 4)) (numA 5)
 
+-----------------
+--  Bool feature
+-----------------
 
-
------------------------------------
--- Add Boolean expression variants
------------------------------------
-
--- BEGIN_CONDITIONAL
-type BoolArithAlg[E] = ArithAlg[E] & {
+type BoolAlg[E] = {
   bool : Bool -> E,
   eq   : E -> E -> E,
-  le   : E -> E -> E,
+  lt   : E -> E -> E,
   iff  : E -> E -> E -> E
 }
--- END_CONDITIONAL
-
-type BoolArith = {
-  accept : forall E. BoolArithAlg[E] -> E
-}
-
-def boolB (b : Bool) : BoolArith = {
-  accept = /\E. \f -> f.bool b
-}
-
-def eqB (e1 : BoolArith) (e2 : BoolArith) : BoolArith = {
-  accept = /\E. \f -> f.eq (e1.accept E f) (e2.accept E f)
-}
-
-def leB (e1 : BoolArith) (e2 : BoolArith) : BoolArith = {
-  accept = /\E. \f -> f.le (e1.accept E f) (e2.accept E f)
-}
-
-def ifB (e1 : BoolArith) (e2 : BoolArith) (e3 : BoolArith) : BoolArith = {
-  accept = /\E. \f -> f.iff (e1.accept E f) (e2.accept E f) (e3.accept E f)
-}
 
 
--- Evaluator
-trait evalBoolArithAlg inherits evalArithAlg : BoolArithAlg[IEval] { self =>
+-- Evaluator algebra
+trait evalBoolAlg : BoolAlg[IEval] { self =>
   def bool b          = { eval = \_ -> just Value (boolV b) }
   def eq e1 e2        = { eval = \env ->
     bind Value Value (e1.eval env) (\v1 ->
       bind Value Value (e2.eval env) (\v2 ->
         just Value (boolV (fromNum v1 == fromNum v2))))
   }
-  def le e1 e2        = { eval = \env ->
+  def lt e1 e2        = { eval = \env ->
     bind Value Value (e1.eval env) (\v1 ->
       bind Value Value (e2.eval env) (\v2 ->
         just Value (boolV (fromNum v1 < fromNum v2))))
@@ -306,18 +251,18 @@ trait evalBoolArithAlg inherits evalArithAlg : BoolArithAlg[IEval] { self =>
   }
 }
 
--- Pretty printer
-trait ppBoolArithAlg inherits ppArithAlg : BoolArithAlg[IPrint] { self =>
+-- Pretty printer algebra
+trait ppBoolAlg : BoolAlg[IPrint] { self =>
   def bool b          = { print = b.toString }
   def eq e1 e2        = { print = "(" ++ e1.print ++ " == " ++ e2.print ++ ")" }
-  def le e1 e2        = { print = "(" ++ e1.print ++ " < " ++ e2.print ++ ")" }
+  def lt e1 e2        = { print = "(" ++ e1.print ++ " < " ++ e2.print ++ ")" }
   def iff e1 e2 e3 =
     { print = "(if " ++ e1.print ++ " then " ++ e2.print ++ " else " ++ e3.print ++ ")" }
 }
 
 
--- Type checker
-trait tcBoolArithAlg inherits tcArithAlg : BoolArithAlg[ITC] { self =>
+-- Type checker algebra
+trait tcBoolAlg : BoolAlg[ITC] { self =>
   def bool b   = { tcheck = \_ -> just Type tbool }
   def eq e1 e2 = { tcheck = \env ->
     bind Type Type (e1.tcheck env) (\t1 ->
@@ -328,7 +273,7 @@ trait tcBoolArithAlg inherits tcArithAlg : BoolArithAlg[ITC] { self =>
             (nothing Type)))
         (nothing Type))
   }
-  def le e1 e2 = { tcheck = \env ->
+  def lt e1 e2 = { tcheck = \env ->
     bind Type Type (e1.tcheck env) (\t1 ->
       caseType Maybe[Type] t1
         (bind Type Type (e2.tcheck env) (\t2 ->
@@ -354,109 +299,152 @@ trait tcBoolArithAlg inherits tcArithAlg : BoolArithAlg[ITC] { self =>
 }
 
 
-def eg2 : BoolArith = ifB (eqB (numA 3) (numA 5)) (numA 12) (addA (numA 12) (numA 22))
+----------------
+--  Var feature
+----------------
 
-
------------------------------
--- Add variable declarations
------------------------------
-
--- BEGIN_VARIABLE
-type VarArithAlg[E] = BoolArithAlg[E] & {
+type VarAlg[E] = {
   var : String -> E,
   decl : String -> E -> E -> E
 }
--- END_VARIABLE
 
-type VarArith = {
-  accept : forall E. VarArithAlg[E] -> E
-}
-
-def varV (n : String) : VarArith = {
-  accept = /\E. \f -> f.var n
-}
-
-def declV (n : String) (e1 : VarArith) (e2 : VarArith) : VarArith = {
-  accept = /\E. \f -> f.decl n (e1.accept E f) (e2.accept E f)
-}
-
-
--- Evaluator
--- BEGIN_EVALUATOR_VARIABLE
-trait evalVarArithAlg inherits evalBoolArithAlg { self =>
+-- Evaluator algebra
+trait evalVarAlg { self =>
   def var (n : String) : IEval = { eval = \env -> lookup Value n env }
   def decl (n : String) (e : IEval) (b : IEval) : IEval = { eval = \env ->
     bind Value Value (e.eval env) (\v ->
       b.eval (insert Value n v env))
   }
 }
--- END_EVALUATOR_VARIABLE
 
--- Pretty printer
--- BEGIN_PRETTY_VARIABLE
-trait ppVarArithAlg inherits ppBoolArithAlg : VarArithAlg[IPrint] { self =>
+-- Pretty printer algebra
+trait ppVarAlg : VarAlg[IPrint] { self =>
   def var n      = { print = n }
   def decl n e b = { print = "var " ++ n ++ " = " ++ e.print ++ "; " ++ b.print }
 }
--- END_PRETTY_VARIABLE
 
--- Type checker
--- BEGIN_TYPECHECKER_VARIABLE
-trait tcVarArithAlg inherits tcBoolArithAlg : VarArithAlg[ITC] { self =>
+-- Type checker algebra
+trait tcVarAlg : VarAlg[ITC] { self =>
   def var n      = { tcheck = \env -> lookup Type n env }
   def decl n e b = { tcheck = \env ->
     bind Type Type (e.tcheck env) (\t ->
       b.tcheck (insert Type n t env))
   }
 }
--- END_TYPECHECKER_VARIABLE
 
 
 -----------------------------
--- Add top-level functions
+--  Function feature
 -----------------------------
 
--- BEGIN_TOP_LEVEL
-type ExpAlg[E] = VarArithAlg[E] & {
+type TFunAlg[E] = {
   call : String -> E -> E
 }
-type Exp = {
-  accept : forall E. ExpAlg[E] -> E
+
+
+
+
+---------------------------------------
+-- Languages:
+-- Arith, BoolArith, VarArith, Mini-JS
+---------------------------------------
+
+------------
+-- Arith
+------------
+
+-- AST
+type Arith = {
+  accept : forall E. ArithAlg[E] -> E
 }
--- END_TOP_LEVEL
 
-def callF (n : String) (e : Exp) : Exp = {
-  accept = /\E. \f -> f.call n (e.accept E f)
+-- Evaluator
+def evalArith (e : Arith) : IEval = e.accept IEval (new[ArithAlg[IEval]] evalArithAlg)
+
+-- Pretty printer
+def ppArith (e : Arith) : IPrint = e.accept IPrint (new[ArithAlg[IPrint]] ppArithAlg)
+
+-- Type checker
+def tcArith (e : Arith) : ITC = e.accept ITC (new[ArithAlg[ITC]] tcArithAlg)
+
+
+-------------
+-- BoolArith
+-------------
+
+-- BEGIN_BOOLARITH
+-- AST
+type BoolArithAlg[E] = ArithAlg[E] & BoolAlg[E]
+type BoolArith = {
+  accept : forall E. BoolArithAlg[E] -> E
+}
+-- Evaluator
+def evalBoolArith (e : BoolArith) =
+  e.accept IEval (new[BoolArithAlg[IEval]] evalArithAlg & evalBoolAlg)
+-- Pretty printer
+def ppBoolArith (e : BoolArith) =
+  e.accept IPrint (new[BoolArithAlg[IPrint]] ppArithAlg & ppBoolAlg)
+-- Type checker
+def tcBoolArith (e : BoolArith) =
+  e.accept ITC (new[BoolArithAlg[ITC]] tcArithAlg & tcBoolAlg)
+-- END_BOOLARITH
+
+
+-------------
+-- VarArith
+-------------
+
+-- AST
+type VarArithAlg[E] = BoolArithAlg[E] & VarAlg[E]
+type VarArith = {
+  accept : forall E. VarArithAlg[E] -> E
 }
 
+-- Evaluator
+def evalVarArith (e : VarArith) : IEval = e.accept IEval (new[VarArithAlg[IEval]] evalArithAlg & evalBoolAlg & evalVarAlg)
 
-type FnAlg[E] = {
-  fnAlg : String -> Type -> Type -> Exp -> E
+-- Pretty printer
+def ppVarArith (e : VarArith) : IPrint = e.accept IPrint (new[VarArithAlg[IPrint]] ppArithAlg & ppBoolAlg & ppVarAlg)
+
+-- Type checker
+def tcVarArith (e : VarArith) : ITC = e.accept ITC (new[VarArithAlg[ITC]] tcArithAlg & tcBoolAlg & tcVarAlg)
+
+
+------------
+-- Mini-JS
+------------
+
+-- AST
+type MiniJSAlg[E] = VarArithAlg[E] & TFunAlg[E]
+type MiniJS = {
+  accept : forall E. MiniJSAlg[E] -> E
+}
+
+type FunAlg[E] = {
+  fun : String -> Type -> Type -> MiniJS -> E
 }
 
 type Function = {
-  accept : forall E. FnAlg[E] -> E
+  accept : forall E. FunAlg[E] -> E
 }
 
-def caseFn E (x : Function) (f : String -> Type -> Type -> Exp -> E) : E =
-  x.accept E { fnAlg = f }
+def caseFn E (x : Function) (f : String -> Type -> Type -> MiniJS -> E) : E = x.accept E { fun = f }
 
 type FEnv = EnvF[Function]
 
 type PgmAlg[E] = {
-  pgmAlg : FEnv -> Exp -> E
+  pgm : FEnv -> MiniJS -> E
 }
 
 type Program = {
   accept : forall E. PgmAlg[E] -> E
 }
 
-def casePgm E (p : Program) (f: FEnv -> Exp -> E) : E =
-  p.accept E { pgmAlg = f }
+def casePgm E (p : Program) (f: FEnv -> MiniJS -> E) : E = p.accept E { pgm = f }
 
 
--- Evaluator
-trait evalExpAlg(fenv : FEnv) inherits evalVarArithAlg : ExpAlg[IEval] { self : ExpAlg[IEval] =>
+-- Evaluator algbebra
+trait evalFunAlg(fenv : FEnv) inherits evalArithAlg & evalBoolAlg & evalVarAlg : MiniJSAlg[IEval] { self : MiniJSAlg[IEval] =>
   def call f arg = { eval = \env ->
     bind Function Value (lookup Function f fenv) (\fn ->
       caseFn Maybe[Value] fn
@@ -466,16 +454,15 @@ trait evalExpAlg(fenv : FEnv) inherits evalVarArithAlg : ExpAlg[IEval] { self : 
   }
 }
 
--- Pretty printer
-trait ppExpAlg inherits ppVarArithAlg : ExpAlg[IPrint] { self =>
+-- Pretty printer algebra
+trait ppFunAlg : TFunAlg[IPrint] { self =>
   def call f arg = { print = f ++ "(" ++ arg.print ++ ")" }
 }
 
--- Type checker
-
+-- Type checker algebra
 type FTEnv = EnvF[Pair[Type, Type]]
 
-trait tcExpAlg(ftenv : FTEnv) inherits tcVarArithAlg : ExpAlg[ITC] { self =>
+trait tcFunAlg(ftenv : FTEnv) : TFunAlg[ITC] { self =>
   def call f arg = { tcheck = \env ->
     bind Pair[Type,Type] Type (lookup Pair[Type,Type] f ftenv) (\p ->
       casePair Type Type Maybe[Type] p (\a b ->
@@ -484,49 +471,53 @@ trait tcExpAlg(ftenv : FTEnv) inherits tcVarArithAlg : ExpAlg[ITC] { self =>
   }
 }
 
-def checkFEnv (fenv : FEnv) : FTEnv = \n ->
-  bind Function Pair[Type, Type] (lookup Function n fenv) (\f ->
-    caseFn Maybe[Pair[Type, Type]] f (\arg typ ret body ->
-    (just Pair[Type,Type] (mkPair Type Type typ ret))))
+
+-- Evaluator
+def evalMiniJS (e : MiniJS) (fenv : FEnv) : IEval = e.accept IEval (new[MiniJSAlg[IEval]] evalFunAlg(fenv))
+
+-- Pretty printer
+def ppMiniJS (e : MiniJS) : IPrint = e.accept IPrint (new[MiniJSAlg[IPrint]] ppArithAlg & ppBoolAlg & ppVarAlg & ppFunAlg)
+
+-- Type checker
+def tcMiniJS (e : MiniJS) (ftenv : FTEnv) : ITC = e.accept ITC (new[MiniJSAlg[ITC]] tcArithAlg & tcBoolAlg & tcVarAlg & tcFunAlg(ftenv))
+
 
 
 -----------------------
 -- Put all together
 -----------------------
 
-def add1Body : Exp = {
+def checkFEnv (fenv : FEnv) : FTEnv = \n ->
+  bind Function Pair[Type, Type] (lookup Function n fenv) (\f ->
+    caseFn Maybe[Pair[Type, Type]] f (\arg typ ret body ->
+    (just Pair[Type,Type] (mkPair Type Type typ ret))))
+
+def add1Body : MiniJS = {
   accept = /\E. \f -> f.add (f.var "x") (f.num 1)
 }
 
 def add1 : Function = {
-  accept = /\E. \f -> f.fnAlg "x" tnum tnum add1Body
+  accept = /\E. \f -> f.fun "x" tnum tnum add1Body
 }
 
 def fenv : FEnv = insert Function "add1" add1 (empty Function)
 
--- BEGIN_FINAL_TEST
 -- add1(var x = 3; var y = 4; if x < y then x + 2 else y + 3)
-def test : Program = {accept = /\E. \p -> p.pgmAlg fenv { accept = /\F. \f ->
+def test : Program = {accept = /\E. \p -> p.pgm fenv { accept = /\F. \f ->
   f.call "add1"
     (f.decl "x" (f.num 3)
       (f.decl "y" (f.num 4)
-        (f.iff (f.le (f.var "x") (f.var "y"))
+        (f.iff (f.lt (f.var "x") (f.var "y"))
           (f.add (f.var "x") (f.num 2))
           (f.add (f.var "y") (f.num 3)))))}}
--- END_FINAL_TEST
 
 -- BEGIN_SUPER_DEF
-type SuperAlg = IEval & IPrint & ITC
 def evalPgm (p : Program) : String =
   casePgm String p (\fenv m ->
     let ftenv : FTEnv = checkFEnv fenv in
-    let op1 : ExpAlg[IEval]  = new[ExpAlg[IEval]] evalExpAlg(fenv) in
-    let op2 : ExpAlg[IPrint] = new[ExpAlg[IPrint]] ppExpAlg in
-    let op3 : ExpAlg[ITC]    = new[ExpAlg[ITC]] tcExpAlg(ftenv) in
-    let superAlg : ExpAlg[SuperAlg] = op1 ,, op2 ,,  op3 in
-    let inst : SuperAlg = m.accept SuperAlg superAlg in
-    if isJust Type (inst.tcheck (empty Type))
-    then inst.print ++ " = " ++ (fromNum (fromJust Value (inst.eval (empty Value)))).toString
+    if isJust Type ((tcMiniJS m ftenv).tcheck (empty Type))
+    then (ppMiniJS m).print ++ " = " ++
+         (fromNum (fromJust Value ((evalMiniJS m fenv).eval (empty Value)))).toString
     else "Type error!")
 -- END_SUPER_DEF
 
