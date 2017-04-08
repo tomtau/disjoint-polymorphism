@@ -6,12 +6,11 @@ import           Data.List (isPrefixOf)
 import           Environment
 import           PrettyPrint
 import           Source.Parser (parseExpr)
-import           Source.Syntax
 import           Source.Typing
 import           System.Console.Repline
 import           System.Environment (getArgs)
 import           System.Exit
-import qualified Target.CBN as CBN
+import qualified Target.Dynamics as T
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 
 
@@ -51,12 +50,12 @@ exec source =
       env <- getCtx
       let res = runTcMonad (replCtx env) (tcModule abt)
       case res of
-        Right (typ, tar, tEnv) -> do
+        Right (typ, tar) -> do
           putMsg "Typing result"
           ppMsg $ colon <+> blue (pprint typ)
-          let res = CBN.evaluate tEnv tar
+          let r = T.evaluate tar
           putMsg "\nEvaluation result"
-          ppMsg $ text "=>" <+> blue (text (show res))
+          ppMsg $ text "=>" <+> blue (text (show r))
         Left err -> ppMsg err
 
 

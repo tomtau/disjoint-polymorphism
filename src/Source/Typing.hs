@@ -18,29 +18,25 @@ import           PrettyPrint
 import           Source.Desugar
 import           Source.Subtyping
 import           Source.Syntax
-import qualified Target.CBN as TC
 import qualified Target.Syntax as T
 
 
 -- Type check a module
-tcModule :: Module -> TcMonad (Type, T.UExpr, TC.Env)
+tcModule :: Module -> TcMonad (Type, T.UExpr)
 tcModule m = do
   let decls = moduleEntries m
   let mainE = mainExpr m
   -- Step 1: Desugar traits
   let sdecls = desugar decls
   -- Step 2: Check module
-  targetDecls <- foldr tcM (return ([])) (sdecls ++ [mainE])
-  -- Step 3: Generate initial environment for execution
-  let (mainType, mainTarget) =
-        maybe (TopT, (s2n "main", T.UUnit)) identity (lastMay targetDecls)
-  let declsTarget = fmap (map snd) (initMay targetDecls)
-  let initEnv =
-        maybe
-          TC.emptyEnv
-          (foldl (\env (n, e) -> TC.extendCtx (n, e, env) env) TC.emptyEnv)
-          declsTarget
-  return (mainType, snd mainTarget, initEnv)
+  transDecls <- foldr tcM (return []) (sdecls ++ [mainE])
+  -- Step 3: Generate target expression for execution
+  let target =
+        foldr1May
+          (\(n, e) (n', t) -> (n', T.ULet (bind n (e, t))))
+          (map snd transDecls)
+  let mainType = lastMay (map fst transDecls)
+  return (maybe TopT identity mainType, maybe T.UUnit snd target)
   where
     tcM ::
          SimpleDecl
@@ -409,6 +405,9 @@ infer (LamA t) = do
   return (Arr a b, T.ULam (bind (translate x) e'))
 
 
+infer Bot =
+  return (DForall (bind (s2n "A", embed TopT) (TVar (s2n "A"))), T.Bot)
+
 infer a = throwError $ text "Infer not implemented:" <+> pprint a
 
 
@@ -530,6 +529,7 @@ tcheck (Acc e l) a = do
                 text "for label" <+>
                 text l PP.<$> text "in" <+> squotes (pprint e))
 
+tcheck Bot a = return T.Bot
 
 {-
 

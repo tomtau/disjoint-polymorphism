@@ -27,7 +27,7 @@ library
                        Source.Desugar
                        Source.SrcLoc
                        Target.Syntax
-                       -- Target.Dynamics
+                       Target.Dynamics
                        Target.CBN
   build-depends:       base >= 4.7 && < 5
                      , unbound >= 0.5.1

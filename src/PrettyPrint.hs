@@ -151,6 +151,7 @@ instance Pretty S.Expr where
         text "let" <+>
         text (name2String x) <+>
         colon <+> t' <+> text "=" <+> e' <+> text "in" <+> b'
+  ppr (S.Bot) = return $ text "undefined"
 
 instance Pretty T.UExpr where
   ppr (T.UVar x) = return . text . name2String $ x
@@ -198,6 +199,8 @@ instance Pretty T.UExpr where
   ppr (T.USqrt e) = do
     e' <- ppr e
     return $ e' <> dot <> text "sqrt"
+  ppr (T.Bot) = do
+    return $ text "undefined"
 
 
 pprint :: Pretty a => a -> Doc
