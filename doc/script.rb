@@ -1,5 +1,4 @@
 # coding: utf-8
-#require 'tempfile'
 require 'fileutils'
 
 # Example 1 - Read File and close

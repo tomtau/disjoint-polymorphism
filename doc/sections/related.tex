@@ -1,24 +1,6 @@
 \section{Related Work}
 
-\begin{figure}[t]
-  \centering
-  \begin{tabular}{l|ccccc}
-    \hline
-     & \bf{Statically typed} & \bf{Polymorphism} & \bf{Covariant model} & \bf{Dynamic inheritance}  \\
-    \hline
-    \name & \cmark & \cmark & \xmark & \cmark \\
-    \hline
-    Scala & \cmark & \cmark & \cmark & \xmark \\
-    \hline
-    Java & \cmark & \cmark & \cmark & \xmark
-
-  \end{tabular}
-  \caption{Comparison between \name and various similar languages.}
-  \label{fig:comparision}
-\end{figure}
-
-
-\subsection{(Disjoint) Intersection Types, Merge Operator}
+\paragraph{(Disjoint) Intersection Types, Merge Operator}
 
 There is a large body of work on studying intersection types. Dating back to
 works as early as~\citet{coppo1981functional} and~\citet{pottinger1980type},
@@ -49,18 +31,42 @@ calculus that includes parametric polymorphism, intersection types and a merge
 operator. \bname serves the theoretical foundation of \name.
 
 
-\subsection{Mainstream Languages with Delegation Mechanism}
+% \paragraph{Dynamically-typed Languages with Delegation Mechanism}
 
-\begin{itemize}
-\item Clojure Protocols
-  % http://www.ibm.com/developerworks/library/j-clojure-protocols/
-\item Ruby mixin
-\item JS mixin
-\end{itemize}
+% \begin{itemize}
+% \item Clojure Protocols
+%   % http://www.ibm.com/developerworks/library/j-clojure-protocols/
+% \item Ruby mixin
+% \item JS mixin
+% \end{itemize}
 
-They are all dynamically typed.
+% They are all dynamically typed.
 
-\subsection{Statically typed Delegation-based Languages}
+\paragraph{Delegation-based Languages, dynamically or statically}
+
+SELF~\cite{chambers1991parents} is a dynamically typed, prototype-based
+language. It offers a simple, pure, classless object model. SELF's inheritance
+system supports a so-called \textit{prioritized multiple inheritance}. Parents
+of a object are given priorities, with the higher-priory parents taking
+precedence over the lower-priority parents if any names clashes. Parents of the
+same priorities are unordered, and access to any clashing methods will generate
+a ``messageAmbiguous'' error at run-time. Like (\jeremy{or unlike?}) \name, it
+also support dynamic inheritance (which, in our terminology, should be called
+mutable inheritance).
+
+There is not much work on statically-typed, delegation-based languages.
+Cecil~\cite{chambers1992object, chambers1993cecil} is a prototype-based
+language, inspired primarily by SELF, where delegation is the mechanism for
+method call and code reuse. One of the design goals of Cecil is to support
+multiple dispatching in a data-abstraction-oriented programming style. Cecil
+supports a static type system which is layered on top of the dynamically-typed
+core language, though no formal typing rules are given. The type system supports
+parametric polymorphism, in addition to the inclusion polymorphism supported
+through subtyping. Similar to \name, the type check is able to detect statically
+when a message might be ambiguously defined as a result of multiple inheritance
+or multiple dispatching. However, one major omission of Cecil, which is also one
+of the interesting features of \name, is dynamic inheritance. Like \name, Cecil
+clearly separates inheritance of implementation and subtyping.
 
 \citet{cook1989inheritance} are the first to propose a typed model of
 inheritance where subtyping and inheritance are two separate concepts. In
@@ -71,27 +77,89 @@ somewhat similar to our merge construct. However two major differences are worth
 pointing out: 1) the \textbf{with} construct operates only on records, and 2) it
 is a biased operation, meaning the conflict is resolved by favoring values from
 its right argument. This is in sheer contrast with \name, where the merge
-construct allows merging two arbitrary terms of disjoint types. \jeremy{Cook's
-  model uses recursive types and F-bounded polymorphism to type object
-  inheritance, while we don't have recursive types.}
+construct allows merging two arbitrary terms of disjoint types to avoid
+ambiguities. Because of the differences, their model are incapable to support
+Javascript-stype mixin-based programming. Another difference is that recursive
+types and F-bounded polymorphism are used to type object inheritance, while we
+currently do not support recursive types.
+
+\paragraph{Mixins and traits} \citet{bracha1990mixin}'s seminal paper extends
+Modula-3 with mixins. Mixins are subclasses parameterized over a superclass, and
+used to produce a variety of classes with the same functionality and behaviour.
+Mixin-based inheritance requires that mixins be composed linearly, and as such,
+conflicts are resolved implicitly (mixins appearing later overwrite all the
+identically named features of earlier mixins). In comparison, the trait model in
+\name requires conflicts be resolved explicitly.
+
+\citet{flatt1998classes} proposed MIXEDJAVA, an extension to a subset of
+sequential Java called CLASSICJAVA with mixins. In their model, mixins
+completely subsume the role of classes (classes are mixins that do not inherit
+any services). One interesting aspect in their system is that two identically
+named methods are allowed to coexist, and are resolved at run-time with run-time
+context information provided by the current \textit{view} of an object. In
+comparison, conflicts in \name are detected statically, and resolved by the
+programmers. Like \name, their model also enforces the distinction between
+implementation inheritance and subtyping.
 
 
 
+Figure~\ref{fig:comparision} shows the comparisons between \name and various
+similar languages.
+
+\begin{figure}[t]
+  \centering
+  \begin{tabular}{l|ccccc}
+    \hline
+    & \bf{Statically typed} & \bf{Polymorphism} & \bf{Covariant model} & \bf{Dynamic inheritance}  \\
+    \hline
+    \name & \cmark & \cmark & \xmark & \cmark \\
+    \hline
+    SELF & \xmark & \xmark & \xmark & \cmark \\
+    \hline
+    Cecil & \cmark & \cmark & \xmark & \xmark \\
+    \hline
+    IFJ & ? & ? & ? & ? \\
+    % \hline
+    % Scala & \cmark & \cmark & \cmark & \xmark \\
+    % \hline
+    % Java & \cmark & \cmark & \cmark & \xmark
+
+  \end{tabular}
+  \caption{Comparison between \name and various similar languages.}
+  \label{fig:comparision}
+\end{figure}
 
 
+
+\begin{comment}
 
 \begin{itemize}
-\item read ``Inheritance is not subtyping'', notice their ``with'' construct can
-  only merge records, problematic to encode the extend operator used in JS style
-  mixin, it's also a biased operation.
 
-\item ``mixin-based inheritance''
 
-\item ``Dynamically composable collaborations with delegation layers''
+\item ``Object-Oriented Multi-Methods in Cecil''
+
+\item ``Dimensions of Object-Based Language Design''
+
+\item ``On the Semantic Diversity of Delegation-Based Programming Languages''
+
+\item ``Delegation by object composition''
+
+\item ``Self: The power of simplicity''
 
 \item ``Type-safe delegation for run-time component adaptation''
 
 \item ``A delegation-based object calculus with subtyping''
+
+\item ``Dynamically composable collaborations with delegation layers''
+
+
+\item ``Inheritance is not subtyping''
+
+\item ``mixin-based inheritance''
+
+\item ``Classes and mixins''
+
+\item ``Jam—Designing a Java Extension with Mixins''
 
 \item ``Big Bang Designing a Statically-Typed Scripting Language''
 
@@ -100,13 +168,15 @@ construct allows merging two arbitrary terms of disjoint types. \jeremy{Cook's
 
 \item ``An imperative, first-order calculus with object extension''
 
-\item ``Object-Oriented Multi-Methods in Cecil''
-
 \end{itemize}
 
 Do they have polymorphic type systems? Do they support mutable self reference?
 
-\subsection{Class-based Languages with More Advanced Form of Inheritance}
+\end{comment}
+
+
+\paragraph{Class-based Languages with More Advanced Form of Inheritance}
+
 
 \begin{itemize}
 \item Eiffel
@@ -115,5 +185,12 @@ Do they have polymorphic type systems? Do they support mutable self reference?
 \item ``Object-Oriented Composition Untangled''
 % \item https://pdfs.semanticscholar.org/7a0a/b7ffce1c1e1195832502d6cb7ace0646596e.pdf
 \item ``Engineering a programming language: The type and class system of Sather ''
+
+\item{``A prototypical java-like language with records and traits''}
+
+\item ``A core calculus of classes and mixins''
+
+\item ``A core calculus of higher-order mixins and classes''
+
 \end{itemize}
 
