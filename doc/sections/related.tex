@@ -44,6 +44,8 @@ operator. \bname serves the theoretical foundation of \name.
 
 \paragraph{Delegation-based Languages, dynamically or statically}
 
+\citet{lieberman1986using} is the first to promote the use of prototypes and
+delegation as the mechanism to code sharing between objects.
 SELF~\cite{chambers1991parents} is a dynamically typed, prototype-based
 language. It offers a simple, pure, classless object model. SELF's inheritance
 system supports a so-called \textit{prioritized multiple inheritance}. Parents
@@ -55,18 +57,20 @@ also support dynamic inheritance (which, in our terminology, should be called
 mutable inheritance).
 
 There is not much work on statically-typed, delegation-based languages.
-Cecil~\cite{chambers1992object, chambers1993cecil} is a prototype-based
-language, inspired primarily by SELF, where delegation is the mechanism for
-method call and code reuse. One of the design goals of Cecil is to support
-multiple dispatching in a data-abstraction-oriented programming style. Cecil
-supports a static type system which is layered on top of the dynamically-typed
-core language, though no formal typing rules are given. The type system supports
-parametric polymorphism, in addition to the inclusion polymorphism supported
-through subtyping. Similar to \name, the type check is able to detect statically
-when a message might be ambiguously defined as a result of multiple inheritance
-or multiple dispatching. However, one major omission of Cecil, which is also one
-of the interesting features of \name, is dynamic inheritance. Like \name, Cecil
-clearly separates inheritance of implementation and subtyping.
+\citet{kniesel1999type} provides a good overview of problems when combining
+delegation with s static type discipline. Cecil~\cite{chambers1992object,
+  chambers1993cecil} is a prototype-based language, inspired primarily by SELF,
+where delegation is the mechanism for method call and code reuse. One of the
+design goals of Cecil is to support multiple dispatching in a
+data-abstraction-oriented programming style. Cecil supports a static type system
+which is layered on top of the dynamically-typed core language, though no formal
+typing rules are given. The type system supports parametric polymorphism, in
+addition to the inclusion polymorphism supported through subtyping. Similar to
+\name, the type check is able to detect statically when a message might be
+ambiguously defined as a result of multiple inheritance or multiple dispatching.
+However, one major omission of Cecil, which is also one of the interesting
+features of \name, is dynamic inheritance. Like \name, Cecil clearly separates
+inheritance of implementation and subtyping.
 
 \citet{cook1989inheritance} are the first to propose a typed model of
 inheritance where subtyping and inheritance are two separate concepts. In
@@ -101,34 +105,7 @@ comparison, conflicts in \name are detected statically, and resolved by the
 programmers. Like \name, their model also enforces the distinction between
 implementation inheritance and subtyping.
 
-
-
-Figure~\ref{fig:comparision} shows the comparisons between \name and various
-similar languages.
-
-\begin{figure}[t]
-  \centering
-  \begin{tabular}{l|ccccc}
-    \hline
-    & \bf{Statically typed} & \bf{Polymorphism} & \bf{Covariant model} & \bf{Dynamic inheritance}  \\
-    \hline
-    \name & \cmark & \cmark & \xmark & \cmark \\
-    \hline
-    SELF & \xmark & \xmark & \xmark & \cmark \\
-    \hline
-    Cecil & \cmark & \cmark & \xmark & \xmark \\
-    \hline
-    IFJ & ? & ? & ? & ? \\
-    % \hline
-    % Scala & \cmark & \cmark & \cmark & \xmark \\
-    % \hline
-    % Java & \cmark & \cmark & \cmark & \xmark
-
-  \end{tabular}
-  \caption{Comparison between \name and various similar languages.}
-  \label{fig:comparision}
-\end{figure}
-
+\jeremy{and more mixin-based languages?}
 
 
 \begin{comment}
@@ -138,11 +115,11 @@ similar languages.
 
 \item ``Object-Oriented Multi-Methods in Cecil''
 
+\item ``Dynamically composable collaborations with delegation layers''
+
 \item ``Dimensions of Object-Based Language Design''
 
 \item ``On the Semantic Diversity of Delegation-Based Programming Languages''
-
-\item ``Delegation by object composition''
 
 \item ``Self: The power of simplicity''
 
@@ -150,10 +127,12 @@ similar languages.
 
 \item ``A delegation-based object calculus with subtyping''
 
-\item ``Dynamically composable collaborations with delegation layers''
-
+\item ``Can Addresses be Types? (a case study: objects with delegation)''
 
 \item ``Inheritance is not subtyping''
+
+
+Mixins
 
 \item ``mixin-based inheritance''
 
@@ -177,11 +156,77 @@ Do they have polymorphic type systems? Do they support mutable self reference?
 
 \paragraph{Class-based Languages with More Advanced Form of Inheritance}
 
+\citet{kniesel1999type} is the first to show that type-safe integration of
+delegation with subtyping into a class-based model is possible, resulting in the
+DARWIN model. In the DARWIN model, the type of the parent object must be a
+declared class and this limits the flexibility of dynamic composition, whereas
+in \name, the merge operator can merge/compose any objects. Another difference
+with \name lies in the conflict resolution, where DARWIN relies on method
+overriding with the assumption that the author of the overriding method is aware
+of the effect.
+
+
+Incomplete Featherweight Java (IFJ), proposed by \citet{bettini2008type}, is a
+conservative extension of Featherweight Java with incomplete objects. Besides
+standard classes, programmers can also define incomplete classes, whose
+instances are incomplete objects. Incomplete objects can be composed (by object
+composition) with complete objects, yielding new complete objects at run-time,
+while ensuring statically that the composition is type safe. Incomplete classes
+can declare some methods as ``incomplete'', either abstract or redefining, and
+the body of these methods must be provided during object composition, which is
+quite similar to traits with requirements in \name. However, object composition
+in IFJ is quite restrictive, compared to \name, in that it can only compose a
+incomplete object with a complete object, resulting in a new complete object.
+Therefore two complete objects cannot be composed. IFJ support a sort of dynamic
+inheritance since composition permits supplying at run-time the missing methods
+with those of other objects. Similar to \name, subtyping and inheritance need
+not to be connected (incomplete class inheritance does not imply subtyping). A
+major difference with \name is that, though IFJ is type safe, it relies on a
+special method body lookup strategy to resolve method name clashes. Lastly, the
+type system is not polymorphic.
+
+
+
+Figure~\ref{fig:comparision} shows the comparisons between \name and various
+similar languages.
+
+\begin{figure}[t]
+  \centering
+  \begin{tabular}{l|ccccc}
+    \hline
+    & \bf{Statically typed} & \bf{Polymorphism} & \bf{Covariant model} & \bf{Dynamic inheritance}  \\
+    \hline
+    \name & \cmark & \cmark & \xmark & \cmark \\
+    \hline
+    SELF & \xmark & \xmark & \xmark & \cmark \\
+    \hline
+    Cecil & \cmark & \cmark & \xmark & \xmark \\
+    \hline
+    IFJ & \cmark & \xmark & \xmark & \cmark \\
+    % \hline
+    % Scala & \cmark & \cmark & \cmark & \xmark \\
+    % \hline
+    % Java & \cmark & \cmark & \cmark & \xmark
+
+  \end{tabular}
+  \caption{Comparison between \name and various similar languages.}
+  \label{fig:comparision}
+\end{figure}
+
+
+
+
+\begin{comment}
 
 \begin{itemize}
+
 \item Eiffel
 
+\item ``Delegation by object composition'' (IFJ) and ``Type safe dynamic object delegation in class-based languages''
+
+
 \item ``Nominal and Structural Subtyping in Component-Based Programming''
+
 \item ``Object-Oriented Composition Untangled''
 % \item https://pdfs.semanticscholar.org/7a0a/b7ffce1c1e1195832502d6cb7ace0646596e.pdf
 \item ``Engineering a programming language: The type and class system of Sather ''
@@ -194,3 +239,4 @@ Do they have polymorphic type systems? Do they support mutable self reference?
 
 \end{itemize}
 
+\end{comment}
