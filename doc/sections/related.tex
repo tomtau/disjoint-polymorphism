@@ -1,5 +1,9 @@
 \section{Related Work}
 
+Figure~\ref{fig:comparision} shows the comparisons between \name and various
+similar languages.
+
+
 \paragraph{(Disjoint) Intersection Types, Merge Operator}
 
 There is a large body of work on studying intersection types. Dating back to
@@ -50,15 +54,17 @@ SELF~\cite{chambers1991parents} is a dynamically typed, prototype-based
 language. It offers a simple, pure, classless object model. SELF's inheritance
 system supports a so-called \textit{prioritized multiple inheritance}. Parents
 of a object are given priorities, with the higher-priory parents taking
-precedence over the lower-priority parents if any names clashes. Parents of the
+precedence over the lower-priority parents if any name clashes. Parents of the
 same priorities are unordered, and access to any clashing methods will generate
 a ``messageAmbiguous'' error at run-time. Like (\jeremy{or unlike?}) \name, it
 also support dynamic inheritance (which, in our terminology, should be called
-mutable inheritance).
+mutable inheritance). Further discussion on delegation can be found
+in~\citet{wegner1987dimensions,malenfant1995semantic}.
+
 
 There is not much work on statically-typed, delegation-based languages.
 \citet{kniesel1999type} provides a good overview of problems when combining
-delegation with s static type discipline. Cecil~\cite{chambers1992object,
+delegation with a static type discipline. Cecil~\cite{chambers1992object,
   chambers1993cecil} is a prototype-based language, inspired primarily by SELF,
 where delegation is the mechanism for method call and code reuse. One of the
 design goals of Cecil is to support multiple dispatching in a
@@ -87,6 +93,18 @@ Javascript-stype mixin-based programming. Another difference is that recursive
 types and F-bounded polymorphism are used to type object inheritance, while we
 currently do not support recursive types.
 
+\citet{anderson2003can} presents a type system for an imperative object based
+calculus with delegation, whereas \name's objects are purely functional. Unlike
+\name, their type system does not support polymorphism.
+
+The BigBang language~\cite{palmer2015building,menon2012big} has an interesting
+language construct called the onion. At first sight, it looks quite like our
+merge construct in that it can be used to concatenate two objects. However, a
+crucial different with the merge construct is that, onion concatenation is
+asymmetric -- it is a left-associative operator which gives rightmost
+precedence.
+
+
 \paragraph{Mixins and traits} \citet{bracha1990mixin}'s seminal paper extends
 Modula-3 with mixins. Mixins are subclasses parameterized over a superclass, and
 used to produce a variety of classes with the same functionality and behaviour.
@@ -105,7 +123,7 @@ comparison, conflicts in \name are detected statically, and resolved by the
 programmers. Like \name, their model also enforces the distinction between
 implementation inheritance and subtyping.
 
-\jeremy{and more mixin-based languages?}
+\jeremy{and more mixin-based languages coming}
 
 
 \begin{comment}
@@ -114,8 +132,6 @@ implementation inheritance and subtyping.
 
 
 \item ``Object-Oriented Multi-Methods in Cecil''
-
-\item ``Dynamically composable collaborations with delegation layers''
 
 \item ``Dimensions of Object-Based Language Design''
 
@@ -138,14 +154,17 @@ Mixins
 
 \item ``Classes and mixins''
 
+\item ``A core calculus of classes and mixins''
+
+\item ``A core calculus of higher-order mixins and classes''
+
 \item ``Jam—Designing a Java Extension with Mixins''
 
 \item ``Big Bang Designing a Statically-Typed Scripting Language''
 
 \item ``Building a Typed Scripting Language''
-  % https://jscholarship.library.jhu.edu/bitstream/handle/1774.2/39502/PALMER-DISSERTATION-2015.pdf?sequence=1&isAllowed=y
 
-\item ``An imperative, first-order calculus with object extension''
+
 
 \end{itemize}
 
@@ -165,6 +184,16 @@ with \name lies in the conflict resolution, where DARWIN relies on method
 overriding with the assumption that the author of the overriding method is aware
 of the effect.
 
+Generic wrappers~\cite{buchi2000generic} supports aggregating objects at
+run-time. In their model, once a ``wrappee'' is assigned to a ``wrapper'', the
+wrappee is fixed. GBETA~\cite{ernst2000gbeta} has some dynamic features that are
+related to delegation. Like Generic wrappers, parents in GBETA are fixed at
+run-time.
+
+\citet{ostermann2001object} proposed compound references (CR) as a abstraction
+for object references, which provides explicit linguistic support for combining
+different composition properties on-demand. The model is statically typed, and
+decouples subtype declaration from implementation reuse.
 
 Incomplete Featherweight Java (IFJ), proposed by \citet{bettini2008type}, is a
 conservative extension of Featherweight Java with incomplete objects. Besides
@@ -182,13 +211,19 @@ inheritance since composition permits supplying at run-time the missing methods
 with those of other objects. Similar to \name, subtyping and inheritance need
 not to be connected (incomplete class inheritance does not imply subtyping). A
 major difference with \name is that, though IFJ is type safe, it relies on a
-special method body lookup strategy to resolve method name clashes. Lastly, the
+special method body lookup strategy to resolve method name clashes. Also, their
 type system is not polymorphic.
 
+\citet{ostermann2002dynamically} proposed delegation layers as an approach to
+decompose a collaboration into layers and compose these layers dynamically at
+run-time. This combines and generalizes delegation and virtual classes concepts.
+
+\citet{ostermann2008nominal} compared the nominal and structural subtyping
+mechanisms. They argue nominal subtyping gives more safety guarantee, whereas
+structural subtyping is more flexible from a component-based perspective. The
+type system of \name chooses structural subtyping.
 
 
-Figure~\ref{fig:comparision} shows the comparisons between \name and various
-similar languages.
 
 \begin{figure}[t]
   \centering
@@ -222,20 +257,23 @@ similar languages.
 
 \item Eiffel
 
-\item ``Delegation by object composition'' (IFJ) and ``Type safe dynamic object delegation in class-based languages''
+\item ``Delegation by object composition'' (IFJ) and ``Type safe dynamic object
+  delegation in class-based languages''
 
+\item ``Dynamically composable collaborations with delegation layers''
+
+\item ``Generic wrappers''
+
+\item ``Object-Oriented Composition Untangled''
+
+\item ``gbeta - a language with virtual attributes, Block Structure, and Propagating, Dynamic Inheritance''
 
 \item ``Nominal and Structural Subtyping in Component-Based Programming''
 
-\item ``Object-Oriented Composition Untangled''
-% \item https://pdfs.semanticscholar.org/7a0a/b7ffce1c1e1195832502d6cb7ace0646596e.pdf
 \item ``Engineering a programming language: The type and class system of Sather ''
 
-\item{``A prototypical java-like language with records and traits''}
+\item ``A prototypical java-like language with records and traits''
 
-\item ``A core calculus of classes and mixins''
-
-\item ``A core calculus of higher-order mixins and classes''
 
 \end{itemize}
 
