@@ -1,4 +1,6 @@
 \section{Introduction}
+\label{sec:intro}
+
 
 Mainstream statically-typed Object-Oriented Programming (OOP) languages (such as Java,
 C++ C\# or Scala) all use a similar programming model based on
@@ -129,18 +131,19 @@ model, which is simple, and well-understood by programmers.
 %Indeed a famous instance of this is the design of DART
 
 This paper has three primary goals. The first goal is to argue that the
-covariant model significantly restricts statically-typed OOP
-programming in terms of modularity and reuse for important practical
-applications. The second goal to identify additional desirable
-features that improve flexibility of OOP and are needed in practice.
-In particular we argue that supporting a more \emph{dynamic}
-form of inheritance (where concrete implementations of the inherited
-code are possibly unknown) is highly desirable in practice. Thus 
-we are naturally led to a OO language design using \emph{delegation} (or \emph{dynamic inheritance}).
-Finally, we present \name: a programming language that puts these 
-ideas into practice using a type system based on 
-\emph{disjoint intersection types}~\cite{oliveira2016disjoint} and \emph{disjoint
-polymorphism}~\cite{alpuimdisjoint}.
+covariant model significantly restricts statically-typed OOP programming in
+terms of modularity and reuse for important practical applications. The second
+goal to identify additional desirable features that improve flexibility of OOP
+and are needed in practice. In particular we argue that supporting a more
+\emph{dynamic} form of inheritance (where concrete implementations of the
+inherited code are possibly unknown) is highly desirable in practice. Thus we
+are naturally led to a OO language design using \emph{delegation} (or
+\emph{dynamic inheritance}). Finally, we present \name: a purely functional OO
+language that puts these ideas into practice using a polymorphic structural type
+system based on \emph{disjoint intersection types}~\cite{oliveira2016disjoint}
+and \emph{disjoint polymorphism}~\cite{alpuimdisjoint}. The choice of structural
+typing is simply due to simplicity, but we think similar ideas should also work
+in a nominal type system.
 
 Regarding the first goal, we argue that there are at least two
 applications areas where the inflexibility of type systems of

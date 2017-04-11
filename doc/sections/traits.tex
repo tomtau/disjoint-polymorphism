@@ -3,11 +3,8 @@
 \label{sec:traits}
 
 \bruno{Should we say something about structural typing, purely
-  functional? if so, where? here? the introduction?} 
-%\name is a purely functional OO language with a polymorphic 
-%structural type system based on disjoint intersection types~\cite{}.
-%The choice of structural typing is simply due to simplicity, but we
-%similar ideas should also work in a nominal 
+  functional? if so, where? here? the introduction?} \jeremy{moved to
+  introduction, page 2, line 25}
 
 This section introduces and showcases the features of \name. 
 In this section we focus on \name's native support
@@ -15,14 +12,13 @@ for dynamically composable traits. We demonstrate that \name overcomes all those
 limitations mentioned in Section~\ref{sec:critique}.
 
 We describe a representation of graphical objects such as circles, ovals, or
-buttons as our running example. The example is illustrative of typical
-uses of JavaScript style mixins, and it is adapted from an online
+buttons as our running example. The example is illustrative of typical uses of
+JavaScript-style mixins, and it is adapted from an online
 tutorial~\footnote{\url{https://javascriptweblog.wordpress.com/2011/05/31/a-fresh-look-at-javascript-mixins/}}
-on JavaScript mixins.
-We will use traits to structure the representation and factor out reusable
-components. Along the way, we also explain briefly how various features in \name
-are encoded behind the scene. All code snippets in this section are runnable in
-our prototype implementation.
+on JavaScript mixins. We will use traits to structure the representation and
+factor out reusable components. Along the way, we also explain briefly how
+various features in \name are encoded behind the scene. All code snippets in
+this and later sections are runnable in our prototype implementation.
 
 \subsection{Simple Traits}
 
@@ -33,7 +29,7 @@ disciplined forms of multiple inheritance. One interesting aspect
 about traits is the way conflicting features that are typical arise in
 multiple inheritance are dealt with. Instead of automatically resolved
 by scoping rules, conflicts are detected by the type system, and
-programmers are required to explicitly resolve them.
+explicitly resolved by the programmer.
 
 There are three interesting points about \name's traits: 1) they are
 \emph{statically typed}; 2) they support \emph{constructors}; and 3)
@@ -91,14 +87,14 @@ The trait \lstinline{point} provides a simple example of trait
 declarations in \name. The following discussions illustrate 
 some fundamental features of \name's traits.
 
-\paragraph{Traits as templates for creating objects} A first an
-obvious difference of traits in \name to many other models of traits
-is that they directly serve as templates for objects. In many other
-trait models~\cite{}, traits are complemented by classes, which take 
-the responsability for object creation. In particular, most models
-of traits do not allow constructors for traits. As the
-\lstinline{point} definition illustrates, however, traits in \name 
-have a single constructor, which can have an arbitrary number of arguments.
+\paragraph{Traits as templates for creating objects} An obvious difference of
+traits in \name to many other models of traits is that they directly serve as
+templates for objects. In many other trait
+models~\cite{scharli2003traits,fisher2004typed,odersky2005scalable}, traits are
+complemented by classes, which take the responsability for object creation. In
+particular, most models of traits do not allow constructors for traits. As the
+\lstinline{point} definition illustrates, however, traits in \name have a single
+constructor, which can have an arbitrary number of arguments.
 
 \paragraph{Trait requirements versus provided functionality}
 When modelling a trait there are two important 
@@ -136,7 +132,7 @@ A trait can be extended by inheriting all members of
 other traits, and defining additional members. This is, in some sense, similar
 to class inheritance in traditional OO languages. Traits can inherit
 from one or more traits, provided that
-no conflicts arize. The trait \lstinline$circle$ extends
+no conflicts arise. The trait \lstinline$circle$ extends
 \lstinline{point} with an extra field \lstinline{radius}.
 \lstinputlisting[linerange=18-21]{../examples/box.txt}% APPLY:linerange=CIRCLE_DEF
 
@@ -144,19 +140,17 @@ The keyword \lstinline{inherits} is one of the two options in \name to introduce
 inheritance. In the above example, trait \lstinline{circle} inherits from trait
 \lstinline{point} two methods \lstinline{x} and \lstinline{y} plus its own
 method \lstinline{radius}.\bruno{Should we talk about the second
-  option here?}
+  option here?} \jeremy{it's mentioned later on.}
 
 \paragraph{Intersection types model subtyping}
 The type \lstinline{Circle} is defined as the intersection of type
-\lstinline{Point} and a record type with the field
-\lstinline{radious}. An intersection
-type~\cite{dunfield2014elaborating}~\bruno{Dunfield did not invent
-  intersection types. Put the appropriate reference here.} such as \lstinline{A & B} contains exactly
-those values which can be used as values of type \lstinline{A} and of type
-\lstinline{B}. As such, \lstinline{A & B} immediately introduces a subtyping
-relation between itself and its two component types \lstinline{A} and
-\lstinline{B}. In the previous example, \lstinline{Circle} is, unsurprisingly, a subtype of
-\lstinline{Point}.
+\lstinline{Point} and a record type with the field \lstinline{radious}. An
+intersection type~\cite{coppo1981functional,pottinger1980type} such as
+\lstinline{A & B} contains exactly those values which can be used as values of
+type \lstinline{A} and of type \lstinline{B}. As such, \lstinline{A & B}
+immediately introduces a subtyping relation between itself and its two
+constituent types \lstinline{A} and \lstinline{B}. In the previous example,
+\lstinline{Circle} is, unsurprisingly, a subtype of \lstinline{Point}.
 
 \paragraph{Inheritance and subtyping are separated}
 Now it is clear that, unlike the common covariant
@@ -188,11 +182,9 @@ by having an \emph{abstract} radius definition. In \name there are no
 abstract definitions (method or fields), but we can express a
 requirement on the trait to achieve a similar result. 
 
-Requirements 
-are satisfied at object creation time.
-When \lstinline$circleFns$ is instantiated and
-composed with other traits, it must be composed with an implementation of
-\lstinline$Circle$. For example:
+Requirements are satisfied at object creation time. When \lstinline$circleFns$
+is instantiated and composed with other traits, it must be composed with an
+implementation of \lstinline$Circle$. For example:
 \lstinputlisting[linerange=42-42]{../examples/box.txt}% APPLY:linerange=CIRCLE_FULL
 
 The object \lstinline{circleWithFns} enables us to call
@@ -200,12 +192,12 @@ methods from different traits on a single object, such as
 \lstinline{circleWithFns.area()} and \lstinline{circleWithFns.radius}.
 
 \paragraph{Composition of traits}
-The definition \lstinline{circleWithFns} also shows the second option to introduce inheritance, namely by
-\textit{composition} of traits. Composition of traits is denoted by
-the operator \lstinline{&}.  
-Thus \name offers two options when using inheritance: we can either compose beforehand
-when declaring traits (using \lstinline{inherits}), or compose at the object
-creation point (using \lstinline{new} and \lstinline{&} operator).
+The definition \lstinline{circleWithFns} also shows the second option to
+introduce inheritance, namely by \textit{composition} of traits. Composition of
+traits is denoted by the operator \lstinline{&}. Thus \name offers two options
+when it comes to inheritance: we can either compose beforehand when declaring
+traits (using \lstinline{inherits}), or compose at the object creation point
+(using \lstinline{new} and \lstinline{&} operator).
 
 %Under the hood, inheritance is accomplished by using the \textit{merge operator}
 %(denoted by \lstinline{,,}). The merge operator~\cite{dunfield2014elaborating}
@@ -248,7 +240,7 @@ The following trait gets rejected because both \lstinline{asOval} and
 \lstinline{circle} have a conflicting \lstinline{radius} method.
 \lstinputlisting[linerange=82-83]{../examples/box.txt}% APPLY:linerange=CONFLICT_DEF
 
-\noindent As mentioned in Section~\ref{} \name's type system is based
+\noindent As mentioned in Section~\ref{sec:intro} \name's type system is based
 on intersection types. More concretely, \name uses a type system based
 on \emph{disjoint intersection types}~\cite{oliveira2016disjoint}. Disjointness, in its simplest
 form, means that the set of values of both types are disjoint. The above
@@ -263,11 +255,15 @@ To resolve the conflict, the programmer needs to explicitly state which
 avoid a conflict before it occurs. The following is one choice, and is accepted
 by \name again.
 \lstinputlisting[linerange=89-90]{../examples/box.txt}% APPLY:linerange=CONFLICT_RESOLVE
+
+\noindent Note that because of the disjointness condition, the exclusion
+operator is able to pinpoint the exact field given a label and a type.
+
 \bruno{As I mentioned before, this exclusion operator is not very
   adequate for a system with disjoint intersection types, since our
   notion of disjointness is not purely based on names: we account for
   types as well! So restriction should take into account the types of
-  the fields.}
+  the fields.} \jeremy{fixed}
 
 \subsection{Dynamic Instantiation}
 
@@ -276,7 +272,7 @@ quite dynamic: we are able to compose traits \textit{dynamically} and then
 instantiate them later. This is impossible in traditional OO language, such as
 Java, since classes being instantiated must be known statically. In \name, as we
 will explain in Section~\ref{sec:desugar}, traits are just terms: they are
-first-class values and can be passed around or returned from a function.
+first-class values and can be passed around or returned from other functions.
 
 Let us extend the functions of circles by another method \lstinline{inCircle},
 which, given a point, tests if the point lies inside the circle.
@@ -305,4 +301,6 @@ round button that provides \lstinline{inCircle} method with Euclidean norm baked
 in.
 \lstinputlisting[linerange=118-118]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST2
 
-\bruno{This tour doesn't go over polymorphism!}
+\bruno{This tour doesn't go over polymorphism!} \jeremy{seems hard to
+  incorporate polymorphism into the example, next section mentions it when
+  polymorphism first appears}

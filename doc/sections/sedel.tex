@@ -47,10 +47,12 @@ evaluation. The initial system constitutes expressions with two variants
 (literals and addition), as depicted below:
 \lstinputlisting[linerange=4-7]{../examples/visitor.txt}% APPLY:linerange=ALGEBRA_DEF
 
-\noindent The type \lstinline{ExpAlg[E]}, constitutes the
-so-called Object Algebra interface. The first component abstracts over the type
-of literal expressions (\lstinline{Int -> E}). The second component abstracts
-over the type of addition expression (\lstinline{E -> E -> E}).
+\noindent The type \lstinline{ExpAlg[E]}, constitutes the so-called Object
+Algebra interface. The first component abstracts over the type of literal
+expressions (\lstinline{Int -> E}). The second component abstracts over the type
+of addition expression (\lstinline{E -> E -> E}). \name supports parametric
+polymorphism, and type variables are identifiers beginning with uppercase
+letters.
 
 \paragraph{Operations.} Defining operations over expressions requires
 implementing \lstinline{ExpAlg[E]}. An interesting operation over expressions is
