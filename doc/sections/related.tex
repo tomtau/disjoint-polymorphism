@@ -93,7 +93,7 @@ Javascript-stype mixin-based programming. Another difference is that recursive
 types and F-bounded polymorphism are used to type object inheritance, while we
 currently do not support recursive types.
 
-\citet{anderson2003can} presents a type system for an imperative object based
+\citet{anderson2003can} presents a type system for an imperative object-based
 calculus with delegation, whereas \name's objects are purely functional. Unlike
 \name, their type system does not support polymorphism.
 
@@ -105,13 +105,13 @@ asymmetric -- it is a left-associative operator which gives rightmost
 precedence.
 
 
-\paragraph{Mixins and traits} \citet{bracha1990mixin}'s seminal paper extends
-Modula-3 with mixins. Mixins are subclasses parameterized over a superclass, and
-used to produce a variety of classes with the same functionality and behaviour.
-Mixin-based inheritance requires that mixins be composed linearly, and as such,
-conflicts are resolved implicitly (mixins appearing later overwrite all the
-identically named features of earlier mixins). In comparison, the trait model in
-\name requires conflicts be resolved explicitly.
+\paragraph{Mixin-based inheritance} \citet{bracha1990mixin}'s seminal paper
+extends Modula-3 with mixins. Mixins are subclasses parameterized over a
+superclass, and used to produce a variety of classes with the same functionality
+and behaviour. Mixin-based inheritance requires that mixins be composed
+linearly, and as such, conflicts are resolved implicitly (mixins appearing later
+overwrite all the identically named features of earlier mixins). In comparison,
+the trait model in \name requires conflicts be resolved explicitly.
 
 \citet{flatt1998classes} proposed MIXEDJAVA, an extension to a subset of
 sequential Java called CLASSICJAVA with mixins. In their model, mixins
@@ -123,7 +123,17 @@ comparison, conflicts in \name are detected statically, and resolved by the
 programmers. Like \name, their model also enforces the distinction between
 implementation inheritance and subtyping.
 
-\jeremy{and more mixin-based languages coming}
+\citet{bono1999core} develop an imperative class-based calculus that provides a
+formal model for both single and mixin inheritance. Objects are represented by
+records and produced by instantiating classes. In their calculus, the class
+construct is extensible but not subtypable, while objects are subtypable but not
+extensible. Like \name, their system has a clean separation between subtyping
+and inheritance. Also, their type system does not have polymorphism.
+
+\citet{ancona2003jam} extends the Java language to support mixins, called Jam.
+Since Jam is an upward-compatible extension of Java 1.0, it is inheritantly a
+covariant mode. Unlike MIXEDJAVA, mixins can be only instantiated on classes,
+and there is no notion of mixin composition.
 
 
 \begin{comment}
@@ -159,10 +169,6 @@ Mixins
 \item ``A core calculus of higher-order mixins and classes''
 
 \item ``Jam—Designing a Java Extension with Mixins''
-
-\item ``Big Bang Designing a Statically-Typed Scripting Language''
-
-\item ``Building a Typed Scripting Language''
 
 
 
@@ -273,6 +279,11 @@ type system of \name chooses structural subtyping.
 \item ``Engineering a programming language: The type and class system of Sather ''
 
 \item ``A prototypical java-like language with records and traits''
+
+\item ``Big Bang Designing a Statically-Typed Scripting Language''
+
+\item ``Building a Typed Scripting Language''
+
 
 
 \end{itemize}
