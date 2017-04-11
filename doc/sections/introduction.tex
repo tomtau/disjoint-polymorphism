@@ -3,7 +3,7 @@
 Mainstream statically-typed Object-Oriented Programming (OOP) languages (such as Java,
 C++ C\# or Scala) all use a similar programming model based on
 classes. This programming model has its roots on the
-origins of OOP in the 1960's in the Simula~\cite{} language. 
+origins of OOP in the 1960's in the Simula~\cite{dahl1967simula} language.
 We will refer to this model as the \emph{covariant model} for the
 remainder of this paper, because in this model inheritance and
 subtyping vary in the same way. More concretely
@@ -34,7 +34,7 @@ earliest works on the theory of OOP and subtyping, we have known that
 the covariant view of objects is somewhat simplified. Already in
 Cardelli's~\cite{} earliest work on the theoretic foundations of OOP,
 we knew that functions do not behave in a strictly covariant way. 
-However it was only until Cook et al.~\cite{} famous paper on
+However it was only until \citet{cook1989inheritance}'s famous paper on
 ``\emph{Inheritance is not Subtyping}'' that the issues were discussed 
 in more detail. As Cook et al. argued inheritance and
 subtyping are different relations: subtyping being a relation on types 
@@ -139,15 +139,15 @@ code are possibly unknown) is highly desirable in practice. Thus
 we are naturally led to a OO language design using \emph{delegation} (or \emph{dynamic inheritance}).
 Finally, we present \name: a programming language that puts these 
 ideas into practice using a type system based on 
-\emph{disjoint intersection types}~\cite{} and \emph{disjoint
-polymorphism}~\cite{}.
+\emph{disjoint intersection types}~\cite{oliveira2016disjoint} and \emph{disjoint
+polymorphism}~\cite{alpuimdisjoint}.
 
 Regarding the first goal, we argue that there are at least two
 applications areas where the inflexibility of type systems of
 mainstream statically-typed OOP languages is problematic.
 
 \paragraph{\bf JavaScript-style Mixin-Based Programming}
-A common programming pattern in JavaScript is based variant of
+A common programming pattern in JavaScript is based on a variant of
 Mixins. This programming style is very flexible and enables forms 
 of reuse not usually available in more statically typed languages like Java.
 However, mixins in JavaScript fundamentally rely on an \emph{object-level composition}
@@ -157,7 +157,7 @@ statically-typed OO languages. Ideally the essence of such
 form of mixins should be capturable in statically-typed languages. 
 Languages such as TypeScript do attempt to provide better static
 type-checking support for those patterns. However, as recently illustrated 
-by the work of Alpuim et al.~\cite{}, there are several issues with such an 
+by the work of \citet{alpuimdisjoint}, there are several issues with such an
 approach, including type-unsoundness! 
 
 \paragraph{\bf Extensible Visitors and First-Class Values for Object Algebras}

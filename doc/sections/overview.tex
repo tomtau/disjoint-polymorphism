@@ -3,14 +3,14 @@
 
 This section discusses several limitations of mainstream OOP languages
 that work against modularity and reuse. The limitations discussed here
-arize in a concrete practical application: Extensible Visitors and/or
-Object Algebras. Such limitations arize from the \emph{covariant
+arise in a concrete practical application: Extensible Visitors and/or
+Object Algebras. Such limitations arise from the \emph{covariant
   model} of objects, the limitations imposed by the use of
 \emph{static inheritance} and common (overly conservative)
 \emph{restrictions} imposed by inheritance mechanisms.  Our discussion
 serves as a critique to the mechanisms present in current mainstream
 statically-typed OOP languages, and it is a motivator for the design
-of \name. Section~\ref{} shows how Object Algebras and Extensible
+of \name. Section~\ref{sec:OA} shows how Object Algebras and Extensible
 Visitors are modelled in \name.  However, independently of our work on
 \name, the critique is useful to pinpoint drawbacks that could be
 addressed differently in future work by others.
@@ -92,8 +92,7 @@ interface A inherits B super B {}
 
 \noindent Once the functionality of {\bf extends} is broken, it also
 becomes possible to inherit code without creating any subtype
-relation. This is for example the situation that is discussed by Cook
-et al.~\cite{}. 
+relation. This is for example the situation that is discussed by \citet{cook1989inheritance}.
 
 \paragraph{Contravariant Subtyping Refinement of Arguments}
 Another feature that is missing from mainstream OOP languages is 
@@ -110,11 +109,11 @@ interface B  extends A {B m();} // B extends and refines the return type of m() 
 valid form of refinement also applies to method arguments~\cite{}. However 
 the refinement on method arguments is contravariant. For an
 extended type to become a subtype under argument refinements in
-methods, it is necessary that the  that the arguments of the methods
+methods, it is necessary that the arguments of the methods
 in the subtypes become supertypes. The following example illustrates 
 this: 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=java]
 interface A  {Int m(String s);} 
 
 interface B  extends A {Int m(Object s);} // B extends and refines the return type of m()
@@ -154,7 +153,7 @@ interface ExtExp super Exp { // An extended AST becomes a supertype of the origi
 However, combined with retroactive super types, contravariant
 refinement of argument types becomes 
 much more interesting! In particular we claim that this combination is 
-helpful in dealing with modularity/reuse problems that arize in
+helpful in dealing with modularity/reuse problems that arise in
 visitors and Object Algebras. There have been several attempts 
 at making visitors extensible in the past~\cite{}. However most
 attempts usually rely on advanced type system features. With retroactive super
@@ -174,12 +173,11 @@ modelling the extended AST type. The extended type
 \lstinline{Ext}. This follows from the fact that the new
 \lstinline{accept} method takes an argument which is a subtype of the
 original accept method. Thus we get the following subtyping relation
-between the signatures of the two
-accept methods: 
+between the signatures of the two accept methods:
 
-\vspace{5pt}
-\lstinline{ExpVisitor<A>} $\to$ \lstinline{A} $<:$ \lstinline{ExtExpVisitor<A>} $\to$ \lstinline{A}
-\vspace{5pt}
+\begin{lstlisting}[mathescape=true]
+ExpVisitor<A> $\to$ A $<:$ ExtExpVisitor<A> $\to$ A
+\end{lstlisting}
 
 \noindent Here the subtype (the type on the left) is the type of the
 \lstinline{accept} method in \lstinline{Exp}, and the supertype is the type of
@@ -188,7 +186,7 @@ accept method, it is clear that the extended AST type should be a
 supertype of the original one. 
 
 Although such code cannot be expressed in Java, it is expressible in
-\name, as shown in Section~\ref{sec:dynamic}. In fact statically typed 
+\name, as shown in Section~\ref{sec:OA}. In fact statically typed
 OO languages using structural types (and which also support
 contravariant type refinement!) should be able to express 
 the example, as the subtyping relations are implict. 
@@ -204,7 +202,7 @@ inheritance. One of those common restrictions is that the same class (or trait)
 cannot be inherited twice. We illustrate this restriction using Scala
 and Scala traits (which provide a form of multiple implementation inheritance):
 
-\begin{lstlisting}
+\begin{lstlisting}[language=scala]
 trait A {def m(x : A) = x}
 
 trait B extends A with A {}
@@ -215,7 +213,7 @@ inherited twice''. At first sight such restriction appears
 reasonable. However consider the following variant of the example 
 above:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=scala]
 trait C[A] {def m(x : A) = x}
 	
 trait D extends C[Int] with C[Boolean]
@@ -232,7 +230,7 @@ same reason as the previous example: the trait \lstinline{C} is
 inherited twice. To overcome this problem, a possible solution would
 be to create two specialized versions of \lstinline{C}:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=scala]
 trait CInt {def m(x : Int) = x}
 
 trait CBoolean {def m(x : Boolean) = x}
@@ -247,7 +245,7 @@ In general, while for non-parametric classes/traits the restriction
 that inheriting the same class twice makes sense, for parametric
 classes there are situations where it would make sense to inherit 
 from the same class/trait twice. As it turns out similar situations 
-do arize in practice when defining composition operators for 
+do arise in practice when defining composition operators for
 Object Algebras, as we shall see in Section~\ref{sec:dynamic}.
 
 \subsection{No Dynamic Inheritance}
@@ -306,7 +304,7 @@ type, it is hard to build values with such types.
 %type-unsafe operations, and can result in run-time type exceptions
 %that should be caught statically instead.
 
-The need for dynamic inheritance arizes in composition operators for
+The need for dynamic inheritance arises in composition operators for
 Object Algebras~\cite{}. Although such compositions can be encoded in
 Scala using low-level meta-programming mechanisms (such as run-time
 reflection), a language-based solution would be clearly better. 
