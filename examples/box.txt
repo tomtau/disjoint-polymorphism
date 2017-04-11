@@ -87,7 +87,7 @@ trait oval(shortRadius : Double, longRadius : Double, center: Point)
 
 -- BEGIN_CONFLICT_RESOLVE
 trait oval(shortRadius : Double, longRadius : Double, center: Point)
-  inherits circle(center, shortRadius) \ radius & asOval(shortRadius, longRadius)
+  inherits circle(center, shortRadius) \ { radius : Double } & asOval(shortRadius, longRadius)
 -- END_CONFLICT_RESOLVE
 
 -- BEGIN_NORM_DEF

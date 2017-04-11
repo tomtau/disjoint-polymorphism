@@ -305,12 +305,12 @@ t \ l = t1 ~> c
 
 -}
 
-infer (Remove e l) = do
+infer (Remove e l lt) = do
   (t, e') <- infer e
   ctx <- askCtx
   t' <- expandType ctx t
-  case restrict t' l of
-    [(a, c)] -> return (a, T.UApp c e')
+  case restrict t' l lt of
+    Just (a, c) -> return (a, T.UApp c e')
     _ ->
       throwError
         (hang 2 $
@@ -672,22 +672,14 @@ recordFields = go identity
 -- τ1 \ l = τ2 ~> C
 ----------------------
 
-restrict :: Type -> Label -> [(Type, T.UExpr)]
-restrict t l =
-  case M.lookup l m of
-    Nothing -> []
-    Just s -> s
+restrict :: Type -> Label -> Type -> Maybe (Type, T.UExpr)
+restrict t l lt = go t
   where
-    m = restrictedFields t
-
-restrictedFields :: Type -> Map Label [((Type, T.UExpr))]
-restrictedFields = go
-  where
-    go (SRecT l' t') = M.fromList [(l', [(TopT, T.elam "x" T.UUnit)])]
+    go (SRecT l' t') = if l == l' && aeq lt t' then Just (TopT, T.elam "x" T.UUnit) else Nothing
     go (And t1 t2) =
       let m1 = go t1
           m2 = go t2
-          m1' = M.mapWithKey (\_ v -> map (\(t, c) -> (And t t2, T.elam "x" (T.UPair (T.UApp c (T.UP1 (T.evar "x"))) (T.UP2 (T.evar "x"))))) v) m1
-          m2' = M.mapWithKey (\_ v -> map (\(t, c) -> (And t1 t, T.elam "x" (T.UPair (T.UP1 (T.evar "x")) (T.UApp c (T.UP2 (T.evar "x")))))) v) m2
-      in M.unionWith (++) m1' m2'
-    go _ = M.empty
+          m1' = fmap (\(tt, c) -> (And tt t2, T.elam "x" (T.UPair (T.UApp c (T.UP1 (T.evar "x"))) (T.UP2 (T.evar "x"))))) m1
+          m2' = fmap (\(tt, c) -> (And t1 tt, T.elam "x" (T.UPair (T.UP1 (T.evar "x")) (T.UApp c (T.UP2 (T.evar "x")))))) m2
+      in m1' <|> m2'
+    go _ = Nothing

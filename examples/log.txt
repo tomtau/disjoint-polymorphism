@@ -27,7 +27,7 @@ trait employee(n : String, s: String) { self =>
 
 -- The following type checks
 -- Though the type looks ugly
-val fool = new[(T & {male : String}) & Person] employee("Tom", "yes") \ name & person("Jim", true)
+val fool = new[(T & {male : String}) & Person] employee("Tom", "yes") \ { name : String } & person("Jim", true)
 
 
 main = jim.log ()

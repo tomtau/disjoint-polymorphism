@@ -165,8 +165,8 @@ traitConstrs :: { [Expr] }
 
 
 traitConstr :: { Expr }
-  : LOWER_IDENT type_list_or_empty  args                    { App (foldl App (foldl TApp (evar $1) $2) $3) (evar "self") }
-  | LOWER_IDENT type_list_or_empty  args lam LOWER_IDENT    { Remove (App (foldl App (foldl TApp (evar $1) $2) $3) (evar "self")) $5 }
+  : LOWER_IDENT type_list_or_empty args                    { App (foldl App (foldl TApp (evar $1) $2) $3) (evar "self") }
+  | LOWER_IDENT type_list_or_empty args lam '{' LOWER_IDENT ':' type '}'   { Remove (App (foldl App (foldl TApp (evar $1) $2) $3) (evar "self")) $6 $8 }
 
 
 type_list_or_empty :: { [Type] }
@@ -353,7 +353,7 @@ aexpr :: { Expr }
       | str                              { StrV $1 }
       | aexpr '.' LOWER_IDENT            { Acc $1 $3 }
       | record_construct                 { $1 }
-      | aexpr lam LOWER_IDENT            { Remove $1 $3 }
+      | aexpr lam '{' LOWER_IDENT ':' type '}'           { Remove $1 $4 $6 }
       | top                              { Top }
       | aexpr ':' type                   { Anno $1 $3 }
       | undefined                        { Bot }

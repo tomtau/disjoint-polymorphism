@@ -138,9 +138,10 @@ instance Pretty S.Expr where
   ppr (S.Acc e l) = do
     e' <- ppr e
     return $ e' <> dot <> text l
-  ppr (S.Remove e l) = do
+  ppr (S.Remove e l t) = do
     e' <- ppr e
-    return $ e' <+> char '\\' <+> text l
+    t' <- ppr t
+    return $ e' <+> char '\\' <+> braces (text l <+> colon <+> t')
   ppr S.Top = return $ text "T"
   ppr (S.Let b) = do
     lunbind b $ \((x, Embed t), (e, body)) -> do
