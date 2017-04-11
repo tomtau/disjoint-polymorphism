@@ -98,42 +98,44 @@ normalizeTmDecl decl = (bindName decl, body)
 
 -- | Recursively expand all type synonyms. The given type must be well-kinded.
 
-expandType :: Ctx -> Type -> TcMonad Type
 
--- Interesting cases:
-expandType d (TVar a) = do
-  case lookupTVarSynMaybe d a of
-    Nothing -> return $ TVar a
-    Just t -> expandType d t
-expandType d (OpAbs b) = do
-  ((x, Embed k), t) <- unbind b
-  t' <- expandType (extendTVarCtx x k d) t
-  return $ OpAbs (bind (x, embed k) t')
-expandType d typ@(OpApp t1 t2) =
-  expandType d t1 >>= \case
-    OpAbs b -> do
-      t2' <- expandType d t2
+expandType :: Ctx -> Type -> Type
+expandType ctx ty = runFreshM (go ctx ty)
+  where
+    go :: Ctx -> Type -> FreshM Type
+      -- Interesting cases:
+    go d (TVar a) = do
+      case lookupTVarSynMaybe d a of
+        Nothing -> return $ TVar a
+        Just t -> go d t
+    go d (OpAbs b) = do
       ((x, Embed k), t) <- unbind b
-      expandType d (subst x t2' t)
-    _ -> return typ
-
-expandType _ NumT = return NumT
-expandType _ BoolT = return BoolT
-expandType _ StringT = return StringT
-expandType d (Arr t1 t2) = do
-  t1' <- expandType d t1
-  t2' <- expandType d t2
-  return $ Arr t1' t2'
-expandType d (And t1 t2) = do
-  t1' <- expandType d t1
-  t2' <- expandType d t2
-  return $ And t1' t2'
-expandType d (DForall b) = do
-  ((a, Embed t1), t2) <- unbind b
-  t1' <- expandType d t1
-  t2' <- expandType d t2
-  return $ DForall (bind (a, embed t1') t2')
-expandType d (SRecT l t) = do
-  t' <- expandType d t
-  return $ SRecT l t'
-expandType _ TopT = return TopT
+      t' <- go (extendTVarCtx x k d) t
+      return $ OpAbs (bind (x, embed k) t')
+    go d typ@(OpApp t1 t2) =
+      go d t1 >>= \case
+        OpAbs b -> do
+          t2' <- go d t2
+          ((x, Embed k), t) <- unbind b
+          go d (subst x t2' t)
+        _ -> return typ
+    go _ NumT = return NumT
+    go _ BoolT = return BoolT
+    go _ StringT = return StringT
+    go d (Arr t1 t2) = do
+      t1' <- go d t1
+      t2' <- go d t2
+      return $ Arr t1' t2'
+    go d (And t1 t2) = do
+      t1' <- go d t1
+      t2' <- go d t2
+      return $ And t1' t2'
+    go d (DForall b) = do
+      ((a, Embed t1), t2) <- unbind b
+      t1' <- go d t1
+      t2' <- go d t2
+      return $ DForall (bind (a, embed t1') t2')
+    go d (SRecT l t) = do
+      t' <- go d t
+      return $ SRecT l t'
+    go _ TopT = return TopT

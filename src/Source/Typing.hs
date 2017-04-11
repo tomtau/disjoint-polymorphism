@@ -172,7 +172,7 @@ infer (Var x) = do
 -}
 infer (Anno e a) = do
   c <- askCtx
-  a' <- expandType c a
+  let a' = expandType c a
   e' <- tcheck e a'
   return (a, e')
 
@@ -187,7 +187,7 @@ infer (Anno e a) = do
 infer inp@(App e1 e2) = do
   (arr, e1') <- infer e1
   c <- askCtx
-  expandType c arr >>= \case
+  case expandType c arr of
     Arr a1 a2 -> do
       e2' <- tcheck e2 a1
       return (a2, T.UApp e1' e2')
@@ -211,11 +211,11 @@ infer inp@(TApp e a) = do
   wf a
   (t, e') <- infer e
   ctx <- askCtx
-  expandType ctx t >>= \case
+  case expandType ctx t of
     DForall t' -> do
       ((x, Embed b), c) <- unbind t'
-      a' <- expandType ctx a
-      b' <- expandType ctx b
+      let a' = expandType ctx a
+      let b' = expandType ctx b
       disjoint ctx a' b'
       return (subst x a c, e')
     _ ->
@@ -238,8 +238,8 @@ infer (Merge e1 e2) = do
   (a, e1') <- infer e1
   (b, e2') <- infer e2
   ctx <- askCtx
-  a' <- expandType ctx a
-  b' <- expandType ctx b
+  let a' = expandType ctx a
+  let b' = expandType ctx b
   disjoint ctx a' b'
   return (And a b, T.UPair e1' e2')
 
@@ -283,7 +283,7 @@ infer (Acc e "sqrt") = do
 infer (Acc e l) = do
   (t, e') <- infer e
   ctx <- askCtx
-  t' <- expandType ctx t
+  let t' = expandType ctx t
   case select t' l of
     [(a, c)] -> return (a, T.UApp c e')
     _ ->
@@ -308,7 +308,7 @@ t \ l = t1 ~> c
 infer (Remove e l lt) = do
   (t, e') <- infer e
   ctx <- askCtx
-  t' <- expandType ctx t
+  let t' = expandType ctx t
   case restrict t' l lt of
     Just (a, c) -> return (a, T.UApp c e')
     _ ->
@@ -368,8 +368,8 @@ infer inp@(If e1 e2 e3) = do
   (t2, e2') <- infer e2
   (t3, e3') <- infer e3
   ctx <- askCtx
-  t2' <- expandType ctx t2
-  t3' <- expandType ctx t3
+  let t2' = expandType ctx t2
+  let t3' = expandType ctx t3
   if aeq t2' t3'
     then return (t2, T.UIf e1' e2' e3')
     else throwError $
@@ -463,8 +463,8 @@ tcheck (Merge e1 e2) (And a b) = do
   e1' <- tcheck e1 a
   e2' <- tcheck e2 b
   ctx <- askCtx
-  a' <- expandType ctx a
-  b' <- expandType ctx b
+  let a' = expandType ctx a
+  let b' = expandType ctx b
   disjoint ctx a' b'
   return (T.UPair e1' e2')
 
@@ -505,7 +505,7 @@ tcheck (Acc e "sqrt") NumT = do
 tcheck (Acc e l) a = do
   (t, e') <- infer e
   ctx <- askCtx
-  t' <- expandType ctx t
+  let t' = expandType ctx t
   let ls = select t' l
   case length ls of
     0 ->
@@ -518,7 +518,7 @@ tcheck (Acc e l) a = do
     -- Multiple label of 'l' are found, find the only one whose type is a subtype of 'a'
     _ ->
       let (bs, cs) = unzip ls
-          res = dropWhile (isLeft . fst) $ zip (fmap (flip subtype a) bs) cs
+          res = dropWhile (isLeft . fst) $ zip (fmap (flip (subtype ctx) a) bs) cs
       in case res of
            (Right c', c):_ -> return $ T.UApp c' (T.UApp c e')
            _ ->
@@ -545,9 +545,7 @@ tcheck e b = do
   wf b
   (a, e') <- infer e
   ctx <- askCtx
-  a' <- expandType ctx a
-  b' <- expandType ctx b
-  let res = subtype a' b'
+  let res = subtype ctx a b
   case res of
     Right c -> do
       return (T.UApp c e')
@@ -564,7 +562,7 @@ tcheck e b = do
 wf :: Type -> TcMonad ()
 wf t = do
   ctx <- askCtx
-  t' <- expandType ctx t
+  let t' = expandType ctx t
   maybe_kind <- kind ctx t'
   case maybe_kind of
     Nothing -> throwError $ squotes (pprint t) <+> text "is not well-kinded"
@@ -609,10 +607,10 @@ disjoint _ _ TopT = return ()
 
 disjoint ctx (TVar x) b
   | Just a <- lookupTVarConstraintMaybe ctx x
-  , Right _ <- subtype a b = return ()
+  , Right _ <- subtype ctx a b = return ()
 disjoint ctx b (TVar x)
   | Just a <- lookupTVarConstraintMaybe ctx x
-  , Right _ <- subtype a b = return ()
+  , Right _ <- subtype ctx a b = return ()
 disjoint _ (TVar x) (TVar y) =
   throwError $
   text "Type variables:" <+>
@@ -637,10 +635,32 @@ disjoint ctx (And a1 a2) b = do
 disjoint ctx a (And b1 b2) = do
   disjoint ctx a b1
   disjoint ctx a b2
-disjoint _ NumT NumT = throwError $ text "Double and Double are not disjoint"
-disjoint _ BoolT BoolT = throwError $ text "Bool and Bool are not disjoint"
-disjoint _ StringT StringT = throwError $ text "String and String are not disjoint"
-disjoint _ _ _ = return ()
+disjoint ctx a b =
+  if disjointAx a b
+    then return ()
+    else throwError $ pprint a <+> text "is not disjoint with" <+> pprint b
+
+
+disjointAx :: Type -> Type -> Bool
+disjointAx t1 t2 =
+  type2num t1 < 6 && type2num t2 < 6 && type2num t1 /= type2num t2
+  where
+    type2num :: Type -> Int
+    type2num NumT = 0
+    type2num BoolT = 1
+    type2num StringT = 2
+    type2num (Arr {}) = 3
+    type2num (DForall {}) = 4
+    type2num (SRecT {}) = 5
+    -- The above are basic type
+    type2num (TopT {}) = 6
+    type2num (And {}) = 7
+    type2num (TVar {}) = 8
+    type2num (OpAbs {}) = 9
+    type2num (OpApp {}) = 10
+
+
+
 
 
 --------------------

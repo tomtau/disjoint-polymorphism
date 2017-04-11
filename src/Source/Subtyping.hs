@@ -19,6 +19,8 @@ import           Unbound.LocallyNameless
 import           PrettyPrint
 import           Source.Syntax
 import qualified Target.Syntax as T
+import Environment
+import           Source.Desugar
 
 ----------------------------
 -- A <: B ~> E
@@ -26,9 +28,14 @@ import qualified Target.Syntax as T
 ----------------------------
 -- | Subtyping (<:) is defined only between types of kind *.
 -- WARN: They must be expanded first
-subtype :: Type -> Type -> Either Doc T.UExpr
-subtype st tt = runExcept $ runFreshMT (subtypeS st tt)
+subtype :: Ctx -> Type -> Type -> Either Doc T.UExpr
+subtype ctx st tt = runExcept $ runFreshMT go
   where
+    go :: (FreshMT (Except Doc)) T.UExpr
+    go = do
+      let a = expandType ctx st
+      let b = expandType ctx tt
+      subtypeS a b
     subtypeS :: Type -> Type -> (FreshMT (Except Doc)) T.UExpr
     {-
 
@@ -63,7 +70,7 @@ subtype st tt = runExcept $ runFreshMT (subtypeS st tt)
     -}
     subtypeS (And a1 _) a3
       | ordinary a3
-      , Right e <- subtype a1 a3 = do
+      , Right e <- subtype ctx a1 a3 = do
         let c = T.eapp e (T.UP1 (T.evar "x"))
         b <- coerce a3 c
         return (T.elam "x" b)
@@ -76,7 +83,7 @@ subtype st tt = runExcept $ runFreshMT (subtypeS st tt)
     -}
     subtypeS (And _ a2) a3
       | ordinary a3
-      , Right e <- subtype a2 a3 = do
+      , Right e <- subtype ctx a2 a3 = do
         let c = T.eapp e (T.UP2 (T.evar "x"))
         b <- coerce a3 c
         return (T.elam "x" b)
