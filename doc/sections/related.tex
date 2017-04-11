@@ -181,6 +181,15 @@ Do they have polymorphic type systems? Do they support mutable self reference?
 
 \paragraph{Class-based Languages with More Advanced Form of Inheritance}
 
+Eiffel~\cite{meyer1987eiffel} is a class-based language that is based on the
+identification of classes with types and of inheritance with subtyping. Eiffel
+supports multiple inheritance, with the restriction that name collisions are
+considered programming errors, and ambiguities must be resolved explicitly by
+the programmer (by means of renaming). In this regard, \name is quite like
+Eiffel. However, the type system in \name is more lenient in that two
+identically named methods with different signatures can coexist without any
+problems.
+
 \citet{kniesel1999type} is the first to show that type-safe integration of
 delegation with subtyping into a class-based model is possible, resulting in the
 DARWIN model. In the DARWIN model, the type of the parent object must be a
