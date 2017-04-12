@@ -2,10 +2,11 @@
 \label{sec:OA}
 
 This section shows that \name's features are enough for encoding extensible
-designs for Object Algebras and Extensible Visitors that been presented in
-mainstream languages. Moreover \name addresses limitations of those languages,
-making those designs significantly simpler and convenient to use. There are two
-main advantages of \name over existing languages:
+designs for Object Algebras and Extensible Visitors that have been presented in
+mainstream languages. Moreover \name addresses limitations of those languages
+mentioned in Section~\ref{sec:critique}, making those designs significantly
+simpler and convenient to use. There are two main advantages of \name over
+existing languages:
 \begin{enumerate}
 \item \name supports an expressive form of dynamic inheritance. This form
   of inheritance is sufficient to directly express (delegation-based) composition
@@ -82,12 +83,12 @@ In \name the actual type of arithmetic expressions is:
 \lstinputlisting[linerange=15-15]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
 An attentive reader may immediately recognize this is a variant of the VISITOR
 pattern. Indeed, as already noted by \citet{oliveira2012extensibility}, Object
-Algebras are closely related internal visitors~\cite{}. However, \emph{Object
+Algebras are closely related to internal visitors~\cite{}. However, \emph{Object
 Algebras in languages like Java or Scala do not define the type
 \lstinline{Exp} because this would preclude extensibility in those
 languages}. Nevertheless in \name it is still possible to define
 \lstinline{Exp} and retain extensibility. In essence, the type
-\lstinline{Exp} simply encapsulates the type 
+\lstinline{Exp} simply encapsulates the type
 of the \lstinline{mkX} methods used in the original formulation of the
 pattern. With \lstinline{Exp}, the expression \lstinline{2 + 3} is
 built as:
@@ -101,7 +102,7 @@ expression now has a concrete type, rather than being a function. With
 
 
 \paragraph{Add a subtraction variant.} Interesting things happen when a new
-variant, such as subtraction. To do so, we need to extend both
+variant, such as subtraction is added. To do so, we need to extend both
 \lstinline{ExpAlg[E]} , \lstinline{evalAlg} and create a more refined
 type for expressions with subtraction:
 \lstinputlisting[linerange=41-45]{../examples/visitor.txt}% APPLY:linerange=SUB_DEF
@@ -120,18 +121,17 @@ are interesting subtyping relations between ASTs and their
 extensions~\cite{oliveira09modular}. An interesting aspect about subtyping in
 the new system is that subtyping follows the opposite direction of the
 extension. In other words, subtyping is contravariant with respect to the
-extension. First note that \lstinline{SubExpAlg[E]} appears in a
-parameter
-position of \lstinline{accept} and function parameters are 
-contravariant. Thus \lstinline{ExtExp} should be a \textit{supertype} of
-\lstinline{Exp}. By contrast, in common OO languages, subtyping and
-inheritance always go along together. For example, Java/Scala forbid any kind of
-type-refinement on method parameter types. The consequence of this is that in
-those languages, it is impossible to express that \lstinline{ExtExp} is both an
-extension and a supertype of \lstinline{Exp}. Such kind of phenomena is an
-example where ``inheritance is not
-subtyping''~\cite{cook1989inheritance}. In \name, however,
-\lstinline{ExtExp} is indeed a supertype of \lstinline{Exp}.
+extension. First note that \lstinline{SubExpAlg[E]} appears in a parameter
+position of \lstinline{accept} and the function constructor is
+\textit{contravariant} in parameter types. Thus \lstinline{ExtExp} should be a
+\textit{supertype} of \lstinline{Exp}. By contrast, in common OO languages,
+subtyping and inheritance always go along together. For example, Java/Scala
+forbid any kind of type-refinement on method parameter types. The consequence of
+this is that in those languages, it is impossible to express that
+\lstinline{ExtExp} is both an extension and a supertype of \lstinline{Exp}. Such
+kind of phenomenon is an example where ``inheritance is not
+subtyping''~\cite{cook1989inheritance}. In \name, however, \lstinline{ExtExp} is
+indeed a supertype of \lstinline{Exp}.
 
 \paragraph{Add a new operation.} The second type of extension is adding a new
 operation, such as pretty printing. Similar to evaluation, the interface of the
@@ -181,39 +181,39 @@ create an object that contains both printing and evaluation.
 \citet{oliveira2012extensibility} addressed this problem by proposing
 \textit{Object Algebra combinators} that combine multiple algebras into one.
 However, as they noted, such combinators written in Java are difficult to use in
-practice, and they require significant amounts of boilerplate. 
-Improved variants of Object Algebra combinators have been encoded in Scala using
-intersection types and an encoding of the merge
-operator~\cite{oliveira2013feature, rendel14attributes}. Unfortunatelly, the Scala
-encoding of the merge operator is quite complex as it relies on low-level
-type-unsafe programming features such as dynamic proxies, reflection or other
-meta-programming techniques. In \name there is no need for such complex
-encoding, as the merge operator is natively supported. This allows
-type-safe, coherent and boilerplate free composition of Object Algebras.  
+practice, and they require significant amounts of boilerplate. Improved variants
+of Object Algebra combinators have been encoded in Scala using intersection
+types and an encoding of the merge construct~\cite{oliveira2013feature,
+  rendel14attributes}. Unfortunately, the Scala encoding of the merge construct
+is quite complex as it relies on low-level type-unsafe programming features such
+as dynamic proxies, reflection or other meta-programming techniques. In \name
+there is no need for such complex encoding, as the merge construct is natively
+supported. This allows type-safe, coherent and boilerplate-free composition of
+Object Algebras.
 
-\paragraph{Merge in \name} Section~\ref{sec:scala-merge} points out that in Scala
-intersection types are not completely first class, since it is hard to 
-build values of intersections with unknown components. In \name,
-however, this is trivial. The \lstinline{merge} operation discussed 
-in Section~\ref{sec:scala-merge} can be written as:
-\lstinputlisting[linerange=4-4]{../examples/merge.txt}% APPLY:linerange=MERGE_EG
+% \paragraph{Merge in \name} Section~\ref{sec:scala-merge} points out that in Scala
+% intersection types are not completely first class, since it is hard to
+% build values of intersections with unknown components. In \name,
+% however, this is trivial. The \lstinline{merge} operation discussed
+% in Section~\ref{sec:scala-merge} can be written as:
+% \lstinputlisting[linerange=4-4]{../examples/merge.txt}% APPLY:linerange=MERGE_EG
 
-\noindent From the typing point of view, the difference between
-\lstinline{merge} in Scala and \name is that the type variable
-\lstinline{B} now has a \emph{disjointness constraint}. The notation
-\lstinline{B * A} means that the type variable \lstinline{B} can be instantiated
-to any types that are disjoint to the type \lstinline{A}. This is
-crutial to ensure that the composition between \lstinline{x} and \lstinline{y}
-is well-formed. That is, there are no conflicts between the two objects. 
+% \noindent From the typing point of view, the difference between
+% \lstinline{merge} in Scala and \name is that the type variable
+% \lstinline{B} now has a \emph{disjointness constraint}. The notation
+% \lstinline{B * A} means that the type variable \lstinline{B} can be instantiated
+% to any types that are disjoint to the type \lstinline{A}. This is
+% crutial to ensure that the composition between \lstinline{x} and \lstinline{y}
+% is well-formed. That is, there are no conflicts between the two objects.
 
 \paragraph{Boilerplate-free composition of Object Algebras} 
 %An acute reader may have smelled some boilerplate code in the definition of
 %\lstinline{combine}. After all, \lstinline{combine} just invokes the
 %corresponding method on the arguments, which is solely driven by the types of
 %the two input algebras and the resulting algebra. 
-The merge operator in \name is quite powerful. Using \name inheritance
-(which is just syntactic sugar to the merge operator) it is
-possible to compose two Object Algebras in a trivial way:  
+The merge construct (cf. Section~\ref{sec:merge-construct}) in \name is quite
+powerful. Using trait inheritance (which is just syntactic sugar to the merge
+construct) it is possible to compose two Object Algebras in a trivial way:
 
 %is, in general, the type
 %system behind \name is powerful enough to derive such definition for us:
@@ -221,21 +221,23 @@ possible to compose two Object Algebras in a trivial way:
 
 \lstinputlisting[linerange=59-59]{../examples/visitor3.txt}% APPLY:linerange=COMBINE_DEF
 
-That is it. None of the boilerplate in other approaches~\cite{}, or
-type-unsafe meta-programming techniques~\cite{} of other approaches is needed! 
-Two points worth noting: 1) \lstinline{combine} relies
-on \textit{dynamic inheritance}. Notice how we let \lstinline{combine}
-inherit \lstinline{f & g}, for which the implementation is unknown
-statically. 2) \name supports multiple inheritance of traits with the same type:
-both \lstinline{f} and \lstinline{g} are traits of the \emph{same}
-subtraction algebra \lstinline{SubExpAlg}. Type
-systems for many OO languages are too inflexible to express this kind
-of flexible and dynamic inheritance. \name hits a sweet spot in the design space of being how much
-dynamic, where we retain much of the flexibility of dynamic languages without
-sacrificing the type-safety and coherence guarantees.
+That is it. None of the boilerplate in other approaches~\cite{}, or type-unsafe
+meta-programming techniques~\cite{} of other approaches are needed! Three points
+worth noting: 1) \lstinline{combine} relies on \textit{dynamic inheritance}.
+Notice how we let \lstinline{combine} inherit \lstinline{f & g}, for which the
+implementation is unknown statically; 2) \name supports multiple inheritance of
+traits with the same type: both \lstinline{f} and \lstinline{g} are traits of
+the \emph{same} subtraction algebra \lstinline{SubExpAlg} and 3) disjointness
+constraint (\lstinline{B * A}) is \textit{crucial} to make sure two Object
+Algebras (\lstinline{f} and \lstinline{g}) are disjoint in order to avoid
+conflicts when being composed. Type systems for many OO languages are too
+inflexible to express this kind of flexible and dynamic inheritance. \name hits
+a sweet spot in the design space of being how much dynamic, where we retain much
+of the flexibility of dynamic languages without sacrificing the type-safety and
+coherence guarantees.
 
-With \lstinline{combine} at hand, we can finally have a object \lstinline{o}
-print and evaluate at the same time:
+With \lstinline{combine} at hand, we can finally have an object \lstinline{o}
+that is able to print and evaluate at the same time:
 
 \lstinputlisting[linerange=68-71]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_TEST
 

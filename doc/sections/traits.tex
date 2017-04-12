@@ -301,6 +301,7 @@ in.
 \noindent This concludes our running example of presenting graphical objects.
 
 \subsection{Parametric Polymorphism and Disjointness Constraints}
+\label{sec:merge-construct}
 
 Before we finish this tour, let us revisit the incapability of Scala's
 intersection types to define the \lstinline{merge} operation. As pointed out in
@@ -310,17 +311,17 @@ components. In \name, however, this is trivial. The \lstinline{merge} operation
 discussed in Section~\ref{sec:scala-merge} can be written as:
 \lstinputlisting[linerange=4-4]{../examples/merge.txt}% APPLY:linerange=MERGE_EG
 
-Firstly \name supports parametric polymorphism, and type variables are
+\noindent Firstly \name supports parametric polymorphism, and type variables are
 identifiers beginning with uppercase letters. Secondly, from the typing point of
 view, the difference between \lstinline{merge} in Scala and \name is that the
 type variable \lstinline{B} now has a \emph{disjointness
   constraint}~\cite{alpuimdisjoint}. The notation \lstinline{B * A} means that
 the type variable \lstinline{B} can be instantiated to any types that are
-disjoint to the type \lstinline{A}. Thirdly, the value of the intersection type
+disjoint to the type \lstinline{A}. Finally, the value of the intersection type
 \lstinline{A & B} is directly built using the \textit{merge construct} (denoted
 by \lstinline{,,}). The merge construct~\cite{dunfield2014elaborating} allows
-two arbitrary values to be merged, with the resulting type being an intersection
-type.
+two arbitrary values (even polymorphic) to be merged, with the resulting type
+being an intersection type.
 
 It is this disjoint polymorphism~\cite{alpuimdisjoint} that sets apart \name
 from other OO languages, and enables extensible designs as is elaborated in
