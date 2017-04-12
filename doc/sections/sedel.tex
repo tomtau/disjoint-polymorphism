@@ -1,13 +1,11 @@
 \section{Object Algebras and Extensible Visitors in \name}
 \label{sec:OA}
 
-This section shows that \name features are enough for encoding
-extensible designs for Object Algebras and Extensible Visitors
-that
-been presented in mainstream languages. Moreover \name addresses
-limitations of those languages, making those designs
-significantly simpler and convenient to use. There are two main advantages of \name
-over existing languages:
+This section shows that \name's features are enough for encoding extensible
+designs for Object Algebras and Extensible Visitors that been presented in
+mainstream languages. Moreover \name addresses limitations of those languages,
+making those designs significantly simpler and convenient to use. There are two
+main advantages of \name over existing languages:
 \begin{enumerate}
 \item \name supports an expressive form of dynamic inheritance. This form
   of inheritance is sufficient to directly express (delegation-based) composition
@@ -48,9 +46,7 @@ evaluation. The initial system constitutes expressions with two variants
 \noindent The type \lstinline{ExpAlg[E]}, constitutes the so-called Object
 Algebra interface. The first component abstracts over the type of literal
 expressions (\lstinline{Int -> E}). The second component abstracts over the type
-of addition expression (\lstinline{E -> E -> E}). \name supports parametric
-polymorphism, and type variables are identifiers beginning with uppercase
-letters.
+of addition expression (\lstinline{E -> E -> E}).
 
 \paragraph{Operations.} Defining operations over expressions requires
 implementing \lstinline{ExpAlg[E]}. An interesting operation over expressions is

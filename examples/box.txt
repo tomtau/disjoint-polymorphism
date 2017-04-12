@@ -44,12 +44,8 @@ def circleWithFns = new[Circle & CircleFns] circle(pointTest, 3) & circleFns
 
 
 -- BEGIN_BUTTON_DEF
-type Button = {
-  label : String
-}
-trait button(label : String) { self  =>
-  def label = label
-}
+type Button = { label : String }
+trait button(label : String) { self => def label = label }
 -- END_BUTTON_DEF
 
 -- BEGIN_BUTTON_FNS

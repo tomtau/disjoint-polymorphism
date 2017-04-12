@@ -1,17 +1,17 @@
 --> true
 
 
+-- BEGIN_EVEN_ODD
 type EvenOdd = {
-  even : Double -> Bool,
-  odd : Double -> Bool
+  isEven : Double -> Bool,
+  isOdd  : Double -> Bool
 }
-
-trait even() { self : EvenOdd =>
-  def even(n : Double)  = if n == 0 then true else self.odd(n - 1)
+trait even { self : EvenOdd =>
+  def isEven(n : Double)  = if n == 0 then true else self.isOdd(n - 1)
 }
-
-trait odd() { self : EvenOdd =>
-  def odd(n : Double)  = if n == 0 then false else self.even(n - 1)
+trait odd { self : EvenOdd =>
+  def isOdd(n : Double)   = if n == 0 then false else self.isEven(n - 1)
 }
-
-main = (new[EvenOdd] even() & odd()).even(42)
+main = (new[EvenOdd] even & odd).isEven(42)
+-- Output: true
+-- END_EVEN_ODD
