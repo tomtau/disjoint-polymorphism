@@ -1,4 +1,4 @@
-\section{Case Studies}
+\section{Case Study: Modularizing Components in a Small Scripting Language}
 
 %This section shows the expressiveness of \name. 
 %We show that features of \name
@@ -8,22 +8,22 @@
 %In particular, \name addresses
 %limitations of those languages, making the designs significantly
 %simpler. 
-This section presents two case studies that illustrate the applicatbility of
-\name. The first is a larger case study based on the approach to Object Algebras
-presented in Section~\ref{sec:objectalgebra}. The case study modulares several
-orthogonal features of a subset of JavaScript, used by~\citet{poplcook} in his
-undergraduate textbook on programming languages. The case study illustrates that
-how various features and operations can be modularly developed and later
-composed to assemble a complete language with various operations baked in. The
-second is a case study on embedding a higher-order domain-specific language
-(simply-typed lambda-calculus with conditional and constants) with a selectable
-evaluation order: CBN and CBV. The outcome is an evaluator parameterized over
-the evaluation order. This case study shows that features of \name are
-sufficient for such a seemingly impossible task, which usually require fancy
-types (in particular, GADTs).
+To further illustrates the applicability of \name, we present a case study based
+on the approach to Object Algebras presented in Section~\ref{sec:OA}. The case
+study modularizes several orthogonal features of a subset of JavaScript, used
+by~\citet{poplcook} in his undergraduate textbook on programming languages. The
+case study illustrates that how various features and operations can be modularly
+developed and later composed to assemble a complete language with various
+operations baked in.
 
 
-\subsection{Modularizing Components in a Small Scripting Language}
+% The second is a case study on embedding a higher-order
+% domain-specific language (simply-typed lambda-calculus with conditional and
+% constants) with a selectable evaluation order: CBN and CBV. The outcome is an
+% evaluator parameterized over the evaluation order. This case study shows that
+% features of \name are sufficient for such a seemingly impossible task, which
+% usually require fancy types (in particular, GADTs).
+
 
 Figure~\ref{fig:mini-js} presents the syntax of the expressions, values and
 types provided by the features with each line annotated with the corresponding
@@ -278,6 +278,7 @@ printer.
 % Everything works as expected!
 
 
+\begin{comment}
 \subsection{Parameterizing Expressions by the Evaluation Order}
 
 We now turn to the second case study. In this case study, we embed a
@@ -345,3 +346,5 @@ supplementary materials.
 \jeremy{I am afraid we don't seem to have many advantages over OCaml's version,
   because we don't really have higher-kinded types, we cannot make a AST type
   for this example, though \lstinline{makeEvaluator} seems to be one advantage }
+
+\end{comment}
