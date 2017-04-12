@@ -1,4 +1,4 @@
---> "(5.0 - (3.0 + 2.0)) = 0.0"
+--> "((5.0 - (2.0 + 3.0)) + 3.0) = 3.0"
 
 type ExpAlg[E] = {
   lit : Double -> E,
@@ -46,7 +46,7 @@ def sub (e1 : ExtExp) (e2 : ExtExp) : ExtExp = {
 
 
 -- BEGIN_COMBINE1_DEF
-trait combine A [B * A] (f : Trait[SubExpAlg[A]] , g : Trait[SubExpAlg[B]]) { self =>
+trait combine1 A [B * A] (f : Trait[SubExpAlg[A]] , g : Trait[SubExpAlg[B]]) { self =>
   def lit (x : Double)   = (new[SubExpAlg[A]] f).lit x   ,, (new[SubExpAlg[B]] g).lit x
   def add (x : A & B) (y : A & B) = (new[SubExpAlg[A]] f).add x y ,, (new[SubExpAlg[B]] g).add x y
   def sub (x : A & B) (y : A & B) = (new[SubExpAlg[A]] f).sub x y ,, (new[SubExpAlg[B]] g).sub x y
@@ -56,20 +56,17 @@ trait combine A [B * A] (f : Trait[SubExpAlg[A]] , g : Trait[SubExpAlg[B]]) { se
 
 
 -- BEGIN_COMBINE_DEF
-trait combine1 A [B * A] (f : Trait[SubExpAlg[A]], g : Trait[SubExpAlg[B]]) inherits f & g
+trait combine A [B * A] (f : Trait[SubExpAlg[A]], g : Trait[SubExpAlg[B]]) inherits f & g
 -- END_COMBINE_DEF
 
-
-
-def e = sub (lit 5) (add (lit 3) (lit 2))
-
-def newAlg1 = combine1 IEval IPrint subEvalAlg printAlg
-def oo = e.accept (IEval & IPrint) (new[SubExpAlg[IEval & IPrint]] newAlg1)
+def e1 : Exp = {accept = /\E . \f -> f.add (f.lit 2) (f.lit 3)}
+def e2 : ExtExp = { accept = /\E. \f -> f.sub (f.lit 5) (e1.accept E f) }
+def e3 : ExtExp = { accept = /\E. \f -> f.add (e2.accept E f) (f.lit 3) }
 
 
 -- BEGIN_COMBINE1_TEST
 def newAlg = combine IEval IPrint subEvalAlg printAlg
-def o = e.accept (IEval & IPrint) (new[SubExpAlg[IEval & IPrint]] newAlg)
+def o = e3.accept (IEval & IPrint) (new[SubExpAlg[IEval & IPrint]] newAlg)
 main = o.print ++ " = " ++ o.eval.toString
--- Output: "(5 - (3 + 2)) = 0"
+-- Output: "((5.0 - (2.0 + 3.0)) + 3.0) = 3.0"
 -- END_COMBINE1_TEST

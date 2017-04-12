@@ -9,9 +9,9 @@ limitations of those languages, making those designs
 significantly simpler and convenient to use. There are two main advantages of \name
 over existing languages:
 \begin{enumerate}
-\item \name supports an expressive form dynamic inheritance. This form
+\item \name supports an expressive form of dynamic inheritance. This form
   of inheritance is sufficient to directly express (delegation-based) composition
-  operators for Object Algebras~\cite{}, without any boilerplate or meta-programming.
+  operators for Object Algebras~\cite{oliveira2012extensibility}, without any boilerplate or meta-programming.
 \item \name does not couple inheritance and subtyping. Moreover
 \name supports contravariant parameter types in the subtyping
 relation. This enables \name to account for the \emph{correct
@@ -28,18 +28,16 @@ features of generics.
 is not Subtyping}
 \label{sec:objectalgebra}
 
-Oliveira and Cook~\cite{} proposed a design pattern that can
-solve the Expression Problem in languages like Java. An
-advantage of the pattern over previous solutions is that it is
-relatively lightweight in terms of type system features. However, 
-a problem with Object Algebras is that it is hard to pass 
-values built with Object Algebras around, since there are 
-no concrete expressions/AST types. This problem happens, not 
-because this is a fundamental limitation of Object Algebras, but 
-because the type systems of OO languages like Java or Scala 
-are too restricted to express the types of first-class Object Algebra
-values directly. Fortunally \name has no such restriction as
-illustrated next. 
+\citet{oliveira2012extensibility} proposed a design pattern that can solve the
+Expression Problem~\cite{wadler1998expression} in languages like Java. An
+advantage of the pattern over previous solutions is that it is relatively
+lightweight in terms of type system features. However, a problem with Object
+Algebras is that it is hard to pass values built with Object Algebras around,
+since there are no concrete expressions/AST types. This problem happens, not
+because this is a fundamental limitation of Object Algebras, but because the
+type systems of OO languages like Java or Scala are too restricted to express
+the types of first-class Object Algebra values directly. Fortunally \name has no
+such restriction as illustrated next.
 
 \paragraph{Simple expressions}
 To start, we begin with a very simple system modeling arithmetic expressions and
@@ -64,7 +62,7 @@ rule for each variant:
 \lstinputlisting[linerange=33-36]{../examples/visitor.txt}% APPLY:linerange=EVAL_IMPL
 
 \paragraph{Second-class Object Algebra Values} In the original pattern
-proposed by Oliveira and Cook, concrete values are built with
+proposed by \citet{oliveira2012extensibility}, concrete values are built with
 functions that abstract over concrete Object Algebras. For example:
 
 \lstinputlisting[linerange=11-11]{../examples/visitor.txt}% APPLY:linerange=MKVALUE_DEF
@@ -72,7 +70,7 @@ functions that abstract over concrete Object Algebras. For example:
 \noindent builds an expression that adds $2$ and $3$. One way to
 interpret this code is that Object Algebras act as \emph{factories}
 that build values of some \emph{abstract} type \lstinline{E}. However
-lets suppose we wanted to express something like:
+suppose we wanted to express something like:
 
 \begin{lstlisting}
 def eval (e : Exp) : Double = ...
@@ -87,7 +85,7 @@ without giving up extensibility and the expected subtyping  relations.
 In \name the actual type of arithmetic expressions is:
 \lstinputlisting[linerange=15-15]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
 An attentive reader may immediately recognize this is a variant of the VISITOR
-pattern. Indeed, as already noted by Oliveira and Cook~\cite{}, Object
+pattern. Indeed, as already noted by \citet{oliveira2012extensibility}, Object
 Algebras are closely related internal visitors~\cite{}. However, \emph{Object
 Algebras in languages like Java or Scala do not define the type
 \lstinline{Exp} because this would preclude extensibility in those
@@ -155,7 +153,7 @@ To test our functions we create some values of type \lstinline{ExtExp} as follow
 %We define two expressions, one of type \lstinline{Exp}, the other
 %\lstinline{ExtExp}:
 \lstinputlisting[linerange=75-76]{../examples/visitor.txt}% APPLY:linerange=EXPRESSION2_EG
-Notice how we are reuse \lstinline{e1} in the definition of
+Notice how we reuse \lstinline{e1} in the definition of
 \lstinline{e2}, even though they have \emph{different types}. This is 
 possible by calling the \lstinline{accept}
 method of \lstinline{Exp} on a subtype (\lstinline{SubExpAlg})
@@ -188,7 +186,7 @@ create an object that contains both printing and evaluation.
 \textit{Object Algebra combinators} that combine multiple algebras into one.
 However, as they noted, such combinators written in Java are difficult to use in
 practice, and they require significant amounts of boilerplate. 
-Improved variants of object algebra combinators have been encoded in Scala using
+Improved variants of Object Algebra combinators have been encoded in Scala using
 intersection types and an encoding of the merge
 operator~\cite{oliveira2013feature, rendel14attributes}. Unfortunatelly, the Scala
 encoding of the merge operator is quite complex as it relies on low-level
@@ -197,23 +195,19 @@ meta-programming techniques. In \name there is no need for such complex
 encoding, as the merge operator is natively supported. This allows
 type-safe, coherent and boilerplate free composition of Object Algebras.  
 
-\paragraph{Merge in \name} Section~\cite{} points out that in Scala 
+\paragraph{Merge in \name} Section~\ref{sec:scala-merge} points out that in Scala
 intersection types are not completely first class, since it is hard to 
 build values of intersections with unknown components. In \name,
 however, this is trivial. The \lstinline{merge} operation discussed 
-in Section~\ref{} can be written as:
-   
-\bruno{Fix syntax, type-check}
-\begin{lstlisting}
-def merge T (U * T) (first : T, second : U) : T & U = first & second 
-\end{lstlisting}
+in Section~\ref{sec:scala-merge} can be written as:
+\lstinputlisting[linerange=4-4]{../examples/merge.txt}% APPLY:linerange=MERGE_EG
 
 \noindent From the typing point of view, the difference between
 \lstinline{merge} in Scala and \name is that the type variable
-\lstinline{U} now has a \emph{disjointness constraint}. The notation
-\lstinline{U * T} means that the type variable U can be instantiated
-to any types that is disjoint to the type \lstinline{T}. This is
-crutial to ensure that the composition between \lstinline{first} and \lstinline{second} 
+\lstinline{B} now has a \emph{disjointness constraint}. The notation
+\lstinline{B * A} means that the type variable \lstinline{B} can be instantiated
+to any types that are disjoint to the type \lstinline{A}. This is
+crutial to ensure that the composition between \lstinline{x} and \lstinline{y}
 is well-formed. That is, there are no conflicts between the two objects. 
 
 \paragraph{Boilerplate-free composition of Object Algebras} 
@@ -247,7 +241,7 @@ sacrificing the type-safety and coherence guarantees.
 With \lstinline{combine} at hand, we can finally have a object \lstinline{o}
 print and evaluate at the same time:
 
-\lstinputlisting[linerange=71-74]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_TEST
+\lstinputlisting[linerange=68-71]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_TEST
 
 
 \begin{comment}
