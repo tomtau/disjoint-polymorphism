@@ -8,11 +8,11 @@
 %In particular, \name addresses
 %limitations of those languages, making the designs significantly
 %simpler. 
-To further illustrates the applicability of \name, we present a case study based
+To further illustrate the applicability of \name, we present a case study based
 on the approach to Object Algebras presented in Section~\ref{sec:OA}. The case
 study modularizes several orthogonal features of a subset of JavaScript, used
 by~\citet{poplcook} in his undergraduate textbook on programming languages. The
-case study illustrates that how various features and operations can be modularly
+case study illustrates how various features and operations can be modularly
 developed and later composed to assemble a complete language with various
 operations baked in.
 
@@ -24,20 +24,23 @@ operations baked in.
 % features of \name are sufficient for such a seemingly impossible task, which
 % usually require fancy types (in particular, GADTs).
 
+\subsection{Overview}
 
 Figure~\ref{fig:mini-js} presents the syntax of the expressions, values and
-types provided by the features with each line annotated with the corresponding
+types provided by the features; each line is annotated with the corresponding
 feature. Starting from a simple arithmetic language, we gradually introduce new
 features and combine them with some of the existing features to form various
-languages.
+languages. Below we briefly explain what constitutes each feature:
+\begin{itemize}
+\item $\mathit{Arith}$ contains numerical literals, addition, subtraction, among
+  others.
+\item $\mathit{Bool}$ introduces Boolean values, comparison, and if expressions.
+\item $\mathit{Var}$ introduces local variables and variable declarations.
+\item $\mathit{Function}$ introduces top-level functions and function calls.
+\end{itemize}
 
-The first feature ($\mathit{Arith}$) is a simple language of arithmetic
-expressions, containing numerical literals, addition, subtraction, among others.
-The second feature ($\mathit{Bool}$) introduces Boolean values, comparison, and
-if expressions. The third feature ($\mathit{Var}$) introduces local variables
-and variable declarations. And as the last feature ($\mathit{Function}$), we
-have top-level functions and function calls. For each feature, we also define
-three operations: evaluator, pretty printer, and type checker.
+% For each feature, we also define three operations: evaluator, pretty printer,
+% and type checker.
 
 \begin{figure}[t]
 \centering
@@ -75,27 +78,27 @@ three operations: evaluator, pretty printer, and type checker.
 Figure~\ref{fig:dependency} gives an overview of the reusable components of the
 implementation, and the subtyping/inheritance relations of the languages we can
 assemble. The interactions between languages and features are revealed by the
-arrows. For example, the leftward arrow between \lstinline{BoolArith} and
-\lstinline{Arith} states that \lstinline{BoolArith} extends \lstinline{Arith},
-while the rightward dashed arrow between them states that \lstinline{Arith} is a
-subtype of \lstinline{BoolArith}. We can see that features are resued across
-different languages, directly or indirectly. For example, $\mathit{Arith}$ is
-the most used feature. We thus obtain 4 languages with 12 operations in total.
+arrows. Below we briefly explain what features/operations each language supports:
+\begin{itemize}
+\item \lstinline{ArithL} is a simple language of arithmetic expressions,
+  directly inherited from the feature $\mathit{Arith}$. We define an evaluator
+  and a pretty printer.
+\item \lstinline{BoolArithL} extends \lstinline{ArithL} with the feature
+  $\mathit{Bool}$. Apart from the evaluator and pretty printer, we define
+  another operation: type checker. Thus \lstinline{BoolArithL} is illustrative
+  of solving the Expression Problem.
+\item \lstinline{VarArithL} extends \lstinline{BoolArithL} with the feature
+  $\mathit{Var}$. We define an evaluator, a pretty printer, and a type checker.
+\item \lstinline{Mini-JS} is the complete language that inherits all the
+  features and operations.
+\end{itemize}
 
-
-Figure~\ref{fig:sloc} compares the number of source lines of code (SLOC, lines
-of code without counting empty lines and comments) for \name's implementation
-with the vanilla AST-based implementation in Haskell. Although \name is
-considerably more verbose than a functional language like Haskell, \name's
-implementation for all 4 languages in total reduces approximately 34\% in terms
-of SLOC, due to the modular development of the language components. In
-particular, the reduction for language \lstinline{VarArith} can be up to 93\%.
-
-The reason is that, the more frequently a feature is reused by other languages
-directly or indirectly, the more reduction we see in the total SLOC. For
-example, feature $\mathit{Arith}$ is used across all 4 languages. Even though
-itself alone has a lot more SLOC than that of Haskell (82 vs 47), we still get a
-huge gain when implementing other languages.
+\noindent Figure~\ref{fig:dependency} also illustrates the subtyping/inheritance
+relations between each language. For example, the leftward arrow between
+\lstinline{BoolArithL} and \lstinline{ArithL} says that \lstinline{BoolArithL}
+extends \lstinline{ArithL}, while the rightward dashed arrow between them says
+that \lstinline{ArithL} is a subtype of \lstinline{BoolArithL}. We thus obtain 4
+languages and 11 operations in total.
 
 \begin{figure}[t]
   \centering
@@ -104,19 +107,50 @@ huge gain when implementing other languages.
   \label{fig:dependency}
 \end{figure}
 
+\subsection{Evaluation}
+
+To evaluate \name's implementation of the case study, Figure~\ref{fig:sloc}
+compares the number of source lines of code (SLOC, lines of code without
+counting empty lines and comments) for \name's implementation with the vanilla
+AST-based implementation in Haskell. Since Haskell is a more concise language
+than \name, we omit lines of code that are for infrastructure purpose. In the
+left part, for each feature, we count lines of the Object Algebra interface, and
+the Object Algebras for the operations. In the right part, for each language, we
+count lines of defining the AST, and the code to combine previously defined
+operations. For example, here is the code that is needed to make the
+\lstinline{VarArithL} language that extends \lstinline{BoolArithL} with the
+$\mathit{Var}$ feature.
+
+\lstinputlisting[linerange=383-394]{../examples/case_study1.txt}% APPLY:linerange=VARARITHL
+
+\noindent As we can see, there are 2 lines of code to define the AST, and 6
+lines of code to combine the operations. Thus for \lstinline{VarArithL} we only
+need 8 lines in total.
+
+Therefore, the total number of the \name's implementation is the sum of all the
+lines in the feature and language parts. Although \name is considerably more
+verbose than a functional language like Haskell, \name's implementation for all
+4 languages in total reduces approximately 33\% in terms of SLOC. The reason is
+that, the more frequently a feature is reused by other languages directly or
+indirectly, the more reduction we see in the total SLOC. For example,
+$\mathit{Arith}$ is used across all 4 languages. Even though \lstinline{ArithL}
+itself alone has a lot more SLOC ($40 = 37+3$) than that of Haskell (which has
+29), we still get a huge gain when implementing other languages.
+
+
 
 \begin{figure}[t]
   \centering
   \begin{tabular}{lc|lccc}
     \hline
-  \bf{Component} & \name & \bf{Language} & \name & \bf{Haskell} & \bf{\% Reduced}  \\
+    \bf{Feature} & \name & \bf{Language} & \name & \bf{Haskell} & \bf{\% Reduced}  \\
     \hline
-    $\mathit{Arith}$ & 76 & \lstinline$Arith$ & 82 & 47 & N/A  \\
-   $\mathit{Bool}$ & 67 & \lstinline$BoolArith$ & 10 & 86 & 88\% \\
-   $\mathit{Var}$ & 22 & \lstinline$VarArith$ & 7 & 99 & 93\% \\
-    $\mathit{Function}$ & 24 & \lstinline$MiniJS$ & 22 & 120 & 82\% \\
+    $\mathit{Arith}$ & 37 & \lstinline$ArithL$ & 3 & 29 & 90\%  \\
+    $\mathit{Bool}$ & 66 & \lstinline$BoolArithL$ & 44 & 86 & 49\% \\
+    $\mathit{Var}$ & 22 & \lstinline$VarArithL$ & 8 & 99 & 92\% \\
+    $\mathit{Function}$ & 24 & \lstinline$Mini-JS$ & 20 & 120 & 83\% \\
     \hline
-    \bf{Total} & & & 234 & 352 & 34\% \\
+    \bf{Total} & & & 224 & 334 & 33\% \\
     \hline
 
   \end{tabular}
@@ -246,23 +280,20 @@ interested reader to the supplementary materials.
 \end{comment}
 
 
-\bruno{I think the part of the following is the only thing that should
-that could be mentioned here, in a discussion about what does it take
-to assemble a language from components. } \jeremy{done}
+% \bruno{I think the part of the following is the only thing that should
+% that could be mentioned here, in a discussion about what does it take
+% to assemble a language from components. } \jeremy{done}
 
-\paragraph{Putting all together}
+\subsection{Putting all together}
 
-With all the components ready, we can assemble them at will to cook a language
-with whatever features we want. For example, here is the glue code that is
-needed to make the \lstinline{BoolArith} language that combines $\mathit{Arith}$
-and $\mathit{Bool}$ features together, along with the combined operations.
-\lstinputlisting[linerange=376-389]{../examples/case_study1.txt}% APPLY:linerange=BOOLARITH
-We hope by now the reader can share our feeling that this is indeed a simple and
-modular way to cook a language incrementally.
+% With all the components ready, we can assemble them at will to cook a language
+% with whatever features we want. For example, we hope by now the reader can share
+% our feeling that this is indeed a simple and modular way to cook a language
+% incrementally.
 
-To demonstrate the usage of the final language, here is a function that makes
-sure ``well-typed programs cannot go wrong'':
-\lstinputlisting[linerange=515-521]{../examples/case_study1.txt}% APPLY:linerange=SUPER_DEF
+To demonstrate the usage of the final language \lstinline{MiniJS}, here is a function that
+makes sure ``well-typed programs cannot go wrong'':
+\lstinputlisting[linerange=498-504]{../examples/case_study1.txt}% APPLY:linerange=SUPER_DEF
 It type checks the program before passing it to the evaluator and pretty
 printer.
 
@@ -274,7 +305,7 @@ printer.
 % the \lstinline{add1} function.
 
 % Finally we apply it to the program we have just created:
-% \lstinputlisting[linerange=525-526]{../examples/case_study1.txt}% APPLY:linerange=TEST_TEST
+% \lstinputlisting[linerange=508-509]{../examples/case_study1.txt}% APPLY:linerange=TEST_TEST
 % Everything works as expected!
 
 

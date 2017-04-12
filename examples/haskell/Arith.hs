@@ -38,26 +38,6 @@ evaluate (Div a b) env = do
   (IntV bv) <- evaluate b env
   return (IntV (av `div` bv))
 
--- Type checker
-tcheck :: Exp -> TEnv -> Maybe Type
-tcheck (Num n) _ = Just TInt
-tcheck (Add a b) env =
-  case (tcheck a env, tcheck b env) of
-    (Just TInt, Just TInt) -> Just TInt
-    _ -> Nothing
-tcheck (Sub a b) env =
-  case (tcheck a env, tcheck b env) of
-    (Just TInt, Just TInt) -> Just TInt
-    _ -> Nothing
-tcheck (Mult a b) env =
-  case (tcheck a env, tcheck b env) of
-    (Just TInt, Just TInt) -> Just TInt
-    _ -> Nothing
-tcheck (Div a b) env =
-  case (tcheck a env, tcheck b env) of
-    (Just TInt, Just TInt) -> Just TInt
-    _ -> Nothing
-
 
 -- Pretty printer
 pretty :: Exp -> String
