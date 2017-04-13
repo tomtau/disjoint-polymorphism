@@ -16,7 +16,7 @@ decl                                        :: 'decl_' ::=     {{ com Declaratio
 
 
 E {{ tex e }} :: 'E_' ::=                                                    {{ com Terms }}
-  | top                              ::   :: Top                 {{ com Top }}
+  | ()                              ::   :: Top                 {{ com Top }}
   | x                              ::   :: Var                 {{ com Variable }}
   | N                              ::   :: Arith               {{ com Literal }}
   | BL                              ::   :: Bool                {{ com Bool }}
@@ -26,8 +26,10 @@ E {{ tex e }} :: 'E_' ::=                                                    {{ 
   | blam ( a ** A ) . E                       ::  :: BLam               {{ com BLam }}
   | E A                        ::  :: TApp               {{ com TApp }}
   | { l = E }                        ::  :: Recd               {{ com Record }}
+  | { l1 = E1 , ... , ln = En }                        ::  :: Recds               {{ com Records }}
+  | { l1 = E1 } ,, ... ,, { ln = En }                        ::  :: Recds2               {{ com Records2 }}
   | E . l                        ::  :: Proj               {{ com Projection }}
-  | E -- l                        ::  :: Rem               {{ com Remove }}
+  | E -- { l : A }                       ::  :: Rem               {{ com Remove }}
   | let x : A = E1 in E2      :: :: LetBinding {{ com Let binding }}
   | if E1 then E2 else E3          ::   :: If                  {{ com Conditional }}
   | E1 + E2                        ::   :: Add                 {{ com Add }}
@@ -50,4 +52,6 @@ A, B :: 'T_' ::=                                              {{ com Type }}
   | a                          ::   :: Var           {{ com Var }}
   | forall ( a ** A ) . B      ::   :: Forall           {{ com Forall }}
   | { l : A }      ::   :: RecdT           {{ com Record }}
-  | A [ B1 ... Bn ]   ::   :: TApp    {{ com TApp }}
+  | { l1 : A1 , ... , ln : An } :: :: RecdTs  {{ com Records }}
+  | { l1 : A1 } & ... & { ln : An } :: :: RecdTs2  {{ com Records2 }}
+  | T [ B1 , .. , Bn ]   ::   :: TApp    {{ com TApp }}

@@ -29,7 +29,7 @@ desugar = map go
 
 -- Desugar inherits:
 -- trait a (x : A, y : B) inherits b & c {self : C => ...}
--- def a (x : A) (y : B) (self : C) = b(self) ,, c(self) ,, {...}
+-- def a (x : A) (y : B) (self : T -> C) = b(self) ,, c(self) ,, {...}
 desugarTrait :: Trait -> SimpleDecl
 desugarTrait trait =
   (DefDecl $
