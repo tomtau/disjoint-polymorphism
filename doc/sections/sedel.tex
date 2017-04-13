@@ -42,7 +42,7 @@ such restriction as illustrated next.
 To start, we begin with a very simple system modeling arithmetic expressions and
 evaluation. The initial system constitutes expressions with two variants
 (literals and addition), as depicted below:
-\lstinputlisting[linerange=4-7]{../examples/visitor.txt}% APPLY:linerange=ALGEBRA_DEF
+\lstinputlisting[linerange=4-6]{../examples/visitor.txt}% APPLY:linerange=ALGEBRA_DEF
 
 \noindent The type \lstinline{ExpAlg[E]}, constitutes the so-called Object
 Algebra interface. The first component abstracts over the type of literal
@@ -53,16 +53,16 @@ of addition expression (\lstinline{E -> E -> E}).
 implementing \lstinline{ExpAlg[E]}. An interesting operation over expressions is
 evaluation. The first step is to choose a suitable concrete type for
 instantiating the type parameter \lstinline{E}. One such suitable type is:
-\lstinputlisting[linerange=29-29]{../examples/visitor.txt}% APPLY:linerange=EVAL_DEF
+\lstinputlisting[linerange=28-28]{../examples/visitor.txt}% APPLY:linerange=EVAL_DEF
 Using \lstinline{IEval}, we can define a trait that implements the evaluation
 rule for each variant:
-\lstinputlisting[linerange=33-36]{../examples/visitor.txt}% APPLY:linerange=EVAL_IMPL
+\lstinputlisting[linerange=32-34]{../examples/visitor.txt}% APPLY:linerange=EVAL_IMPL
 
 \paragraph{Second-class Object Algebra Values} In the original pattern
 proposed by \citet{oliveira2012extensibility}, concrete values are built with
 functions that abstract over concrete Object Algebras. For example:
 
-\lstinputlisting[linerange=11-11]{../examples/visitor.txt}% APPLY:linerange=MKVALUE_DEF
+\lstinputlisting[linerange=10-10]{../examples/visitor.txt}% APPLY:linerange=MKVALUE_DEF
 
 \noindent builds an expression that adds $2$ and $3$. One way to
 interpret this code is that Object Algebras act as \emph{factories}
@@ -80,7 +80,7 @@ without giving up extensibility and the expected subtyping  relations.
 
 \paragraph{First-class Object Algebra values in \name}
 In \name the actual type of arithmetic expressions is:
-\lstinputlisting[linerange=15-15]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
+\lstinputlisting[linerange=14-14]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
 An attentive reader may immediately recognize this is a variant of the VISITOR
 pattern. Indeed, as already noted by \citet{oliveira2012extensibility}, Object
 Algebras are closely related to internal visitors~\cite{}. However, \emph{Object
@@ -93,7 +93,7 @@ of the \lstinline{mkX} methods used in the original formulation of the
 pattern. With \lstinline{Exp}, the expression \lstinline{2 + 3} is
 built as:
 
-\lstinputlisting[linerange=72-72]{../examples/visitor.txt}% APPLY:linerange=EXPRESSION1_EG
+\lstinputlisting[linerange=68-68]{../examples/visitor.txt}% APPLY:linerange=EXPRESSION1_EG
 
 \noindent Note that the code is almost the same as before, but the the
 expression now has a concrete type, rather than being a function. With
@@ -105,7 +105,7 @@ expression now has a concrete type, rather than being a function. With
 variant, such as subtraction is added. To do so, we need to extend both
 \lstinline{ExpAlg[E]} , \lstinline{evalAlg} and create a more refined
 type for expressions with subtraction:
-\lstinputlisting[linerange=41-45]{../examples/visitor.txt}% APPLY:linerange=SUB_DEF
+\lstinputlisting[linerange=39-42]{../examples/visitor.txt}% APPLY:linerange=SUB_DEF
 Firstly, \lstinline{SubExpAlg[E]} defines an extended algebra interface that contains the
 variants of the original plus the new subtraction variant. Intersection types
 are used to model subtyping. Secondly, the Object Algebra
@@ -136,19 +136,19 @@ indeed a supertype of \lstinline{Exp}.
 \paragraph{Add a new operation.} The second type of extension is adding a new
 operation, such as pretty printing. Similar to evaluation, the interface of the
 pretty printing feature is modeled as:
-\lstinputlisting[linerange=51-51]{../examples/visitor.txt}% APPLY:linerange=PRINT_DEF
+\lstinputlisting[linerange=48-48]{../examples/visitor.txt}% APPLY:linerange=PRINT_DEF
 The implementation is straightforward:
-\lstinputlisting[linerange=56-60]{../examples/visitor.txt}% APPLY:linerange=PRINT_IMPL
+\lstinputlisting[linerange=53-56]{../examples/visitor.txt}% APPLY:linerange=PRINT_IMPL
 
 \paragraph{Abstracting over Object Algebra values.} Values of \lstinline{Exp} and
 \lstinline{ExtExp} are first-class, meaning they can be passed around or
 returned from other functions. For example the evaluator and
 pretty-printer for expressions with subtraction (\lstinline{ExtExp}) are defined as follows:
-\lstinputlisting[linerange=67-68]{../examples/visitor.txt}% APPLY:linerange=EVAL_PRINT
+\lstinputlisting[linerange=63-64]{../examples/visitor.txt}% APPLY:linerange=EVAL_PRINT
 To test our functions we create some values of type \lstinline{ExtExp} as follows:
 %We define two expressions, one of type \lstinline{Exp}, the other
 %\lstinline{ExtExp}:
-\lstinputlisting[linerange=75-76]{../examples/visitor.txt}% APPLY:linerange=EXPRESSION2_EG
+\lstinputlisting[linerange=71-72]{../examples/visitor.txt}% APPLY:linerange=EXPRESSION2_EG
 Notice how we reuse \lstinline{e1} in the definition of
 \lstinline{e2}, even though they have \emph{different types}. This is 
 possible by calling the \lstinline{accept}
@@ -159,7 +159,7 @@ of \lstinline{ExpAlg}.
 The following example illustrates a simple test program of the
 functionality, using \lstinline{print} and \lstinline{eval}, as well
 as the values defined previously:
-\lstinputlisting[linerange=86-90]{../examples/visitor.txt}% APPLY:linerange=VISITOR_EG
+\lstinputlisting[linerange=82-86]{../examples/visitor.txt}% APPLY:linerange=VISITOR_EG
 
 \noindent Note how \lstinline{print} and \lstinline{eval} can be
 safely applied to \lstinline{e1} (of type \lstinline{Exp}) since
@@ -249,7 +249,7 @@ which is of type
 \textit{subtype} of \lstinline{ExtExp}. An acute reader by now may find an issue
 about code reuse, i.e., we cannot reuse constructors! For example, the following
 is rejected:
-\lstinputlisting[linerange=81-81]{../examples/visitor.txt}% APPLY:linerange=EXPRESSION_WRONG
+\lstinputlisting[linerange=77-77]{../examples/visitor.txt}% APPLY:linerange=EXPRESSION_WRONG
 Instead, \lstinline{e3} should be written as follow:
 \lstinputlisting[linerange=-]{}% APPLY:linerange=EXPRESSION_CORRECT
 Although, admittedly, creating expressions like this is slightly more
@@ -280,7 +280,7 @@ needed to ensure that two input algebras build values of disjoint types
 \begin{comment}
 \paragraph{Data constructors.} Using \lstinline{Exp} the two data constrcutors
 are defined as follows:
-\lstinputlisting[linerange=19-24]{../examples/visitor.txt}% APPLY:linerange=DC_DEF
+\lstinputlisting[linerange=18-23]{../examples/visitor.txt}% APPLY:linerange=DC_DEF
 % Note that the notation \lstinline{/\E} is type abstraction: it introduces a type
 % variable in the environment.
 \end{comment}

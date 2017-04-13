@@ -4,14 +4,10 @@
 -- BEGIN_EVEN_ODD
 type EvenOdd = {
   isEven : Double -> Bool,
-  isOdd  : Double -> Bool
-}
+  isOdd  : Double -> Bool }
 trait even { self : EvenOdd =>
-  def isEven(n : Double)  = if n == 0 then true else self.isOdd(n - 1)
-}
+  def isEven(n : Double)  = if n == 0 then true else self.isOdd(n - 1) }
 trait odd { self : EvenOdd =>
-  def isOdd(n : Double)   = if n == 0 then false else self.isEven(n - 1)
-}
-main = (new[EvenOdd] even & odd).isEven(42)
--- Output: true
+  def isOdd(n : Double)   = if n == 0 then false else self.isEven(n - 1) }
+main = (new[EvenOdd] even & odd).isEven(42) -- Output: true
 -- END_EVEN_ODD

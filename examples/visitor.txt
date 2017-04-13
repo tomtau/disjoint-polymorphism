@@ -3,8 +3,7 @@
 -- BEGIN_ALGEBRA_DEF
 type ExpAlg[E] = {
   lit : Double -> E,
-  add : E -> E -> E
-}
+  add : E -> E -> E }
 -- END_ALGEBRA_DEF
 
 -- BEGIN_MKVALUE_DEF
@@ -32,16 +31,14 @@ type IEval = { eval : Double }
 -- BEGIN_EVAL_IMPL
 trait evalAlg { self =>
   def lit (x : Double)            = { eval = x }
-  def add (x : IEval) (y : IEval) = { eval = x.eval + y.eval }
-}
+  def add (x : IEval) (y : IEval) = { eval = x.eval + y.eval } }
 -- END_EVAL_IMPL
 
 
 -- BEGIN_SUB_DEF
 type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E }
 trait subEvalAlg inherits evalAlg { self =>
-  def sub (x : IEval) (y : IEval) = { eval = x.eval - y.eval }
-}
+  def sub (x : IEval) (y : IEval) = { eval = x.eval - y.eval } }
 type ExtExp = { accept: forall E. SubExpAlg[E] -> E }
 -- END_SUB_DEF
 
@@ -56,8 +53,7 @@ type IPrint = { print : String }
 trait printAlg { self =>
   def lit (x : Double)              = { print = x.toString }
   def add (x : IPrint) (y : IPrint) = { print = "(" ++ x.print ++ " + " ++ y.print ++ ")" }
-  def sub (x : IPrint) (y : IPrint) = { print = "(" ++ x.print ++ " - " ++ y.print ++ ")" }
-}
+  def sub (x : IPrint) (y : IPrint) = { print = "(" ++ x.print ++ " - " ++ y.print ++ ")" } }
 -- END_PRINT_IMPL
 
 def sub (e1 : ExtExp) (e2 : ExtExp) : ExtExp = {

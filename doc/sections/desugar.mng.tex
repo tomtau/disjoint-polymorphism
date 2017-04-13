@@ -65,7 +65,7 @@ singleton records.
 
 \begin{figure}[t]
 \centering
-% \begin{small}
+\begin{small}
 \begin{tabular}{lrcl}
   Types  & $[[A]], [[B]]$ & ::= & $[[top]] \mid [[Int]] \mid [[A -> B]] \mid [[A & B]] \mid  [[{ l : A }]] \mid [[a]] \mid [[forall ( a ** A ) . B]] \mid [[ T [ B1 , .. , Bn ] ]]$ \\
   Expressions & $[[E]]$ & ::= & $[[()]] \mid [[N]] \mid [[x]] \mid [[\ x . E]] \mid [[E1 E2]] \mid [[blam ( a ** A ) . E]] \mid [[E A]] \mid [[E1 ,, E2]] $ \\
@@ -77,7 +77,7 @@ singleton records.
   Record types & $[[ { l1 : A1 , ... , ln : An } ]] $ & := & $[[ { l1 : A1} & ... & { ln : An } ]]$ \\
   Records &  $[[ { l1 = E1 , ... , ln = En } ]] $ & := & $ [[ { l1 = E1 } ,, ... ,, { ln = En } ]]$
 \end{tabular}
-% \end{small}
+\end{small}
 \caption{\bname syntax and syntactic abbreviations}
 \label{fig:synax-fi}
 \end{figure}
