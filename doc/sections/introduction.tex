@@ -229,21 +229,23 @@ In summary the contributions of this paper are:
   In this design inheritance and subtyping are separated, and a
   powerful form of conflict-free multiple dynamic inheritance is supported.
 
-\item {\bf Improved variants of Extensible Designs:} We present
+\item {\bf Improved variants of extensible designs:} We present
   improved variants of \emph{Object
     Algebras} and \emph{Extensible Visitors} in \name. 
 
-\item {\bf A Practical Example where ``Inheritance is not Subtyping''
-    Matters:} This paper shows that extensible Object-Algebras/Visitors
+\item {\bf A practical example where ``Inheritance is not Subtyping''
+    matters:} This paper shows that extensible Object-Algebras/Visitors
   suffers from the ``inheritance is not subtyping problem''. 
 
 \item {\bf Elaboration of dynamically composable traits into disjoint
     intersection types:} We show that, with a simple syntax
   directed layer of sugar, the high-level OOP abstractions of \name
   can be translated into a calculi with disjoint intersection types and
-  polymorphism. 
+  polymorphism. The elaboration is based on Cook and Palsberg work on
+  the denotational semantics of inheritance~\cite{cook1989denotational}.
 
-\item {\bf Implementation and Modularization Case Study:} \name is implementated and
+
+\item {\bf Implementation and modularization case study:} \name is implementated and
   available online. To evaluate \name in terms of its support for more
   modular design we conduct a case study, based on Cook's
   undergraduate Programming Languages book~\cite{}, where the features
