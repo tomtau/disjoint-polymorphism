@@ -117,8 +117,8 @@ In fact, it is simply translated into $(\top \rightarrow T_1) \rightarrow T_2$.
   \begin{tabular}{l|l}
 
 \begin{lstlisting}[mathescape=true]
-trait m ($x_1 : A_1$, .., $x_n : A_n$)
-  inherits $a_1$ & .. & $a_m$ { $s : A_0$ =>
+trait m ($x_1 : A_1$, ..., $x_n : A_n$)
+  inherits $a_1$ & ... & $a_m$ { $s : A_0$ =>
   def $m_1$(..) = $e_1$
   ..
   def $m_s$(..) = $e_s$ }
@@ -131,8 +131,8 @@ new[A] $m_1$ & ... & $m_n$
     $\rightsquigarrow$  & $\rightsquigarrow$ \\
 
 \begin{lstlisting}[mathescape=true]
-def m $(x_1 : A_1)$ .. $(x_n : A_n)$ $(s : \top \rightarrow A_0)$
-  = $a_1$(s) ,, .. ,, $a_m$(s) ,,
+def m $(x_1 : A_1)$ ... $(x_n : A_n)$ $(s : \top \rightarrow A_0)$
+  = $a_1$(s) ,, ... ,, $a_m$(s) ,,
 { $m_1$ = [s := s()] \(..) -> $e_1$
 , ..
 , $m_s$ = [s := s()] \(..) -> $e_s$ }
