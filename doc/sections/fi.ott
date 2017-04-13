@@ -55,3 +55,15 @@ A, B :: 'T_' ::=                                              {{ com Type }}
   | { l1 : A1 , ... , ln : An } :: :: RecdTs  {{ com Records }}
   | { l1 : A1 } & ... & { ln : An } :: :: RecdTs2  {{ com Records2 }}
   | T [ B1 , .. , Bn ]   ::   :: TApp    {{ com TApp }}
+
+
+defns
+Jtype :: '' ::=
+
+defn
+A <: B :: :: subtyping :: Sub_ {{ com Subtyping }} by
+
+
+A <: { l : A1 -> B1 } & { l : A2 -> B2 }
+------------------------------------------- :: R
+A <: { l : A1 & A2 -> B1 & B2 }
