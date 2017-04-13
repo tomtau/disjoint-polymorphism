@@ -210,20 +210,29 @@
 %% before \maketitle command
 \begin{abstract}
 This paper presents \name: a new delegation based object-oriented
-programming language. Unlike most previous designs for delegation
-(and also prototype) based languages, \name is statically typed and
-has an expressive polymorphic type system. 
-The design of \name and its type systems has two primary goals: 
+programming language. The design of \name follows Cook et al. motto 
+of ``\emph{Inheritance is not Subtyping}'' and clearly separates the two notions.
+Unlike most previous designs for delegation (or dynamic inheritance)
+based languages, \name is statically typed, 
+has an expressive polymorphic type system and it
+supports a powerful form of \emph{conflict-free} multiple dynamic
+inheritance. 
+The design of \name and its type system has two primary goals: 
 guaranteeing important \emph{safety} properties; and 
 ensuring a high-degree of programming \emph{flexibility}.
 In terms of safety \name's type system provides, not only the usual 
 type-safety property, but also coherence. The coherence property
 ensures that the semantics of \name is unambiguous. In particular 
 this property is useful to ensure that programs using 
-multiple inheritance remain free of ambiguities. 
+multiple dynamic inheritance remain free of conflicts/ambiguities
+(even when the types of the object parts being composed are not
+statically know). 
 In terms of flexibility, the polymorphic type system provides 
 an expressive form of polymorphism and intersection types that 
 can type-check various delegation-based programs and patterns. 
+We show how the mechanisms \name improve extensibility design patterns 
+such as Extensible Visitors and Object Algebras. 
+
 \end{abstract}
 
 
