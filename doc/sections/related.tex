@@ -1,6 +1,42 @@
 \section{Related Work}
 \label{sec:related}
 
+\bruno{I think (part of) this text can be discussed in here instead:
+
+There are multiple flavours of inheritance. To avoid confusion, since 
+the same terminology is often used in the literature to mean different 
+things, we use the following 3 terms in this paper:
+
+\begin{itemize}
+
+
+
+\item{{\bf Static inheritance:}} Static inheritance refers to what the
+  typical model of inheritance in class-based languages. The
+  inheritance model is said to be static because when using class
+  extension, the extended classes are statically known at compile-type.
+Static inheritance is used in languages such as Java, Scala or C\# or
+C++\footnote{Note that C++ templates allow the Mixin pattern, which
+  enables ...}.
+
+\item{{\bf Mutable Inheritance:}} Prototype-based languages such as 
+Javascript or Self allow another model of inheritance, which we call
+\emph{mutable inheritance}. In this inheritance model, self references 
+can be changed at any point. 
+
+\item{{\bf Dynamic Inheritance:}} Dynamic inheritance is a less well-known 
+model which stands in between static and mutable inheritance.
+Dynamic inheritance is a model used by some academic delegation 
+OOP languages, such as ...  
+Unlike the static inheritance model, with dynamic inheritance 
+objects can inherits from other objects which are not statically
+known. However, unlike mutable inheritance, the self-reference is not 
+mutable and cannot be arbitrarely changed at run-time. 
+
+\end{itemize}
+}
+
+
 Figure~\ref{fig:comparision} shows the comparisons between \name and various
 similar languages.
 
