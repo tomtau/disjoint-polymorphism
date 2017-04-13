@@ -1,4 +1,3 @@
-{-# LANGUAGE Strict #-}
 {-# LANGUAGE RecursiveDo #-}
 
 
@@ -9,7 +8,7 @@ import Common
 import Control.Monad.Reader
 import Target.Syntax
 import Unbound.LocallyNameless
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 
 
 ------------------------
