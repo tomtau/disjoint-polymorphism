@@ -2,7 +2,7 @@
 \label{sec:intro}
 
 Mainstream statically-typed Object-Oriented Programming (OOP) languages (such as Java,
-C++ C\# or Scala) all use a similar programming model based on
+C++, C\# or Scala) all use a similar programming model based on
 classes. This programming model has its roots on the
 origins of OOP in the 1960s in the Simula~\cite{dahl1967simula} language.
 We will refer to this model as the \emph{covariant model} for the
@@ -228,22 +228,21 @@ In summary the contributions of this paper are:
 
 \item {\bf A practical example where ``Inheritance is not Subtyping'' matters:}
   This paper shows that extensible Object-Algebras/Visitors suffer from the
-  ``inheritance is not subtyping'' problem .
+  ``inheritance is not subtyping'' problem.
 
 \item {\bf Elaboration of dynamically composable traits into disjoint
-    intersection types:} We show that, with a simple syntax directed layer of
+    intersection types/polymorphism:} We show that, with a simple syntax directed layer of
   sugar, the high-level OOP abstractions of \name can be translated into a
   calculus with disjoint intersection types and polymorphism. The elaboration is
   based on \citet{cook1989denotational}'s work on the denotational semantics of
-  inheritance
-
+  inheritance.
 
 \item {\bf Implementation and modularization case study:} \name is implementated
   and available online. To evaluate \name in terms of its support for more
   modular design we conduct a case study, based on Cook's undergraduate
   Programming Languages book~\cite{poplcook}, where the features of a small
   subset of a JavaScript-like language are modularized using \name's improved
-  support for Object Algebras \footnote{{\bf Note to reviewers:} Due to the
+  support for Object Algebras\footnote{{\bf Note to reviewers:} Due to the
     anonymous submission process, the code for the implementation and case
     studies is submitted as supplementary material.}.
 
