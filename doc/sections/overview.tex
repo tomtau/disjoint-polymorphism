@@ -1,5 +1,7 @@
 \section{A Critique of Mainstream Statically-Typed OOP}
 \label{sec:critique}
+\bruno{Jeremy: pleasy polish the code formatting (some keywords not 
+in bold face (example: inherits)).}
 
 This section discusses several limitations of mainstream OOP languages
 that work against modularity and reuse. The limitations discussed here
@@ -116,7 +118,7 @@ this:
 \begin{lstlisting}[language=java]
 interface A  {Int m(String s);} 
 
-interface B  extends A {Int m(Object s);} // B extends and refines the return type of m()
+interface B  extends A {Int m(Object s);} // INVALID: B extends and refines the return type of m()
 \end{lstlisting}
 
 \noindent Unfortunatelly this is invalid Java code, since Java 
