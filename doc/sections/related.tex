@@ -70,14 +70,14 @@ similar languages, as we will explain below.
 delegation as the mechanism to code sharing between objects. Since then many
 researchers have studied the mechanisms of
 delegation~\cite{wegner1987dimensions,malenfant1995semantic,goldberg1989smalltalk}.
-\textsc{Self}~\cite{ungar1988self} is a dynamically typed, prototype-based language with
-a simple and uniform object model. \textsc{Self}'s inheritance model is typical of we
-call mutable inheritance, because an object's parent slots may be assigned new
-values at run-time. Mutable inheritance is rather unstructured, and oftentimes
-access to any clashing methods will generate a ``messageAmbiguous'' error at
-run-time. Although \name's dynamic inheritance is not as powerful as mutable
-inheritance, its static type system can guarantee that no such errors could
-occur at run-time.
+\textsc{Self}~\cite{ungar1988self} is a dynamically typed, prototype-based
+language with a simple and uniform object model. \textsc{Self}'s inheritance
+model is typical of what we call mutable inheritance, because an object's parent
+slots may be assigned new values at run-time. Mutable inheritance is rather
+unstructured, and oftentimes access to any clashing methods will generate a
+``messageAmbiguous'' error at run-time. Although \name's dynamic inheritance is
+not as powerful as mutable inheritance, its static type system can guarantee
+that no such errors could occur at run-time.
 
 There is not much work on statically-typed, delegation-based languages.
 \citet{kniesel1999type} provides a good overview of problems when combining
@@ -91,7 +91,8 @@ omission of Cecil, which is also one of the interesting features of \name, is
 dynamic inheritance. There are other
 work~\cite{fisher1995delegation,anderson2003can} on delegation in a
 statically-typed setting, but none of them provide means (such as the merge
-construct, disjointness constraint, etc.) that are needed for extensible designs
+construct, disjointness constraint, etc.) that are needed for extensible
+designs.
 
 \citet{cook1989inheritance} are the first to propose a typed model of
 inheritance where subtyping and inheritance are two separate concepts. In
@@ -106,7 +107,7 @@ traits. In particular, the \textbf{with} construct is unable to merge two
 arbitrary (and possible polymorphic) values, which is essential to express the
 \lstinline{merge} operation in Section~\ref{sec:traits}, and which is only
 possible with disjointness constraint in \name. The \textit{onion} construct in
-the BigBang language~\cite{palmer2015building,menon2012big} has a similar
+the Big Bang language~\cite{palmer2015building,menon2012big} has a similar
 problem -- it is a left-associative operator which gives rightmost precedence.
 
 
@@ -133,7 +134,7 @@ traits. In their original paper, they documented an implementation of the trait
 mechanism in a dynamically typed version of Smalltalk. Since then many
 formalizations of traits have been
 proposed~\cite{scharli2003traitsformal,ducasse2006traits,bettini2010prototypical}.
-For example \citet{fisher2004typed} presented a statically typed calculus that
+For example \citet{fisher2004typed} presented a statically-typed calculus that
 models traits. Conflict detection is kind of the hallmark of trait-based
 inheritance, compared with mixin-based inheritance. One important difference
 with \name is that those systems support \textit{classes} in addition to traits,
