@@ -283,19 +283,18 @@ lightweight, and is dedicated to express extensible designs in a simpler way.
 % structural subtyping is more flexible from a component-based perspective. The
 % type system of \name chooses structural subtyping.
 
-\paragraph{Intersection types, polymorphism and the merge operator}
+\paragraph{Intersection types, polymorphism and the merge construct}
 
 There is a large body of work on intersection types. Here we only talk about
-work that have direct influences on ours. The merge operator was first
-introduced in the Forsythe language~\cite{reynolds1997design}.
-\citet{dunfield2014elaborating} shows significant expressiveness of type systems
-with intersection types and a merge operator. However his calculus lacks
-coherence. The limitation was addressed by~\citet{oliveira2016disjoint}, where
-they introduced the notion of disjointness to ensure coherence. The combination
-of intersection types, a merge operator and parametric polymorphism, while
-achieving coherence was first studied in the \bname
-calculus~\cite{alpuimdisjoint}, where they proposed the notion of disjoint
-polymorphism. \bname serves the theoretical foundation of \name.
+work that have direct influences on ours. \citet{dunfield2014elaborating} shows
+significant expressiveness of type systems with intersection types and a merge
+construct. However his calculus lacks coherence. The limitation was addressed
+by~\citet{oliveira2016disjoint}, where they introduced the notion of
+disjointness to ensure coherence. The combination of intersection types, a merge
+construct and parametric polymorphism, while achieving coherence was first
+studied in the \bname calculus~\cite{alpuimdisjoint}, where they proposed the
+notion of disjoint polymorphism. \bname serves the theoretical foundation of
+\name.
 
 
 \begin{comment}
