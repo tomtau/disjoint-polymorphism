@@ -1,15 +1,9 @@
-
 \section{A Tour of \name}
 \label{sec:traits}
-
-\bruno{Should we say something about structural typing, purely
-  functional? if so, where? here? the introduction?} \jeremy{moved to
-  introduction, page 2, line 25}
 
 This section introduces and showcases the main features of \name. In particular
 we focus on \name's native support for \textit{dynamically composable traits}.
 Along the way, we also explain briefly various other features of \name.
-
 As a running example, we describe a representation of graphical objects such as
 circles, ovals, or buttons. The example is illustrative of typical uses of
 JavaScript-style mixins, and it is adapted from an online
@@ -28,7 +22,6 @@ multiple inheritance. One interesting aspect about traits is the way conflicting
 features that typically arise in multiple inheritance are dealt with. Instead of
 automatically resolved by scoping rules, conflicts are, in the case of \name,
 detected by the type system, and explicitly resolved by the programmer.
-
 There are three interesting points about \name's traits: 1) they are
 \emph{statically typed}; 2) they support \emph{constructors}; and 3)
 they support \emph{dynamic inheritance}. The support for such
@@ -38,7 +31,7 @@ trait system particularly flexible and expressive.
 
 In the remainder of this section, we demonstrate various trait features in
 \name. A comparison with the traditional trait model can be found in
-Section~\ref{sec:related}. The desugaring process from traits to \bname is
+Section~\ref{sec:related}. The desugaring process of traits is
 discussed in Section~\ref{sec:desugar}.
 
 \paragraph{Specifying Traits}
@@ -129,9 +122,8 @@ no conflicts arise. The trait \lstinline$circle$ extends
 
 The keyword \lstinline{inherits} is one of the two options in \name to introduce
 inheritance. In the above example, the trait \lstinline{circle} inherits from
-the trait \lstinline{point} two fields \lstinline{x} and \lstinline{y} plus its
-own field \lstinline{radius}.\bruno{Should we talk about the second option
-  here?} \jeremy{it's mentioned later on.}
+the trait \lstinline{point} two fields \lstinline{x} and \lstinline{y}
+and defined its own field \lstinline{radius}.
 
 \paragraph{Intersection types model subtyping}
 The type \lstinline{Circle} is defined as the intersection of the type
@@ -265,7 +257,7 @@ operator is able to pinpoint the exact field given a label and a type.
 
 One important difference with traditional traits or classes is that traits in
 \name are quite dynamic: we are able to compose traits \textit{dynamically} and
-then instantiate them later. This is impossible in traditional OO language, such
+then instantiate them later. This is impossible in traditional OO languages, such
 as Java, since classes being instantiated must be known statically. In \name, as
 we will explain in Section~\ref{sec:desugar}, traits are just terms: they are
 first-class values and can be passed around or returned from other functions.
