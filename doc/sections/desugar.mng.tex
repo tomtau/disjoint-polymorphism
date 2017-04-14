@@ -47,7 +47,7 @@ projections $[[E.l]]$ and exclusions $[[E -- { l : A }]]$
 For the convenience of writing large programs, we also support type and term
 declarations. A type declaration declares a type constructor's name $T$, its
 type parameters and its definition $A$. A term declaration declares a function's
-name $f$, its parameter signatures, its result type $B$. and a function body
+name $f$, its parameter signatures, its result type $B$, and a function body
 $e$. Although previous work does not have declarations, we do not think adding
 them will cause any problems to the meta-theory of \bname. A careful study of
 these additions is of course a good avenue for future work.
@@ -94,10 +94,10 @@ target language, the type of the self-reference $s$ has become a thunk
 \lstinline[mathescape=true]{T -> $A_0$}, and the occurrences of the
 self-reference \lstinline{s} in the trait body are replaced by \lstinline{s()}.
 Now it is clear that \lstinline{self} is not a special keyword: it can have any
-name.
+name.\bruno{I think a concrete example (has we had before) is good here}
 
 
-\paragraph{Instantiation of Traits}
+\paragraph{Instantiation of traits}
 
 The right part of Figure~\ref{fig:trans-trait} shows the translation of trait
 instantiation. Specifically, the self-reference gets passed to each trait $m_1$
@@ -105,8 +105,9 @@ to $m_n$, as each of them is an open term after translation. The results are
 then merged to form another open term. The top type and unit literal are needed
 to prevent premature evaluation. \lstinline{new} instantiates a trait by taking
 the fixpoint of the resulting open term.
+\bruno{Same goes here: concrete example.}
 
-\paragraph{The Type for Traits}
+\paragraph{The type for traits}
 
 \lstinline[mathescape=true]{Trait[$T_1, T_2$]} denotes the type of those traits
 which provide an interface described by the type $T_2$ with dependency on $T_1$.
@@ -160,7 +161,7 @@ elaborating type-checker, which takes a \bname expression, checks it, and
 produces another expression in the target language. The final expression is then
 directly executed by an interpreter. We chose call-by-value untyped lambda
 calculus as the target language. Since we focus on the implementation, and types
-are irrelevant after type checking, untyped lambda calculus is a suitable choice
+are irrelevant after type checking, the untyped lambda calculus is a suitable choice
 with minimal syntax.
 
 The overall implementation is unremarkable, as it closely follows the semantics
@@ -177,9 +178,13 @@ The type checker is the most involved component in the pipeline. It contains a
 (coercive) subtyping procedure and a disjointness checker, both of which are the
 most essential parts for \name to work as we wanted it. In regard to the
 subtyping rules, in addition to what have been presented in
-\citet{alpuimdisjoint}, we have an additional rule specifically designed for the
-composition of Object Algebras. Due to the space limit, we only show a
-simplified one below: \ottusedrule{\ottdruleSubXXR{}} We believe this rule would
+\citet{alpuimdisjoint}, we have an additional rule, which we found
+helpful for enabling the
+composition of Object Algebras. For brevity, we only show a
+simplified version below: \ottusedrule{\ottdruleSubXXR{}} 
+\bruno{explain what the rule does, and give and example, perhaps
+  inspired by OAs, that illustrates it.}
+We believe this rule would
 not endanger the type system, as it is orthogonal to the other subtyping rules.
 Besides, our preliminary meta-theory study shows that the new subtype system
 enjoys the same properties as before.
