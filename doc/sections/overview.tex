@@ -287,7 +287,7 @@ arbitrary objects. This limitation essentially puts intersection types in Scala
 in a second-class status. Although \lstinline{merge} returns an intersection
 type, it is hard to build values with such types.
 
-Exactly the same situation arizes when using inheritance. In Scala, if
+Exactly the same situation arises when using inheritance. In Scala, if
 we try, for example, to create a trait parametrized by an unknown
 supertype, we face problems:
 
@@ -298,7 +298,7 @@ trait T[A] extends A
 \noindent Here the intention would be to capture, once and for all, a 
 family of traits that extend multiple different traits/classes with
 the same method. However, this definition is rejected in Scala because 
-\lstinline{extends} can only be used with concrete classes (and not
+\lstinline[language=scala]{extends} can only be used with concrete classes (and not
 type parameters).  
  
 %A possible solution is to use
