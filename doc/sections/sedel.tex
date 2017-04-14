@@ -83,7 +83,8 @@ In \name the actual type of arithmetic expressions is:
 \lstinputlisting[linerange=14-14]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
 An attentive reader may immediately recognize this is a variant of the VISITOR
 pattern. Indeed, as already noted by \citet{oliveira2012extensibility}, Object
-Algebras are closely related to internal visitors~\cite{}. However, \emph{Object
+Algebras are closely related to internal
+visitors~\cite{}\bruno{missing reference: my 2008 OOPSLA paper}. However, \emph{Object
 Algebras in languages like Java or Scala do not define the type
 \lstinline{Exp} because this would preclude extensibility in those
 languages}. Nevertheless in \name it is still possible to define
@@ -98,7 +99,7 @@ built as:
 \noindent Note that the code is almost the same as before, but the the
 expression now has a concrete type, rather than being a function. With
 \lstinline{Exp} we can easily abstract over values, as we will see later.
-
+\bruno{explanation for big lambda/lambda required.}
 
 
 \paragraph{Add a subtraction variant.} Interesting things happen when a new
@@ -128,9 +129,8 @@ position of \lstinline{accept} and the function constructor is
 subtyping and inheritance always go along together. For example, Java/Scala
 forbid any kind of type-refinement on method parameter types. The consequence of
 this is that in those languages, it is impossible to express that
-\lstinline{ExtExp} is both an extension and a supertype of \lstinline{Exp}. Such
-kind of phenomenon is an example where ``inheritance is not
-subtyping''~\cite{cook1989inheritance}. In \name, however, \lstinline{ExtExp} is
+\lstinline{ExtExp} is both an extension and a supertype of
+\lstinline{Exp}. In \name, however, \lstinline{ExtExp} is
 indeed a supertype of \lstinline{Exp}.
 
 \paragraph{Add a new operation.} The second type of extension is adding a new
@@ -221,8 +221,8 @@ construct) it is possible to compose two Object Algebras in a trivial way:
 
 \lstinputlisting[linerange=59-59]{../examples/visitor3.txt}% APPLY:linerange=COMBINE_DEF
 
-That is it. None of the boilerplate in other approaches~\cite{}, or type-unsafe
-meta-programming techniques~\cite{} of other approaches are needed! Three points
+That is it. None of the boilerplate in other approaches~\cite{}~\bruno{reference}, or type-unsafe
+meta-programming techniques~\cite{}~\bruno{reference} of other approaches are needed! Three points
 worth noting: 1) \lstinline{combine} relies on \textit{dynamic inheritance}.
 Notice how we let \lstinline{combine} inherit \lstinline{f & g}, for which the
 implementation is unknown statically; 2) \name supports multiple inheritance of
@@ -232,8 +232,8 @@ constraint (\lstinline{B * A}) is \textit{crucial} to make sure two Object
 Algebras (\lstinline{f} and \lstinline{g}) are disjoint in order to avoid
 conflicts when being composed. Type systems for many OO languages are too
 inflexible to express this kind of flexible and dynamic inheritance. \name hits
-a sweet spot in the design space of being how much dynamic, where we retain much
-of the flexibility of dynamic languages without sacrificing the type-safety and
+a sweet spot in the design space of being dynamic, while retaining much
+of the flexibility of dynamic languages, and without sacrificing the type-safety and
 coherence guarantees.
 
 With \lstinline{combine} at hand, we can finally have an object \lstinline{o}
