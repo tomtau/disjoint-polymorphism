@@ -71,7 +71,7 @@ singleton records.
   Expressions & $[[E]]$ & ::= & $[[()]] \mid [[N]] \mid [[x]] \mid [[\ x . E]] \mid [[E1 E2]] \mid [[blam ( a ** A ) . E]] \mid [[E A]] \mid [[E1 ,, E2]] $ \\
          & & $\mid$ & $[[{ l = E }]] \mid [[E . l]] \mid [[E -- { l : A }]] $ \\
   Programs & $[[pgm]]$ & ::= & $[[decl1 .. decln E]]$ \\
-  Declarations & $[[decl]]$ & ::= & $[[ def f ( x1 : A1 ) .. ( xn : An ) : B = E ]] \mid [[ type T [ a1 .. an ] = A ]]$ \\ \\
+  Declarations & $[[decl]]$ & ::= & $[[ def f ( x1 : A1 ) .. ( xn : An ) : B = E ]] \mid [[ type T [ a1 , .. , an ] = A ]]$ \\ \\
 \end{tabular}
 \begin{tabular}{llll}
   Record types & $[[ { l1 : A1 , ... , ln : An } ]] $ & := & $[[ { l1 : A1} & ... & { ln : An } ]]$ \\
