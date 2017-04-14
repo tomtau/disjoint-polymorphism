@@ -70,15 +70,15 @@ interface B {}   // original interface
 interface A super B {} // A interface added later, which becomes a supertype of B
 \end{lstlisting}
 
-\noindent We call such an imaginary feature \emph{retroactive super
-  types}. The feature is said to be retroactive because supertypes can
-be added \`a posteriori, which is not possible in languages like Java.
-We should note that Ostermann~\cite{}\bruno{others?}
-also proposes a similar feature to retroactive super types.
+\noindent We call such an imaginary feature \emph{retroactive super types}. The
+feature is said to be retroactive because supertypes can be added \`a
+posteriori, which is not possible in languages like Java. We should note that
+\citet{ostermann2008nominal} also proposes a similar feature to retroactive
+super types.
 
 Retroactive super types could also work with classes, and
 inheritance. In this case it would be important to break the
-functionality that is currently provided by {\bf extends}, so that 
+functionality that is currently provided by \lstinline[language=java]{extends}, so that
 code can be inherited without creating a subtype at the same time. 
 A similar example with classes, but also accounting for inheritance 
 would be:
@@ -87,10 +87,10 @@ would be:
 class B {}   // original class
 
 // A class added later, inherits from B and becomes a supertype of B
-interface A inherits B super B {} 
+class A inherits B super B {}
 \end{lstlisting}
 
-\noindent Once the functionality of {\bf extends} is broken, it also
+\noindent Once the functionality of \lstinline[language=java]{extends} is broken, it also
 becomes possible to inherit code without creating any subtype
 relation. This is for example the situation that is discussed by \citet{cook1989inheritance}.
 
@@ -99,19 +99,18 @@ Another feature that is missing from mainstream OOP languages is
 contravariant refinement of argument types. Most Java-like OOP languages support covariant return type 
 refinement. That is:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=java]
 interface A  {A m();} 
 
 interface B  extends A {B m();} // B extends and refines the return type of m() to a subtype
 \end{lstlisting}
 
-\noindent From the theory of OOP languages, we know that an equally
-valid form of refinement also applies to method arguments~\cite{}. However 
-the refinement on method arguments is contravariant. For an
-extended type to become a subtype under argument refinements in
-methods, it is necessary that the arguments of the methods
-in the subtypes become supertypes. The following example illustrates 
-this: 
+\noindent From the theory of OOP languages, we know that an equally valid form
+of refinement also applies to method arguments~\cite{cardelli1984semantics}.
+However the refinement on method arguments is contravariant. For an extended
+type to become a subtype under argument refinements in methods, it is necessary
+that the arguments of the methods in the subtypes become supertypes. The
+following example illustrates this:
 
 \begin{lstlisting}[language=java]
 interface A  {Int m(String s);} 
@@ -119,7 +118,7 @@ interface A  {Int m(String s);}
 interface B  extends A {Int m(Object s);} // B extends and refines the return type of m()
 \end{lstlisting}
 
-\noindent Unfortunatelly this is invalid Java code, since Java 
+\noindent Unfortunately this is invalid Java code, since Java
 does not support contravariant subtype refinement of arguments. 
 A possible reason for not having such feature is that there are not
 many applications where this feature \emph{in isolation} seems necessary. 
@@ -150,30 +149,29 @@ interface ExtExp super Exp { // An extended AST becomes a supertype of the origi
 \end{figure}
 
 \paragraph{Combining Retroactive Super Types with Contravariant Refinement}
-However, combined with retroactive super types, contravariant
-refinement of argument types becomes 
-much more interesting! In particular we claim that this combination is 
-helpful in dealing with modularity/reuse problems that arise in
-visitors and Object Algebras. There have been several attempts 
-at making visitors extensible in the past~\cite{}. However most
-attempts usually rely on advanced type system features. With retroactive super
-types and contravariant refinement, extensible visitors and improved
-variants of Object Algebras could be achieved more naturally.  
 
-Figure~\ref{fig:JVis} presents pseudo Java code that uses the two
-features in combination. The interface \lstinline{ExpVisitor}
-represents a (internal) visitor interface (and also an Object Algebra
-interface~\cite{}) for a simple AST containing literals and
-additions. The interface \lstinline{Exp} represents the AST interface.
-In a later extension, a subtraction node is added. Modelling the
-extended visitor type (\lstinline{ExtExpVisitor}) is easy: just add
-the new visit method (\lstinline{sub}). The interesting part is
-modelling the extended AST type. The extended type
-(\lstinline{ExtExp}) should become a \emph{supertype} of
-\lstinline{Ext}. This follows from the fact that the new
-\lstinline{accept} method takes an argument which is a subtype of the
-original accept method. Thus we get the following subtyping relation
-between the signatures of the two accept methods:
+However, combined with retroactive super types, contravariant refinement of
+argument types becomes much more interesting! In particular we claim that this
+combination is helpful in dealing with modularity/reuse problems that arise in
+Object-Algebras/Visitors. There have been several attempts at making visitors
+extensible in the past~\cite{oliveira09modular,togersen:2004}. However most
+attempts usually rely on advanced type system features. With retroactive super
+types and contravariant refinement, extensible visitors and improved variants of
+Object Algebras could be achieved more naturally.
+
+Figure~\ref{fig:JVis} presents pseudo Java code that uses the two features in
+combination. The interface \lstinline{ExpVisitor} represents a (internal)
+visitor interface (and also an Object Algebra
+interface~\cite{oliveira2012extensibility}) for a simple AST containing literals
+and additions. The interface \lstinline{Exp} represents the AST type. In a
+later extension, a subtraction node is added. Modelling the extended visitor
+interface (\lstinline{ExtExpVisitor}) is easy: just add the new visit method
+(\lstinline{sub}). The interesting part is modelling the extended AST type. The
+extended type (\lstinline{ExtExp}) should become a \emph{supertype} of
+\lstinline{Exp}. This follows from the fact that the new \lstinline{accept}
+method takes an argument which is a subtype of the original \lstinline{accept}
+method. Thus we get the following subtyping relation between the signatures of
+the two \lstinline{accept} methods:
 
 \begin{lstlisting}[mathescape=true]
 ExpVisitor<A> $\to$ A $<:$ ExtExpVisitor<A> $\to$ A
@@ -182,25 +180,24 @@ ExpVisitor<A> $\to$ A $<:$ ExtExpVisitor<A> $\to$ A
 \noindent Here the subtype (the type on the left) is the type of the
 \lstinline{accept} method in \lstinline{Exp}, and the supertype is the type of
 the new \lstinline{accept} method. Since the AST type is just the
-accept method, it is clear that the extended AST type should be a
+\lstinline{accept} method, it is clear that the extended AST type should be a
 supertype of the original one. 
 
 Although such code cannot be expressed in Java, it is expressible in
-\name, as shown in Section~\ref{sec:OA}. In fact statically typed
+\name, as shown in Section~\ref{sec:OA}. In fact statically-typed
 OO languages using structural types (and which also support
 contravariant type refinement!) should be able to express 
 the example, as the subtyping relations are implict. 
 
 \subsection{An Overly Conservative Restriction on Multiple Inheritance}
 
-Multiple inheritance can be quite helpful to provide reuse. 
-Although not all mainstream OOP languages support multiple
-inheritance some of them do. For example Scala, C++ and Java 8
-(with default methods) all support some form of multiple inheritance. 
-However, there are some restrictions to the usage of multiple
-inheritance. One of those common restrictions is that the same class (or trait)
-cannot be inherited twice. We illustrate this restriction using Scala
-and Scala traits (which provide a form of multiple implementation inheritance):
+Multiple inheritance can be quite helpful to provide reuse. Although not all
+mainstream statically-typed OOP languages support multiple inheritance some of
+them do. For example Scala, C++ and Java 8 (with default methods) all support
+some form of multiple inheritance. However, there are some restrictions to the
+usage of multiple inheritance. One of those common restrictions is that the same
+class (or trait) cannot be inherited twice. We illustrate this restriction using
+Scala traits (which provide a form of multiple implementation inheritance):
 
 \begin{lstlisting}[language=scala]
 trait A {def m(x : A) = x}
@@ -225,7 +222,7 @@ to inherit from \lstinline{C} twice: the first time with the type
 parameter instantiated to \lstinline{Int}, and the second time with
 the type parameter instantiated to \lstinline{Boolean}. The intention 
 would be that the resulting class would have two \emph{overloaded}
-methods \lstinline{m}. Unfortunatelly this code is rejected for the
+methods \lstinline{m}. Unfortunately this code is rejected for the
 same reason as the previous example: the trait \lstinline{C} is
 inherited twice. To overcome this problem, a possible solution would
 be to create two specialized versions of \lstinline{C}:
@@ -251,9 +248,9 @@ Object Algebras, as we shall see in Section~\ref{sec:dynamic}.
 \subsection{No Dynamic Inheritance}
 \label{sec:scala-merge}
 
-The final limitation is that statically typed maistream OOP languages use a
-class-based static inheritance model. This means that when both inheritance 
-is used and objects are created, the \emph{classes involved must be statically known}.
+The final limitation is that maistream OOP languages use a class-based static
+inheritance model. This means that when both inheritance is used and objects are
+created, the \emph{classes involved must be statically known}.
 \begin{comment}
 Intersection types date back as early as Coppo et al.'s
 work~\cite{coppo1981functional}. Since then researchers have studied
@@ -274,8 +271,8 @@ both traits.
   trait B
   val newAB : A with B = new A with B
 \end{lstlisting}
-\noindent Here the type \lstinline{A with B} is an intersection type,
-and the expression \lstinline{new A with B} allows creating a new 
+\noindent Here the type \lstinline[language=scala]{A with B} is an intersection type,
+and the expression \lstinline[language=scala]{new A with B} allows creating a new
 object from the combination of the traits \lstinline{A} and
 \lstinline{B}.
 
@@ -293,7 +290,7 @@ example, the following code:
   // Invalid Scala code:
   def merge[A,B] (x: A) (y: B) : A with B = new x with y
 \end{lstlisting}
-is rejected by the Scala compiler. The problem is that the \lstinline$with$
+is rejected by the Scala compiler. The problem is that the \lstinline[language=scala]$with$
 construct for Scala expression can only be used to mixin traits or classes, not
 arbitrary objects. This limitation essentially puts intersection types in Scala
 in a second-class status. Although \lstinline{merge} returns an intersection
@@ -305,10 +302,8 @@ type, it is hard to build values with such types.
 %type-unsafe operations, and can result in run-time type exceptions
 %that should be caught statically instead.
 
-The need for dynamic inheritance arises in composition operators for
-Object Algebras~\cite{}. Although such compositions can be encoded in
-Scala using low-level meta-programming mechanisms (such as run-time
-reflection), a language-based solution would be clearly better. 
-Section \ref{sec:dynamic}, shows that \name offers such language-based 
-solution.
-
+The need for dynamic inheritance arises in composition operators for Object
+Algebras. Although such compositions can be encoded in Scala using low-level
+meta-programming mechanisms (such as run-time reflection), a language-based
+solution would be clearly better. Section \ref{sec:dynamic}, shows that \name
+offers such language-based solution.
