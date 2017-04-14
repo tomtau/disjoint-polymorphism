@@ -11,7 +11,7 @@ existing languages:
 \item \name does not couple inheritance and subtyping. Moreover
 \name supports contravariant parameter types in the subtyping
 relation. This enables \name to account for the \emph{correct
-subtyping relations} between datatypes modelled with Object Algebras 
+subtyping relations} between datatypes modelled with Object Algebras
 and Extensible Visitors.
 \item \name supports an expressive form of dynamic inheritance. This form
   of inheritance is sufficient to directly express (delegation-based) composition
@@ -83,8 +83,7 @@ In \name the actual type of arithmetic expressions is:
 \lstinputlisting[linerange=14-14]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
 An attentive reader may immediately recognize this is a variant of the VISITOR
 pattern. Indeed, as already noted by \citet{oliveira2012extensibility}, Object
-Algebras are closely related to internal
-visitors~\cite{}\bruno{missing reference: my 2008 OOPSLA paper}. However, \emph{Object
+Algebras are closely related to internal visitors~\cite{Oliveira_2008}. However, \emph{Object
 Algebras in languages like Java or Scala do not define the type
 \lstinline{Exp} because this would preclude extensibility in those
 languages}. Nevertheless in \name it is still possible to define
@@ -96,10 +95,11 @@ built as:
 
 \lstinputlisting[linerange=68-68]{../examples/visitor.txt}% APPLY:linerange=EXPRESSION1_EG
 
-\noindent Note that the code is almost the same as before, but the the
-expression now has a concrete type, rather than being a function. With
-\lstinline{Exp} we can easily abstract over values, as we will see later.
-\bruno{explanation for big lambda/lambda required.}
+\noindent \name provides a lightweight syntax for writing first-class functions,
+i.e., \lstinline{\x -> x + 1}, and big lambda (\lstinline{/\}) to introduce type
+  variables. Note that the code is almost the same as before, but the expression
+  now has a concrete type, rather than being a function. With \lstinline{Exp} we
+  can easily abstract over values, as we will see later.
 
 
 \paragraph{Add a subtraction variant.} Interesting things happen when a new
@@ -150,7 +150,7 @@ To test our functions we create some values of type \lstinline{ExtExp} as follow
 %\lstinline{ExtExp}:
 \lstinputlisting[linerange=71-72]{../examples/visitor.txt}% APPLY:linerange=EXPRESSION2_EG
 Notice how we reuse \lstinline{e1} in the definition of
-\lstinline{e2}, even though they have \emph{different types}. This is 
+\lstinline{e2}, even though they have \emph{different types}. This is
 possible by calling the \lstinline{accept}
 method of \lstinline{Exp} on a subtype (\lstinline{SubExpAlg})
 of \lstinline{ExpAlg}.
@@ -169,7 +169,7 @@ safely applied to \lstinline{e1} (of type \lstinline{Exp}) since
 \label{sec:dynamic}
 
 When programming with Object Algebras, it is often the case that it is
-necessary to pack multiple operations in the same object. For example, 
+necessary to pack multiple operations in the same object. For example,
 in the simple language we have been developing it may be useful to
 create an object that contains both printing and evaluation.
 %The solution to the Expression Problem presented so far has a wrinkle in its usage. To be able to call
@@ -206,11 +206,11 @@ Object Algebras.
 % crutial to ensure that the composition between \lstinline{x} and \lstinline{y}
 % is well-formed. That is, there are no conflicts between the two objects.
 
-\paragraph{Boilerplate-free composition of Object Algebras} 
+\paragraph{Boilerplate-free composition of Object Algebras}
 %An acute reader may have smelled some boilerplate code in the definition of
 %\lstinline{combine}. After all, \lstinline{combine} just invokes the
 %corresponding method on the arguments, which is solely driven by the types of
-%the two input algebras and the resulting algebra. 
+%the two input algebras and the resulting algebra.
 The merge construct (cf. Section~\ref{sec:merge-construct}) in \name is quite
 powerful. Using trait inheritance (which is just syntactic sugar to the merge
 construct) it is possible to compose two Object Algebras in a trivial way:
@@ -221,8 +221,8 @@ construct) it is possible to compose two Object Algebras in a trivial way:
 
 \lstinputlisting[linerange=59-59]{../examples/visitor3.txt}% APPLY:linerange=COMBINE_DEF
 
-That is it. None of the boilerplate in other approaches~\cite{}~\bruno{reference}, or type-unsafe
-meta-programming techniques~\cite{}~\bruno{reference} of other approaches are needed! Three points
+That is it. None of the boilerplate in other approaches~\cite{oliveira2012extensibility}, or type-unsafe
+meta-programming techniques~\cite{oliveira2013feature,rendel14attributes} of other approaches are needed! Three points
 worth noting: 1) \lstinline{combine} relies on \textit{dynamic inheritance}.
 Notice how we let \lstinline{combine} inherit \lstinline{f & g}, for which the
 implementation is unknown statically; 2) \name supports multiple inheritance of
@@ -253,7 +253,7 @@ is rejected:
 Instead, \lstinline{e3} should be written as follow:
 \lstinputlisting[linerange=-]{}% APPLY:linerange=EXPRESSION_CORRECT
 Although, admittedly, creating expressions like this is slightly more
-cumbersome. 
+cumbersome.
 \end{comment}
 
 
@@ -331,7 +331,7 @@ Problem~\cite{}.
   have to be encoded, with significant amounts of boilerplate, with
   either pairs or intersection types. Moreover, the built-in support
   for composition operators \emph{guarantees} safe and unambigous
-  composition, which is not guaranteed in previous work. 
+  composition, which is not guaranteed in previous work.
 
 \end{itemize}
 
