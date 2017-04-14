@@ -1,11 +1,9 @@
 \section{A Critique of Mainstream Statically-Typed OOP}
 \label{sec:critique}
-\bruno{Jeremy: pleasy polish the code formatting (some keywords not 
-in bold face (example: inherits)).}
 
 This section discusses several limitations of mainstream OOP languages
 that work against modularity and reuse. The limitations discussed here
-arise in a concrete practical application: Extensible Visitors and/or
+are relevant in a concrete practical application: Extensible Visitors and/or
 Object Algebras. Such limitations arise from the \emph{covariant
   model} of objects, the limitations imposed by the use of
 \emph{static inheritance} and common (overly conservative)
@@ -68,7 +66,6 @@ what we would like to express is:
 
 \begin{lstlisting}[language=java]
 interface B {}   // original interface
-
 interface A super B {} // A interface added later, which becomes a supertype of B
 \end{lstlisting}
 
@@ -87,41 +84,40 @@ would be:
 
 \begin{lstlisting}[language=java]
 class B {}   // original class
-
-// A class added later, inherits from B and becomes a supertype of B
+//class A is added later, inherits from B and becomes a supertype of B
 class A inherits B super B {}
-\end{lstlisting}
+\end{lstlisting}\bruno{inherits not in bold yet!}
 
 \noindent Once the functionality of \lstinline[language=java]{extends} is broken, it also
 becomes possible to inherit code without creating any subtype
 relation. This is for example the situation that is discussed by \citet{cook1989inheritance}.
 
-\paragraph{Contravariant Subtyping Refinement of Arguments}
+\paragraph{Contravariant Type Refinement of Arguments}
 Another feature that is missing from mainstream OOP languages is 
 contravariant refinement of argument types. Most Java-like OOP languages support covariant return type 
 refinement. That is:
 
 \begin{lstlisting}[language=java]
 interface A  {A m();} 
-
 interface B  extends A {B m();} // B extends and refines the return type of m() to a subtype
 \end{lstlisting}
 
 \noindent From the theory of OOP languages, we know that an equally valid form
 of refinement also applies to method arguments~\cite{cardelli1984semantics}.
-However the refinement on method arguments is contravariant. For an extended
+However the refinement on method arguments is \emph{contravariant}. For an extended
 type to become a subtype under argument refinements in methods, it is necessary
 that the arguments of the methods in the subtypes become supertypes. The
 following example illustrates this:
 
 \begin{lstlisting}[language=java]
 interface A  {Int m(String s);} 
-
 interface B  extends A {Int m(Object s);} // INVALID: B extends and refines the return type of m()
 \end{lstlisting}
 
-\noindent Unfortunately this is invalid Java code, since Java
-does not support contravariant subtype refinement of arguments. 
+\noindent Here the intention is to refine the argument of method
+\lstinline{m} with a supertype (\lstinline{Object}) so that the
+interface \lstinline{B} becomes a subtype. Unfortunately this is invalid Java code, since Java
+does not support contravariant type refinement of arguments. 
 A possible reason for not having such feature is that there are not
 many applications where this feature \emph{in isolation} seems necessary. 
 
@@ -131,15 +127,12 @@ interface ExpVisitor<A> { // Base Visitor and Language
 	A lit(int x);
 	A add(A e1, A e2);
 }
-
 interface Exp { // Simple AST for expressions
 	<A> A accept(ExpVisitor<A> v);
 }
-
 interface ExtExpVisitor<A> extends ExpVisitor<A> { // Extended Visitor and Language
 	A sub(A e1, A e2);
 }
-
 interface ExtExp super Exp { // An extended AST becomes a supertype of the original one
 	<A> A accept(ExtExpVisitor<A> v); // Contravariant argument refinement
 }
@@ -150,7 +143,7 @@ interface ExtExp super Exp { // An extended AST becomes a supertype of the origi
 \label{fig:JVis}
 \end{figure}
 
-\paragraph{Combining Retroactive Super Types with Contravariant Refinement}
+\paragraph{Combining Retroactive Super Types with Contravariant Type Refinement}
 
 However, combined with retroactive super types, contravariant refinement of
 argument types becomes much more interesting! In particular we claim that this
@@ -194,7 +187,7 @@ the example, as the subtyping relations are implict.
 \subsection{An Overly Conservative Restriction on Multiple Inheritance}
 
 Multiple inheritance can be quite helpful to provide reuse. Although not all
-mainstream statically-typed OOP languages support multiple inheritance some of
+mainstream statically-typed OOP languages support multiple inheritance, some of
 them do. For example Scala, C++ and Java 8 (with default methods) all support
 some form of multiple inheritance. However, there are some restrictions to the
 usage of multiple inheritance. One of those common restrictions is that the same
@@ -203,7 +196,6 @@ Scala traits (which provide a form of multiple implementation inheritance):
 
 \begin{lstlisting}[language=scala]
 trait A {def m(x : A) = x}
-
 trait B extends A with A {}
 \end{lstlisting}
 
@@ -213,8 +205,7 @@ reasonable. However consider the following variant of the example
 above:
 
 \begin{lstlisting}[language=scala]
-trait C[A] {def m(x : A) = x}
-	
+trait C[A] {def m(x : A) = x}	
 trait D extends C[Int] with C[Boolean]
 \end{lstlisting}
 
@@ -231,9 +222,7 @@ be to create two specialized versions of \lstinline{C}:
 
 \begin{lstlisting}[language=scala]
 trait CInt {def m(x : Int) = x}
-
 trait CBoolean {def m(x : Boolean) = x}
-	
 trait D extends CInt with CBoolean
 \end{lstlisting}
 
@@ -278,7 +267,7 @@ and the expression \lstinline[language=scala]{new A with B} allows creating a ne
 object from the combination of the traits \lstinline{A} and
 \lstinline{B}.
 
-Scala also allows intersection of type parameters. For example,
+Scala also allows intersections of type parameters. For example,
 \begin{lstlisting}[language=scala]
   def merge[A,B] (x: A) (y: B) : A with B = ...
 \end{lstlisting}
@@ -296,7 +285,22 @@ is rejected by the Scala compiler. The problem is that the \lstinline[language=s
 construct for Scala expression can only be used to mixin traits or classes, not
 arbitrary objects. This limitation essentially puts intersection types in Scala
 in a second-class status. Although \lstinline{merge} returns an intersection
-type, it is hard to build values with such types. 
+type, it is hard to build values with such types.
+
+Exactly the same situation arizes when using inheritance. In Scala, if
+we try, for example, to create a trait parametrized by an unknown
+supertype, we face problems:
+
+\begin{lstlisting}[language=scala]
+trait T[A] extends A
+\end{lstlisting}
+
+\noindent Here the intention would be to capture, once and for all, a 
+family of traits that extend multiple different traits/classes with
+the same method. However, this definition is rejected in Scala because 
+\lstinline{extends} can only be used with concrete classes (and not
+type parameters).  
+ 
 %A possible solution is to use
 %low-level meta-programming mechanisms (such as run-time
 %reflection)~\cite{}, but clearly it would be better to have . 
