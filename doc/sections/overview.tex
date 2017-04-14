@@ -48,7 +48,7 @@ extensions (of classes or interfaces) always result in subtypes.
 This results in a very simple programming model, which is easy 
 to explain to programmers.  
 
-Unfortunatelly, as the theory of OOP languages and subtyping has taught 
+Unfortunately, as the theory of OOP languages and subtyping has taught
 us that the story is not quite so simple. Since the early days of the
 theoretical foundations of OOP and subtyping, it has bee
 
@@ -64,7 +64,7 @@ there are situations where extensions are actually
 covariant model. Using some imaginary syntax for a Java-like language, 
 what we would like to express is:
 
-\begin{lstlisting}[language=java]
+\begin{lstlisting}
 interface B {}   // original interface
 interface A super B {} // A interface added later, which becomes a supertype of B
 \end{lstlisting}
@@ -82,11 +82,11 @@ code can be inherited without creating a subtype at the same time.
 A similar example with classes, but also accounting for inheritance 
 would be:
 
-\begin{lstlisting}[language=java]
+\begin{lstlisting}
 class B {}   // original class
 //class A is added later, inherits from B and becomes a supertype of B
 class A inherits B super B {}
-\end{lstlisting}\bruno{inherits not in bold yet!}
+\end{lstlisting}
 
 \noindent Once the functionality of \lstinline[language=java]{extends} is broken, it also
 becomes possible to inherit code without creating any subtype
