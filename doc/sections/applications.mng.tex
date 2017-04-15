@@ -99,7 +99,9 @@ arithmetic expressions. On top of that, we also define an evaluator, a pretty
 printer, and a type checker. Note that for some languages (e.g.,
 \lstinline{simplenat}), since it has only one kind of value, we only define an
 evaluator and a pretty printer. We thus obtain 12 languages and 30 operations in
-total.
+total. The complete language \lstinline{mini-JS} has all the features and
+operations. Besides, we also define a new algebra with the combined behavior of
+all the operations.
 
 % Figure~\ref{fig:dependency} gives an overview of the reusable components of the
 % implementation, and the subtyping/inheritance relations of the languages we can
@@ -337,7 +339,7 @@ interested reader to the supplementary materials.
 
 To demonstrate the usage of the final language \lstinline{MiniJS}, here is a function that
 makes sure ``well-typed programs cannot go wrong'':
-\lstinputlisting[linerange=719-725]{../examples/case_study1.txt}% APPLY:linerange=SUPER_DEF
+\lstinputlisting[linerange=729-735]{../examples/case_study1.txt}% APPLY:linerange=SUPER_DEF
 It type checks the program before passing it to the evaluator and pretty
 printer.
 
@@ -349,7 +351,7 @@ printer.
 % the \lstinline{add1} function.
 
 % Finally we apply it to the program we have just created:
-% \lstinputlisting[linerange=729-730]{../examples/case_study1.txt}% APPLY:linerange=TEST_TEST
+% \lstinputlisting[linerange=739-740]{../examples/case_study1.txt}% APPLY:linerange=TEST_TEST
 % Everything works as expected!
 \end{comment}
 

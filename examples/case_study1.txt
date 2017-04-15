@@ -696,6 +696,16 @@ def checkFEnv (fenv : FEnv) : FTEnv = \n ->
     caseFn Maybe[Pair[Type, Type]] f (\arg typ ret body ->
     (just Pair[Type,Type] (mkPair Type Type typ ret))))
 
+-- Combined Algebra
+type SuperAlg = IEval & IPrint & ITC
+def combineAlg (fenv : FEnv) : MiniJSAlg[SuperAlg] =
+  let ftenv : FTEnv = checkFEnv fenv in
+  let op1 : MiniJSAlg[IEval]  = new[MiniJSAlg[IEval]] evalFunAlg(fenv) in
+  let op2 : MiniJSAlg[IPrint] = new[MiniJSAlg[IPrint]] ppBoolAlg & ppNatAlg & ppCompAlg & ppVarAlg & ppLogicAlg & ppFunAlg in
+  let op3 : MiniJSAlg[ITC]    = new[MiniJSAlg[ITC]] tcBoolAlg & tcNatAlg & tcCompAlg & tcVarAlg & tcLogicAlg & tcFunAlg(ftenv) in
+  op1 ,, op2 ,, op3
+
+
 def add1Body : MiniJS = {
   accept = /\E. \f -> f.add (f.var "x") (f.num 1)
 }
