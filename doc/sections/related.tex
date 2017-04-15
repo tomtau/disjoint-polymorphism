@@ -149,8 +149,12 @@ Compared to the traditional trait mode, traits in \name have the following diffe
   whereas traits in our language can be instantiated directly.
 \item Traditional traits cannot take constructor parameters whereas ours can. As
   shown in Section~\ref{sec:traits}, traits in \name have a single constructor.
-\item no super keyword
-\item more...
+\item Our trait model lacks a proper notation of inheritance relationship. For
+  example in the traditional trait mode, if the same method (i.e., from the same
+  trait) is obtained more than once via different paths, there is no conflict.
+  This is not the case in \name.
+\item Traits in \name support dynamic inheritance. In the traditional trait
+  model, when it comes to inheritance, the traits must be statically known.
 \end{itemize}
 
 
