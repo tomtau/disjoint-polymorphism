@@ -73,6 +73,8 @@ import Source.SrcLoc
     '_'         { T _ TSym "_" }
     '=>'        { T _ TSym "=>" }
     '++'        { T _ TSym "++" }
+    '&&'        { T _ TSym "&&" }
+    '||'        { T _ TSym "||" }
 
 
     LOWER_IDENT { T _ (Tlowerid $$) _ }
@@ -80,6 +82,8 @@ import Source.SrcLoc
 
 %right '->'
 %left ',,'
+%left '||'
+%left '&&'
 %nonassoc '==' '/='
 %nonassoc '<' '>'
 %left '+' '-' '++'
@@ -332,10 +336,12 @@ infixexpr :: { Expr }
           | infixexpr '-' infixexpr                                       { PrimOp (Arith Sub) $1 $3 }
           | infixexpr '*' infixexpr                                       { PrimOp (Arith Mul) $1 $3 }
           | infixexpr '/' infixexpr                                       { PrimOp (Arith Div) $1 $3 }
-          | infixexpr '==' infixexpr                                      { PrimOp (Logical Equ) $1 $3 }
-          | infixexpr '/=' infixexpr                                      { PrimOp (Logical Neq) $1 $3 }
-          | infixexpr '<' infixexpr                                       { PrimOp (Logical Lt) $1 $3 }
-          | infixexpr '>' infixexpr                                       { PrimOp (Logical Gt) $1 $3 }
+          | infixexpr '==' infixexpr                                      { PrimOp (Comp Equ) $1 $3 }
+          | infixexpr '/=' infixexpr                                      { PrimOp (Comp Neq) $1 $3 }
+          | infixexpr '<' infixexpr                                       { PrimOp (Comp Lt) $1 $3 }
+          | infixexpr '>' infixexpr                                       { PrimOp (Comp Gt) $1 $3 }
+          | infixexpr '&&' infixexpr                                      { PrimOp (Logical LAnd) $1 $3 }
+          | infixexpr '||' infixexpr                                      { PrimOp (Logical LOr) $1 $3 }
           | infixexpr '++' infixexpr                                      { PrimOp Append $1 $3 }
           | infixexpr ',,' infixexpr                                      { Merge $1 $3 }
           | fexpr                                                         { $1 }

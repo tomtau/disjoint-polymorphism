@@ -37,6 +37,7 @@ $(derive [''UExpr])
 instance Subst UExpr ArithOp
 instance Subst UExpr LogicalOp
 instance Subst UExpr Operation
+instance Subst UExpr CompOp
 instance Subst UExpr UExpr where
   isvar (UVar v) = Just (SubstName v)
   isvar _ = Nothing

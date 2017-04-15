@@ -344,6 +344,10 @@ infer (PrimOp op e1 e2) =
       e2' <- tcheck e2 NumT
       return (NumT, T.UPrimOp op e1' e2')
     Logical _ -> do
+      e1' <- tcheck e1 BoolT
+      e2' <- tcheck e2 BoolT
+      return (BoolT, T.UPrimOp op e1' e2')
+    Comp cop | cop == Equ || cop == Neq -> do
       let res1 = do
             e1' <- tcheck e1 NumT
             e2' <- tcheck e2 NumT
@@ -357,6 +361,10 @@ infer (PrimOp op e1 e2) =
             e2' <- tcheck e2 BoolT
             return (e1', e2')
       (e1', e2') <- res1 <|> res2 <|> res3
+      return (BoolT, T.UPrimOp op e1' e2')
+    Comp _ -> do
+      e1' <- tcheck e1 NumT
+      e2' <- tcheck e2 NumT
       return (BoolT, T.UPrimOp op e1' e2')
     Append -> do
       e1' <- tcheck e1 StringT

@@ -23,16 +23,20 @@ instance Pretty ArithOp where
   ppr Sub = return $ text "-"
   ppr Div = return $ text "/"
 
-
-instance Pretty LogicalOp where
+instance Pretty CompOp where
   ppr Equ = return $ text "=="
   ppr Neq = return $ text "!="
   ppr Lt = return $ text "<"
   ppr Gt = return $ text ">"
 
+instance Pretty LogicalOp where
+  ppr LAnd = return $ text "&&"
+  ppr LOr = return $ text "||"
+
 
 instance Pretty Operation where
   ppr (Arith a) = ppr a
+  ppr (Logical a) = ppr a
   ppr (Logical a) = ppr a
   ppr Append = return $ text "++"
 

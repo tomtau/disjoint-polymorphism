@@ -98,11 +98,10 @@ evalOp (Arith Add) (VLit x) (VLit y) = VLit $ x + y
 evalOp (Arith Sub) (VLit x) (VLit y) = VLit $ x - y
 evalOp (Arith Mul) (VLit x) (VLit y) = VLit $ x * y
 evalOp (Arith Div) (VLit x) (VLit y) = VLit $ x / y
-evalOp (Logical Equ) (VLit x) (VLit y) = VBool $ x == y
-evalOp (Logical Equ) (VStr x) (VStr y) = VBool $ x == y
-evalOp (Logical Equ) (VBool x) (VBool y) = VBool $ x == y
-evalOp (Logical Neq) (VLit x) (VLit y) = VBool $ x /= y
-evalOp (Logical Lt) (VLit x) (VLit y) = VBool $ x < y
-evalOp (Logical Gt) (VLit x) (VLit y) = VBool $ x > y
+evalOp (Comp Equ) (VLit x) (VLit y) = VBool $ x == y
+evalOp (Comp Equ) (VStr x) (VStr y) = VBool $ x == y
+evalOp (Comp Equ) (VBool x) (VBool y) = VBool $ x == y
+evalOp (Logical LAnd) (VBool x) (VBool y) = VBool $ x && y
+evalOp (Logical LOr) (VBool x) (VBool y) = VBool $ x || y
 evalOp Append (VStr x) (VStr y) = VStr $ x ++ y
 evalOp _ _ _ = error $ "Impossible happened in evalOp"

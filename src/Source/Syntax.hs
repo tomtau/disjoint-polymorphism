@@ -124,6 +124,7 @@ instance Subst Expr Kind
 instance Subst Expr ArithOp
 instance Subst Expr LogicalOp
 instance Subst Expr Operation
+instance Subst Expr CompOp
 
 instance Subst Expr Expr where
   isvar (Var v) = Just (SubstName v)
@@ -132,6 +133,7 @@ instance Subst Expr Expr where
 instance Subst Type Expr
 instance Subst Type Operation
 instance Subst Type LogicalOp
+instance Subst Type CompOp
 instance Subst Type ArithOp
 instance Subst Type SimpleDecl
 instance Subst Type TmBind
