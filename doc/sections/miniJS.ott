@@ -27,6 +27,8 @@ e :: 'e_' ::=                                                    {{ com Term }}
   | e1 / e2                        ::   :: Div                 {{ com Division }}
   | e1 == e2                       ::   :: Eq                  {{ com Equality }}
   | e1 < e2                        ::   :: Lt                  {{ com Comparison }}
+  | e1 && e2                        ::   :: And                  {{ com And }}
+  | e1 || e2                        ::   :: Or                  {{ com Or }}
   | if e1 then e2 else e3          ::   :: If                  {{ com Conditional }}
   | var x = e1 ; e2                 ::   :: Decl                {{ com Local Def }}
 
@@ -54,6 +56,8 @@ terminals :: 'terminals_' ::=
   | *        ::  :: Time       {{ tex \times }}
   | \        ::  :: lambda    {{ tex \lambda }}
   | --        ::  :: rem    {{ tex \,\backslash\, }}
+  | &&        ::  :: and    {{ tex \,\&\&\, }}
+  | ||        ::  :: or    {{ tex \,||\, }}
   | blam       ::  :: blam        {{ tex \Lambda }}
   | top       ::  :: Top        {{ tex \top }}
   | ,,       ::  :: Merge        {{ tex \,,,\, }}

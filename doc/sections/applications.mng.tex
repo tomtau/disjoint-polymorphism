@@ -26,30 +26,34 @@ various operations baked in.
 
 \subsection{Overview}
 
+A \textit{feature} is an increment in program functionality~\citep{zave1999faq}.
 Figure~\ref{fig:mini-js} presents the syntax of the expressions, values and
 types provided by the features; each line is annotated with the corresponding
 feature. Starting from a simple arithmetic language, we gradually introduce new
 features and combine them with some of the existing features to form various
 languages. Below we briefly explain what constitutes each feature:
 \begin{itemize}
-\item $\mathit{Arith}$ contains numerical literals, addition, subtraction, among
+\item $\mathit{natF}$ contains numerical literals, addition, subtraction, among
   others.
-\item $\mathit{Bool}$ introduces Boolean values, comparison, and if expressions.
-\item $\mathit{Var}$ introduces local variables and variable declarations.
-\item $\mathit{Function}$ introduces top-level functions and function calls.
+\item $\mathit{boolF}$ introduces Boolean values and if expressions.
+\item $\mathit{compF}$ introduces comparisons between numbers.
+\item $\mathit{logicF}$ introduces logical conjunction and disjunction.
+\item $\mathit{varF}$ introduces local variables and variable declarations.
+\item $\mathit{funcF}$ introduces top-level functions and function calls.
 \end{itemize}
-
-% For each feature, we also define three operations: evaluator, pretty printer,
-% and type checker.
+\noindent Besides, each feature is packed with 3 operations: evaluator, pretty
+printer, and type checker.
 
 \begin{figure}[t]
 \centering
 \begin{small}
 \begin{tabular}{lrclr}
-  Expressions & $e$ & ::= & $[[N]] \mid [[e1 + e2]] \mid [[e1 - e2]] \mid [[e1 * e2]] \mid [[e1 / e2]] $ & $\mathit{Arith}$ \\
-              && $\mid$ & $[[BL]] \mid [[e1 == e2]] \mid [[e1 < e2]] \mid$ $[[if e1 then e2 else e3]] $ & $\mathit{Bool}$\\
-              && $\mid$ & $[[x]] \mid [[var x = e1 ; e2]]$  &  $\mathit{Var}$ \\
-  Programs & $[[jpgm]]$ & ::= & $[[jdecl1 .. jdecln e]]$ & $\mathit{Function}$ \\
+  Expressions & $e$ & ::= & $[[N]] \mid [[e1 + e2]] \mid [[e1 - e2]] \mid [[e1 * e2]] \mid [[e1 / e2]] $ & $\mathit{natF}$ \\
+              && $\mid$ & $[[BL]] \mid [[if e1 then e2 else e3]] $ & $\mathit{boolF}$\\
+              && $\mid$ & $ [[e1 == e2]] \mid [[e1 < e2]] $ & $\mathit{compF}$ \\
+              && $\mid$ & $ [[e1 && e2]] \mid [[e1 || e2]] $ & $\mathit{logicF}$ \\
+              && $\mid$ & $[[x]] \mid [[var x = e1 ; e2]]$  &  $\mathit{varF}$ \\
+  Programs & $[[jpgm]]$ & ::= & $[[jdecl1 .. jdecln e]]$ & $\mathit{funcF}$ \\
   Functions & $[[jdecl]]$ & ::= & $[[function f ( x : t ) { e }]]$ & \\
   Values & $v$ & ::= & $[[N]] \mid [[BL]]$ & \\
   Types  & $t$ & ::= & $[[int]] \mid [[bool]]$ &
@@ -59,53 +63,80 @@ languages. Below we briefly explain what constitutes each feature:
 \label{fig:mini-js}
 \end{figure}
 
-% \bruno{You should explain the four features.} \jeremy{done}
-
-% \bruno{The next 4 subsection {\bf are not what we want to see in a
-%     case study section}. Repeating the same ideas that were already
-%   presented in Section~4 is pointless, and that's what you are doing
-%   here. In a case study you want to measure, evaluate the benefits of
-%   modularity. For example in terms of SLOC, or how many languages can
-%   you recover from the components that we have; how many lines are
-%   required to recover each languages, etc. Please go and have a look
-%   at Case Study sections of other papers. I suggest ``Scrap your
-%   Boilerplate as Object Algebras''; and "Meta-theory a la Carte". Also
-% Weixin's case study on EVF is pretty good.}
-% \bruno{Also I think you could talk about the subtyping/inheritance
-%   relations of the languages that you can assemble. Perhaps draw some
-% diagrams. }
-
-Figure~\ref{fig:dependency} gives an overview of the reusable components of the
-implementation, and the subtyping/inheritance relations of the languages we can
-assemble. The interactions between languages and features are revealed by the
-arrows. Below we briefly explain what features/operations each language supports:
-\begin{itemize}
-\item \lstinline{ArithL} is a simple language of arithmetic expressions,
-  directly inherited from the feature $\mathit{Arith}$. We define an evaluator
-  and a pretty printer.
-\item \lstinline{BoolArithL} extends \lstinline{ArithL} with the feature
-  $\mathit{Bool}$. Apart from the evaluator and pretty printer, we define
-  another operation: type checker. Thus \lstinline{BoolArithL} is illustrative
-  of solving the Expression Problem.
-\item \lstinline{VarArithL} extends \lstinline{BoolArithL} with the feature
-  $\mathit{Var}$. We define an evaluator, a pretty printer, and a type checker.
-\item \lstinline{Mini-JS} is the complete language that inherits all the
-  features and operations.
-\end{itemize}
-
-\noindent Figure~\ref{fig:dependency} also illustrates the subtyping/inheritance
-relations between each language. For example, the leftward arrow between
-\lstinline{BoolArithL} and \lstinline{ArithL} says that \lstinline{BoolArithL}
-extends \lstinline{ArithL}, while the rightward dashed arrow between them says
-that \lstinline{ArithL} is a subtype of \lstinline{BoolArithL}. We thus obtain 4
-languages and 11 operations in total.
 
 \begin{figure}[t]
   \centering
-  \includegraphics{dependency.eps}
-  \caption{Overview of the language components.}
-  \label{fig:dependency}
+  \begin{small}
+\begin{tabular}{|l||c|c|c||c|c|c|c|c|c|}
+\hline
+\multirow{2}{*}{Language} & \multicolumn{3}{c||}{Operations} & \multicolumn{6}{c|}{Data variants}           \\ \cline{2-10}
+                      & eval     & print     & check    & $\mathit{natF}$ & $\mathit{boolF}$ & $\mathit{compF}$ & $\mathit{logicF}$ & $\mathit{varF}$ & $\mathit{funcF}$ \\ \hline \hline
+\lstinline$simplenat$             &   \cmark       & \cmark          &          &  \cmark    &       &       &        &      &       \\ \hline
+\lstinline$simplebool$          &  \cmark        &  \cmark         &          &      &  \cmark     &       &        &      &       \\ \hline
+\lstinline$natbool$       &  \cmark        & \cmark          & \cmark         & \cmark     & \cmark      &       &        &      &       \\ \hline
+\lstinline$varbool$       &  \cmark        &  \cmark         &          &      & \cmark      &       &        & \cmark     &       \\ \hline
+\lstinline$varnat$      &   \cmark       &  \cmark         &   &  \cmark    &     &       &        & \cmark      &       \\ \hline
+\lstinline$simplelogic$  &  \cmark        &  \cmark         &          &      &   \cmark    &       &    \cmark    &      &       \\ \hline
+\lstinline$varlogic$   &    \cmark      &   \cmark        &          &      &  \cmark     &       &  \cmark  &  \cmark    &       \\ \hline
+\lstinline$arith$     &  \cmark  &  \cmark &  \cmark &  \cmark    &  \cmark     &  \cmark     &        &      &       \\ \hline
+\lstinline$arithlogic$ &  \cmark   &  \cmark &  \cmark  & \cmark     &  \cmark     & \cmark      & \cmark       &      &       \\ \hline
+\lstinline$vararith$        &  \cmark   &  \cmark  &  \cmark  & \cmark     &  \cmark     &  \cmark     &        & \cmark     &       \\ \hline
+\lstinline$vararithlogic$  &  \cmark &  \cmark  &  \cmark  & \cmark & \cmark & \cmark &  \cmark & \cmark &       \\ \hline
+\lstinline$mini-JS$  &  \cmark &  \cmark  &  \cmark  & \cmark & \cmark & \cmark &  \cmark & \cmark & \cmark      \\ \hline
+\end{tabular}
+
+  \end{small}
+\caption{Overview of the languages we can assemble}
+\label{fig:langs}
+
 \end{figure}
+
+Having the feature set, we can synthesize different language by selecting one or
+more operations, and one or more data variants, as shown in
+Figure~\ref{fig:langs}. For example \lstinline{arith} is a simple language of
+arithmetic expressions. On top of that, we also define an evaluator, a pretty
+printer, and a type checker. Note that for some languages (e.g.,
+\lstinline{simplenat}), since it has only one kind of value, we only define an
+evaluator and a pretty printer. We thus obtain 12 languages and 30 operations in
+total.
+
+% Figure~\ref{fig:dependency} gives an overview of the reusable components of the
+% implementation, and the subtyping/inheritance relations of the languages we can
+% assemble. The interactions between languages and features are revealed by the
+% arrows. Below we briefly explain what features/operations each language supports:
+% \begin{itemize}
+% \item \lstinline{ArithL} is a simple language of arithmetic expressions,
+%   directly inherited from the feature $\mathit{Arith}$. We define an evaluator
+%   and a pretty printer.
+% \item \lstinline{BoolArithL} extends \lstinline{ArithL} with the feature
+%   $\mathit{Bool}$. Apart from the evaluator and pretty printer, we define
+%   another operation: type checker. Thus \lstinline{BoolArithL} is illustrative
+%   of solving the Expression Problem.
+% \item \lstinline{VarArithL} extends \lstinline{BoolArithL} with the feature
+%   $\mathit{Var}$. We define an evaluator, a pretty printer, and a type checker.
+% \item \lstinline{Mini-JS} is the complete language that inherits all the
+%   features and operations.
+% \end{itemize}
+
+From Figure~\ref{fig:langs} we can also see the subtyping/inheritance relations
+between each language. For example, since the feature set of \lstinline{arith}
+contains that of \lstinline{natbool}, we can say \lstinline{arith} extends
+\lstinline{natbool}, and the former is a supertype of the latter. Indeed,
+operations defined for \lstinline{arith} can safely apply to expressions of \lstinline{natbool}.
+
+
+% For example, the leftward arrow between
+% \lstinline{BoolArithL} and \lstinline{ArithL} says that \lstinline{BoolArithL}
+% extends \lstinline{ArithL}, while the rightward dashed arrow between them says
+% that \lstinline{ArithL} is a subtype of \lstinline{BoolArithL}. We thus obtain 4
+% languages and 11 operations in total.
+
+% \begin{figure}[t]
+%   \centering
+%   \includegraphics{dependency.eps}
+%   \caption{Overview of the language components.}
+%   \label{fig:dependency}
+% \end{figure}
 
 \subsection{Evaluation}
 
@@ -114,43 +145,51 @@ compares the number of source lines of code (SLOC, lines of code without
 counting empty lines and comments) for \name's implementation with the vanilla
 AST-based implementation in Haskell. Since Haskell is a more concise language
 than \name, we omit lines of code that are for infrastructure purpose. In the
-left part, for each feature, we count lines of the Object Algebra interface, and
-the Object Algebras for the operations. In the right part, for each language, we
-count lines of defining the AST, and the code to combine previously defined
-operations. For example, here is the code that is needed to make the
-\lstinline{VarArithL} language that extends \lstinline{BoolArithL} with the
-$\mathit{Var}$ feature.
+left part, for each feature, we count lines of the Object Algebra interface
+(number beside the feature name), and the Object Algebras for the operations. In the
+right part, for each language, we count lines of defining the AST, and the code
+to combine previously defined operations. For example, here is the code that is
+needed to make the \lstinline{arith} language.
 
-\lstinputlisting[linerange=383-394]{../examples/case_study1.txt}% APPLY:linerange=VARARITHL
+\lstinputlisting[linerange=537-547]{../examples/case_study1.txt}% APPLY:linerange=ARITH
 
-\noindent As we can see, there are 2 lines of code to define the AST, and 6
-lines of code to combine the operations. Thus for \lstinline{VarArithL} we only
+\noindent As we can see, there are 2 lines of code to define the AST
+(\lstinline{Arith}), and 6 lines of code to combine the operations, so we only
 need 8 lines in total.
 
 Therefore, the total number of the \name's implementation is the sum of all the
-lines in the feature and language parts. Although \name is considerably more
-verbose than a functional language like Haskell, \name's implementation for all
-4 languages in total reduces approximately 33\% in terms of SLOC. The reason is
+lines in the feature and language parts (237 (SLOC for all features) plus 84
+(ASTs and operations)). Although \name is considerably more verbose than a
+functional language like Haskell, \name's implementation for 12 languages and 30
+operations in total reduces approximately 58\% in terms of SLOC. The reason is
 that, the more frequently a feature is reused by other languages directly or
 indirectly, the more reduction we see in the total SLOC. For example,
-$\mathit{Arith}$ is used across all 4 languages. Even though \lstinline{ArithL}
-itself alone has a lot more SLOC ($40 = 37+3$) than that of Haskell (which has
-29), we still get a huge gain when implementing other languages.
+$\mathit{natF}$ is used across many languages. Even though \lstinline{simplenat}
+itself alone has almost twice SLOC ($40 = 7+23+7+3$) than that of Haskell (which
+has 29), we still get a huge gain when implementing other languages.
 
 
 
 \begin{figure}[t]
   \centering
-  \begin{tabular}{lc|lccc}
+  \begin{tabular}{r|ccc|l|ccc}
     \hline
-    \bf{Feature} & \name & \bf{Language} & \name & \bf{Haskell} & \bf{\% Reduced}  \\
+     & eval & print & check &  & \name & \textbf{Haskell} & \textbf{\% Reduced}  \\
     \hline
-    $\mathit{Arith}$ & 37 & \lstinline$ArithL$ & 3 & 29 & 90\%  \\
-    $\mathit{Bool}$ & 66 & \lstinline$BoolArithL$ & 44 & 86 & 49\% \\
-    $\mathit{Var}$ & 22 & \lstinline$VarArithL$ & 8 & 99 & 92\% \\
-    $\mathit{Function}$ & 24 & \lstinline$Mini-JS$ & 20 & 120 & 83\% \\
+    $\mathit{natF}(7)$ & 23 & 7 & 39 & \lstinline$simplenat$ & 3 & 29 & 90\%  \\
+    $\mathit{boolF}(4)$ & 9 & 4 & 17 & \lstinline$simplebool$ & 3 & 12 & 75\% \\
+    $\mathit{compF}(4)$ & 12 & 4 & 20 & \lstinline$natbool$ & 5 & 66 & 92\% \\
+    $\mathit{logicF}(4)$ & 12 & 4 & 20 & \lstinline$varbool$ & 4 & 20 & 80\% \\
+    $\mathit{varF}(4)$ & 7 & 4 & 7 & \lstinline$varnat$ & 4 & 37 & 89\% \\
+    $\mathit{funcF}(3)$ & 10 & 3 & 9 & \lstinline$simplelogic$ & 4 & 24 & 83\% \\
+     & & & & \lstinline$varlogic$ & 6 & 32 & 81\% \\
+     & & & & \lstinline$arith$ & 8 & 86 & 91\% \\
+     & & & & \lstinline$arithlogic$ & 8 & 106 & 92\% \\
+     & & & & \lstinline$vararith$ & 8 & 99 & 92\% \\
+     & & & & \lstinline$vararithlogic$ & 8 & 119 & 93\% \\
+     & & & & \lstinline$mini-JS$ & 23 & 140 & 84\% \\
     \hline
-    \bf{Total} & & & 224 & 334 & 33\% \\
+    \bf{Total} & & & 237 & & 321 & 770 & 58\% \\
     \hline
 
   \end{tabular}
@@ -295,7 +334,7 @@ interested reader to the supplementary materials.
 
 To demonstrate the usage of the final language \lstinline{MiniJS}, here is a function that
 makes sure ``well-typed programs cannot go wrong'':
-\lstinputlisting[linerange=498-504]{../examples/case_study1.txt}% APPLY:linerange=SUPER_DEF
+\lstinputlisting[linerange=719-725]{../examples/case_study1.txt}% APPLY:linerange=SUPER_DEF
 It type checks the program before passing it to the evaluator and pretty
 printer.
 
@@ -307,7 +346,7 @@ printer.
 % the \lstinline{add1} function.
 
 % Finally we apply it to the program we have just created:
-% \lstinputlisting[linerange=508-509]{../examples/case_study1.txt}% APPLY:linerange=TEST_TEST
+% \lstinputlisting[linerange=729-730]{../examples/case_study1.txt}% APPLY:linerange=TEST_TEST
 % Everything works as expected!
 \end{comment}
 
