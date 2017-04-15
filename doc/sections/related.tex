@@ -29,7 +29,7 @@ similar languages, as we will explain below.
 
 \begin{figure}[t]
   \centering
-  % \begin{small}
+  \begin{small}
   \begin{tabular}{l|ccccc}
     \hline
     & \bf{Statically typed} & \bf{Polymorphism} & \bf{Meta-theory} & \bf{Inheritance}  \\
@@ -43,9 +43,8 @@ similar languages, as we will explain below.
     Cook's Modula-3 & \cmark & \xmark & \xmark & Static \\
     \hline
     IFJ & \cmark & \xmark & \cmark & Dynamic \\
-
   \end{tabular}
-  % \end{small}
+  \end{small}
   \caption{Comparison between \name and various similar languages.}
   \label{fig:comparision}
 \end{figure}
@@ -237,12 +236,18 @@ However, object composition in IFJ is quite restrictive, compared to \name, in
 that it can only compose an incomplete object with a complete object. In that
 regard, and also because IFJ's type system is not polymorphic, IFJ is unable to
 encode composition operators of Object Algebras.
+\citeauthor{ostermann2002dynamically}'s delegation
+layers~\citep{ostermann2002dynamically} use delegation for doing dynamic
+composition in a system with virtual classes. This in contrast with most other
+approaches that use class-based composition, but closer to the dynamic
+composition that we use in \name.
 
 There are many other class-based OO languages that are equipped with more
-advanced forms of inheritance~\cite{ostermann2002dynamically,meyer1987eiffel,
-  buchi2000generic, ostermann2001object, kniesel1999type}. Most of them are
-heavyweight and are specific to classes. \name is trait-centered, more
-lightweight, and is dedicated to express extensible designs in a simpler way.
+advanced forms of
+inheritance~\cite{meyer1987eiffel,buchi2000generic,ostermann2001object,kniesel1999type}.
+Most of them are heavyweight and are specific to classes. \name is
+trait-centered, more lightweight, and is dedicated to express extensible designs
+in a simpler way.
 
 
 % Eiffel~\cite{meyer1987eiffel} is a class-based language that is based on the

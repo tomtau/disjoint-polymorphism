@@ -1,4 +1,16 @@
 \section{Conclusion}
 
-Future work includes side effects, recursive types, adding super, formal study
-of the meta-theory, etc.
+This paper describes \name: a polymorphic, statically-typed and delegation-based
+programming language. \name provides a powerful form of conflict-free multiple
+inheritance mechanism called dynamically composable trait. \name is both safe
+and flexible. Throughout the paper, we have shown how the mechanisms of \name
+improve extensibility design pattern such as Extensible Visitors and Object
+Algebras.
+
+There are many avenues for future work. On one hand, we intend to port the core
+functionality of \name into a JVM-based compiler. One the other hand, the
+current trait mode of \name is still very simple, lacking interesting features
+such as side effects, recursive types, super keyword, etc. So we are interested
+to see how our trait model can scale in terms of adding more features. Finally
+we plan to further study the formal meta-theory of the extended version of
+\bname.
