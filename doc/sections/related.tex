@@ -15,7 +15,7 @@ following 3 terms when comparing related work with ours.
   statically known at compile-type.
 \item{{\bf Mutable Inheritance:}} Prototype-based languages allow another model
   of inheritance, which we call \emph{mutable inheritance}. In this inheritance
-  model, self references can be changed at any point.
+  model, self-references can be changed at any point.
 \item{{\bf Dynamic Inheritance:}} Dynamic inheritance is a less well-known model
   which stands in between static and mutable inheritance. Unlike the static
   inheritance model, with dynamic inheritance objects can inherits from other
@@ -114,8 +114,8 @@ problem -- it is a left-associative operator which gives rightmost precedence.
 \paragraph{Mixin-based inheritance}
 
 Mixins have become very popular in many OO languages
-~\cite{flatt1998classes,bono1999core, ancona2003jam} . \citet{bracha1990mixin}'s
-seminal paper extends Modula-3 with mixins. Mixins are subclasses parameterized
+~\cite{flatt1998classes,bono1999core, ancona2003jam}. \citeauthor{bracha1990mixin}'s
+seminal paper~\citep{bracha1990mixin} extends Modula-3 with mixins. Mixins are subclasses parameterized
 over a superclass, and used to produce a variety of classes with the same
 functionality and behaviour. Mixin-based inheritance requires that mixins be
 composed linearly, and as such, conflicts are resolved implicitly (mixins
@@ -149,7 +149,7 @@ Compared to the traditional trait mode, traits in \name have the following diffe
   whereas traits in our language can be instantiated directly.
 \item Traditional traits cannot take constructor parameters whereas ours can. As
   shown in Section~\ref{sec:traits}, traits in \name have a single constructor.
-\item Our trait model lacks a proper notation of inheritance relationship. For
+\item The trait system in \name lacks a proper notation of inheritance relationship. For
   example in the traditional trait mode, if the same method (i.e., from the same
   trait) is obtained more than once via different paths, there is no conflict.
   This is not the case in \name.

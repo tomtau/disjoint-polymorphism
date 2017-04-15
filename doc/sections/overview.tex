@@ -164,7 +164,7 @@ interface (\lstinline{ExtExpVisitor}) is easy: just add the new visit method
 (\lstinline{sub}). The interesting part is modelling the extended AST type. The
 extended type (\lstinline{ExtExp}) should become a \emph{supertype} of
 \lstinline{Exp}. This follows from the fact that the new \lstinline{accept}
-method takes an argument which is a subtype of the original \lstinline{accept}
+method takes an argument which is a subtype of the argument in the original \lstinline{accept}
 method. Thus we get the following subtyping relation between the signatures of
 the two \lstinline{accept} methods:
 
@@ -311,5 +311,5 @@ type parameters).
 The need for dynamic inheritance arises in composition operators for Object
 Algebras. Although such compositions can be encoded in Scala using low-level
 meta-programming mechanisms (such as run-time reflection), a language-based
-solution would be clearly better. Section \ref{sec:dynamic}, shows that \name
+solution would be clearly better. Section \ref{sec:dynamic} shows that \name
 offers such language-based solution.

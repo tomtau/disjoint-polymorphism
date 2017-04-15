@@ -47,6 +47,8 @@ A, B :: 'T_' ::=                                              {{ com Type }}
   | top                           ::   :: Top          {{ com Arith }}
   | Int                          ::   :: Int           {{ com Int }}
   | Bool                          ::   :: Bool           {{ com Bool }}
+  | Char                          ::   :: Char           {{ com Char }}
+  | String                          ::   :: String           {{ com String }}
   | A -> B                          ::   :: Arrow           {{ com Arrow }}
   | A & B                          ::   :: And           {{ com And }}
   | a                          ::   :: Var           {{ com Var }}

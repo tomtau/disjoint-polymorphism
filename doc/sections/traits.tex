@@ -17,7 +17,7 @@ prototype implementation.
 
 \name natively supports a simple, yet expressive form of
 traits~\cite{scharli2003traits}. Traits provide a mechanism of code reuse in
-object-oriented programming, that can be used to model disciplined forms of
+object-oriented programming, which can be used to model disciplined forms of
 multiple inheritance. One interesting aspect about traits is the way conflicting
 features that typically arise in multiple inheritance are dealt with. Instead of
 automatically resolved by scoping rules, conflicts are, in the case of \name,
@@ -40,13 +40,14 @@ a specific perspective of the features of an object. Therefore, compared with
 programs using class-based inheritance, programs using traits usually have a large number of
 small traits rather than fewer but larger classes. Code reuse with traits is
 easier than with classes, since traits are usually shorter and can be
-\textit{composed}. It is the ease of composition that makes traits such a
-appealing language feature: two traits can be freely ``added''
-together. Trait composition is
+\textit{composed}. % It is the ease of composition that makes traits such a
+% appealing language feature: two traits can be freely ``added''
+% together.
+Trait composition is
 a symmetric operation, and trait systems provide conflict detection.
 
 Here is a simple trait \lstinline{point} with its two coordinates \lstinline{x}
-and \lstinline{y}.\jeremy{say \name only supports Double}
+and \lstinline{y}\footnote{\name only has floating numbers.}.
 \lstinputlisting[linerange=4-7]{../examples/box.txt}% APPLY:linerange=POINT_DEF
 
 %The syntax is very similar to Scala's, with the \lstinline{def} keyword
@@ -163,7 +164,7 @@ the definitions of the methods in the trait. Note also that the trait itself
 does not actually contains a \lstinline{radius} definition. In many other OO
 models a similar program could be achieved by having an \emph{abstract} radius
 definition. In \name there are no abstract definitions (methods or fields), but
-we can express a requirement on the trait to achieve a similar result.
+a similar result can be achieved via trait requirements.
 
 Requirements are satisfied at object creation time. When \lstinline$circleFns$
 is instantiated and composed with other traits, it must be composed with an
@@ -171,8 +172,8 @@ implementation of \lstinline$Circle$. For example:
 \lstinputlisting[linerange=38-38]{../examples/box.txt}% APPLY:linerange=CIRCLE_FULL
 
 The object \lstinline{circleWithFns} enables us to call
-methods from different traits on a single object, such as
-\lstinline{circleWithFns.area()} and \lstinline{circleWithFns.radius}.
+methods from different traits on a single object.
+% , such as % \lstinline{circleWithFns.area()} and \lstinline{circleWithFns.radius}
 
 \paragraph{Composition of traits}
 The definition of \lstinline{circleWithFns} also shows the second option to
@@ -188,7 +189,7 @@ traits (using \lstinline{inherits}), or compose at the object creation point
 %intersection type. 
 %For example the type of \lstinline{2 ,, true} is
 %\lstinline{Int & Bool}.
-
+\begin{comment}
 \paragraph{Mutually dependent traits} When two traits are composed, any two
 methods in those two traits can refer to each other via the self-reference. We
 say these two traits are \textit{mutually dependent}. The next example, though a
@@ -197,6 +198,7 @@ bit contrived, illustrates this point.
 
 \noindent By utilizing trait requirements, the \lstinline{isEven} and
 \lstinline{isOdd} methods can refer to each other in two different traits.
+\end{comment}
 
 
 \paragraph{Multiple trait inheritance} To further demonstrate multiple
@@ -237,7 +239,7 @@ The following trait gets rejected because both \lstinline{asOval} and
 on intersection types. More concretely, \name uses a type system based on
 \emph{disjoint intersection types}~\cite{oliveira2016disjoint}. Disjointness, in
 its simplest form, means that the set of values of both types are disjoint. The
-above problematic program fails at passing type checking precisely because both
+above problematic program is ill-typed precisely because both
 traits (\lstinline{circle} and \lstinline{asOval}) have the same type for the
 \lstinline{radius} field, thus violating the disjointness conditions.
 
@@ -249,8 +251,8 @@ avoid a conflict before it occurs. The following is one choice, and is accepted
 by \name again.
 \lstinputlisting[linerange=79-80]{../examples/box.txt}% APPLY:linerange=CONFLICT_RESOLVE
 
-\noindent Note that because of the disjointness conditions, the exclusion
-operator is able to pinpoint the exact field given a label and a type.
+% \noindent Note that because of the disjointness conditions, the exclusion
+% operator is able to pinpoint the exact field given a label and a type.
 
 
 \subsection{Dynamic Instantiation}
@@ -266,11 +268,11 @@ Let us extend the functions of circles by another method \lstinline{inCircle},
 which, given a point, tests if the point lies inside the circle.
 \lstinputlisting[linerange=93-95]{../examples/box.txt}% APPLY:linerange=CIRCLE_FNS2
 
-\lstinline{CircleFns2} just extends \lstinline{CircleFns} by another method
+\lstinline{CircleFns2} extends \lstinline{CircleFns} by another method
 \lstinline{inCircle}, which, as shown in trait \lstinline{circleFns2}, is
 implemented by invoking the \lstinline{norm} method from something of type
 \lstinline{Circle & Norm}. So what is this \lstinline{Norm} type? It consists of
-a single method \lstinline{norm} -- distance of a point to the origin . We
+a single method \lstinline{norm} -- distance of a point to the origin. We
 provide two different norms via two traits.
 \lstinputlisting[linerange=84-89]{../examples/box.txt}% APPLY:linerange=NORM_DEF
 
@@ -278,18 +280,18 @@ To facilitate creating round buttons with different norms baked in, we define a
 factory that takes a trait \lstinline$norm$ and produces a round button:
 \lstinputlisting[linerange=99-101]{../examples/box.txt}% APPLY:linerange=POINT_FUNC
 
-Here \lstinline{norm}, which is a trait used in the object creation of
+\noindent Here \lstinline{norm}, which is a trait used in the object creation of
 \lstinline{roundButtonFac}, is \emph{parameterized}. To express the
 type of such unknown trait \name has a special 
 \lstinline{Trait} type constructor, and \lstinline$Trait[Point, Norm]$
 denotes the type of traits that conforms to the \lstinline$Norm$ type with dependency
 on \lstinline{Point}. This gives us the
-flexibility to choose different norms at \emph{run-time}. For example, below is another version of
+flexibility to choose different norms at \emph{run-time}. Below is a
 round button that provides \lstinline{inCircle} method with Euclidean norm baked
 in.
 \lstinputlisting[linerange=105-105]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST2
 
-\noindent This concludes our running example of presenting graphical objects.
+This concludes our running example of presenting graphical objects.
 
 \subsection{Parametric Polymorphism and Disjointness Constraints}
 \label{sec:merge-construct}
@@ -311,7 +313,7 @@ the type variable \lstinline{B} can be instantiated to any types that are
 disjoint to the type \lstinline{A}. Finally, the value of the intersection type
 \lstinline{A & B} is directly built using the \textit{merge construct} (denoted
 by \lstinline{,,}). The merge construct~\cite{dunfield2014elaborating} allows
-two arbitrary values (even polymorphic) to be merged, with the resulting type
+two arbitrary values (and possible polymorphic) to be merged, with the resulting type
 being an intersection type.
 
 It is this disjoint polymorphism~\cite{alpuimdisjoint} that sets apart \name

@@ -45,12 +45,15 @@ evaluation. The initial system constitutes expressions with two variants
 \lstinputlisting[linerange=4-6]{../examples/visitor.txt}% APPLY:linerange=ALGEBRA_DEF
 
 \noindent The type \lstinline{ExpAlg[E]}, constitutes the so-called Object
-Algebra interface. The first component abstracts over the type of literal
-expressions (\lstinline{Int -> E}). The second component abstracts over the type
-of addition expression (\lstinline{E -> E -> E}).
+Algebra interface. A concrete Object Algebra will implement such an interface by
+instantiating the type parameter with a type that constructs objects for a
+particular purpose.
 
-\paragraph{Operations.} Defining operations over expressions requires
-implementing \lstinline{ExpAlg[E]}. An interesting operation over expressions is
+% The first component abstracts over the type of literal
+% expressions (\lstinline{Int -> E}). The second component abstracts over the type
+% of addition expression (\lstinline{E -> E -> E}).
+
+\paragraph{Operations.} An interesting operation over expressions is
 evaluation. The first step is to choose a suitable concrete type for
 instantiating the type parameter \lstinline{E}. One such suitable type is:
 \lstinputlisting[linerange=28-28]{../examples/visitor.txt}% APPLY:linerange=EVAL_DEF
@@ -97,41 +100,40 @@ built as:
 
 \noindent \name provides a lightweight syntax for writing first-class functions,
 i.e., \lstinline{\x -> x + 1}, and big lambda (\lstinline{/\}) to introduce type
-  variables. Note that the code is almost the same as before, but the expression
-  now has a concrete type, rather than being a function. With \lstinline{Exp} we
-  can easily abstract over values, as we will see later.
+variables. Note that the code is almost the same as before, but the expression
+now has a concrete type, rather than being a function. With \lstinline{Exp} we
+can easily abstract over values, as we will see later.
 
 
 \paragraph{Add a subtraction variant.} Interesting things happen when a new
 variant, such as subtraction is added. To do so, we need to extend both
-\lstinline{ExpAlg[E]} , \lstinline{evalAlg} and create a more refined
-type for expressions with subtraction:
+\lstinline{ExpAlg[E]} , \lstinline{evalAlg} and create a more refined type for
+expressions with subtraction:
+
 \lstinputlisting[linerange=39-42]{../examples/visitor.txt}% APPLY:linerange=SUB_DEF
-Firstly, \lstinline{SubExpAlg[E]} defines an extended algebra interface that contains the
-variants of the original plus the new subtraction variant. Intersection types
-are used to model subtyping. Secondly, the Object Algebra
-\lstinline{subEvalAlg} inherits from \lstinline{evalAlg} and
-complements it with the subtraction case.
-Finally, a new type of expressions
-(\lstinline{ExtExp}) with subtraction is needed. It is important to note that
-the \lstinline{accept} method now takes the new algebra \lstinline{SubExpAlg[E]}
-as argument.
+
+\noindent Firstly, \lstinline{SubExpAlg[E]} defines an extended algebra interface that
+contains the variants of the original plus the new subtraction variant.
+Intersection types are used to model subtyping. Secondly, \lstinline{subEvalAlg}
+inherits from \lstinline{evalAlg} and complements it with the subtraction case.
+Finally, a new type of expressions (\lstinline{ExtExp}) with subtraction is
+needed. It is important to note that the \lstinline{accept} method now takes the
+new algebra \lstinline{SubExpAlg[E]} as argument.
 
 \paragraph{Inheritance is not subtyping.} In the presence of subtyping, there
 are interesting subtyping relations between ASTs and their
-extensions~\cite{oliveira09modular}. An interesting aspect about subtyping in
-the new system is that subtyping follows the opposite direction of the
-extension. In other words, subtyping is contravariant with respect to the
-extension. First note that \lstinline{SubExpAlg[E]} appears in a parameter
-position of \lstinline{accept} and the function constructor is
-\textit{contravariant} in parameter types. Thus \lstinline{ExtExp} should be a
-\textit{supertype} of \lstinline{Exp}. By contrast, in common OO languages,
-subtyping and inheritance always go along together. For example, Java/Scala
-forbid any kind of type-refinement on method parameter types. The consequence of
-this is that in those languages, it is impossible to express that
-\lstinline{ExtExp} is both an extension and a supertype of
-\lstinline{Exp}. In \name, however, \lstinline{ExtExp} is
-indeed a supertype of \lstinline{Exp}.
+extensions~\cite{oliveira09modular}. Interestingly in the new system, subtyping
+follows the opposite direction of the extension. In other words, subtyping is
+contravariant with respect to the extension. First note that
+\lstinline{SubExpAlg[E]} appears in a parameter position of \lstinline{accept}
+and the function constructor is \textit{contravariant} in parameter types. Thus
+\lstinline{ExtExp} should be a \textit{supertype} of \lstinline{Exp}. By
+contrast, in common OO languages, subtyping and inheritance always go along
+together. For example, Java/Scala forbid any kind of type-refinement on method
+parameter types. The consequence of this is that in those languages, it is
+impossible to express that \lstinline{ExtExp} is both an extension and a
+supertype of \lstinline{Exp}. In \name, however, \lstinline{ExtExp} is indeed a supertype
+of \lstinline{Exp}.
 
 \paragraph{Add a new operation.} The second type of extension is adding a new
 operation, such as pretty printing. Similar to evaluation, the interface of the
@@ -168,7 +170,7 @@ safely applied to \lstinline{e1} (of type \lstinline{Exp}) since
 \subsection{Native Dynamic Object Algebra Composition Support}
 \label{sec:dynamic}
 
-When programming with Object Algebras, it is often the case that it is
+When programming with Object Algebras, oftentimes it is
 necessary to pack multiple operations in the same object. For example,
 in the simple language we have been developing it may be useful to
 create an object that contains both printing and evaluation.
