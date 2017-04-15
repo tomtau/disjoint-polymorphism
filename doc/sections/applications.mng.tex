@@ -53,7 +53,8 @@ printer, and type checker.
               && $\mid$ & $ [[e1 == e2]] \mid [[e1 < e2]] $ & $\mathit{compF}$ \\
               && $\mid$ & $ [[e1 && e2]] \mid [[e1 || e2]] $ & $\mathit{logicF}$ \\
               && $\mid$ & $[[x]] \mid [[var x = e1 ; e2]]$  &  $\mathit{varF}$ \\
-  Programs & $[[jpgm]]$ & ::= & $[[jdecl1 .. jdecln e]]$ & $\mathit{funcF}$ \\
+              && $\mid$ & $[[e1 e2]]$ & $\mathit{funcF}$ \\
+  Programs & $[[jpgm]]$ & ::= & $[[jdecl1 .. jdecln e]]$ &  \\
   Functions & $[[jdecl]]$ & ::= & $[[function f ( x : t ) { e }]]$ & \\
   Values & $v$ & ::= & $[[N]] \mid [[BL]]$ & \\
   Types  & $t$ & ::= & $[[int]] \mid [[bool]]$ &
@@ -172,6 +173,7 @@ has 29), we still get a huge gain when implementing other languages.
 
 \begin{figure}[t]
   \centering
+\begin{small}
   \begin{tabular}{r|ccc|l|ccc}
     \hline
      & eval & print & check &  & \name & \textbf{Haskell} & \textbf{\% Reduced}  \\
@@ -193,6 +195,7 @@ has 29), we still get a huge gain when implementing other languages.
     \hline
 
   \end{tabular}
+  \end{small}
   \caption{SLOC statistics: \name implementation vs vanilla AST implementation.}
   \label{fig:sloc}
 \end{figure}

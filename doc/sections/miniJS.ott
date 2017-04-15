@@ -31,6 +31,7 @@ e :: 'e_' ::=                                                    {{ com Term }}
   | e1 || e2                        ::   :: Or                  {{ com Or }}
   | if e1 then e2 else e3          ::   :: If                  {{ com Conditional }}
   | var x = e1 ; e2                 ::   :: Decl                {{ com Local Def }}
+  | e1 e2                 ::   :: Call                {{ com Call }}
 
 
 
