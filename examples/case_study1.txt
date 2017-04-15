@@ -125,15 +125,15 @@ type ITC = { tcheck : TEnv -> Maybe[Type] }
 
 
 --------------------------------------
--- Components
+-- Features
 --------------------------------------
 
 
 ----------------
--- ArithL feature
+-- nat feature
 ----------------
 
-type ArithAlg[E] = {
+type NatAlg[E] = {
   num : Double -> E,
   add : E -> E -> E,
   sub : E -> E -> E,
@@ -142,7 +142,7 @@ type ArithAlg[E] = {
 }
 
 -- Evaluator algebra
-trait evalArithAlg { self =>
+trait evalNatAlg { self =>
   def num (n : Double) : IEval = { eval = \_ -> just Value (numV n) }
   def add (e1 : IEval) (e2 : IEval) : IEval = { eval = \env ->
     bind Value Value (e1.eval env) (\v1 ->
@@ -167,7 +167,7 @@ trait evalArithAlg { self =>
 }
 
 -- Pretty pinter algebra
-trait ppArithAlg { self =>
+trait ppNatAlg { self =>
   def num (n : Double)                = { print = n.toString }
   def add (e1 : IPrint) (e2 : IPrint) = { print = "(" ++ e1.print ++ " + " ++ e2.print ++ ")"}
   def sub (e1 : IPrint) (e2 : IPrint) = { print = "(" ++ e1.print ++ " - " ++ e2.print ++ ")"}
@@ -175,165 +175,8 @@ trait ppArithAlg { self =>
   def div (e1 : IPrint) (e2 : IPrint) = { print = "(" ++ e1.print ++ " / " ++ e2.print ++ ")"}
 }
 
------------------
---  Bool feature
------------------
-
-type BoolAlg[E] = {
-  bool : Bool -> E,
-  eq   : E -> E -> E,
-  lt   : E -> E -> E,
-  iff  : E -> E -> E -> E
-}
-
-
--- Evaluator algebra
-trait evalBoolAlg : BoolAlg[IEval] { self =>
-  def bool b          = { eval = \_ -> just Value (boolV b) }
-  def eq e1 e2        = { eval = \env ->
-    bind Value Value (e1.eval env) (\v1 ->
-      bind Value Value (e2.eval env) (\v2 ->
-        just Value (boolV (fromNum v1 == fromNum v2))))
-  }
-  def lt e1 e2        = { eval = \env ->
-    bind Value Value (e1.eval env) (\v1 ->
-      bind Value Value (e2.eval env) (\v2 ->
-        just Value (boolV (fromNum v1 < fromNum v2))))
-  }
-  def iff e1 e2 e3 = { eval = \env ->
-    bind Value Value (e1.eval env) (\b ->
-      if fromBool b
-      then e2.eval env
-      else e3.eval env)
-  }
-}
-
--- Pretty printer algebra
-trait ppBoolAlg : BoolAlg[IPrint] { self =>
-  def bool b          = { print = b.toString }
-  def eq e1 e2        = { print = "(" ++ e1.print ++ " == " ++ e2.print ++ ")" }
-  def lt e1 e2        = { print = "(" ++ e1.print ++ " < " ++ e2.print ++ ")" }
-  def iff e1 e2 e3    = { print = "(if " ++ e1.print ++ " then " ++ e2.print ++ " else " ++ e3.print ++ ")" }
-}
-
--- Type checker algebra
-trait tcBoolAlg : BoolAlg[ITC] { self =>
-  def bool b   = { tcheck = \_ -> just Type tbool }
-  def eq e1 e2 = { tcheck = \env ->
-    bind Type Type (e1.tcheck env) (\t1 ->
-      caseType Maybe[Type] t1
-        (bind Type Type (e2.tcheck env) (\t2 ->
-          caseType Maybe[Type] t2
-            (just Type tbool)
-            (nothing Type)))
-        (nothing Type))
-  }
-  def lt e1 e2 = { tcheck = \env ->
-    bind Type Type (e1.tcheck env) (\t1 ->
-      caseType Maybe[Type] t1
-        (bind Type Type (e2.tcheck env) (\t2 ->
-          caseType Maybe[Type] t2
-            (just Type tbool)
-            (nothing Type)))
-        (nothing Type))
-  }
-  def iff e1 e2 e3 = { tcheck = \env ->
-    bind Type Type (e1.tcheck env) (\t1 ->
-      caseType Maybe[Type] t1
-        (nothing Type)
-        (bind Type Type (e2.tcheck env) (\t2 ->
-          (bind Type Type (e3.tcheck env) (\t3 ->
-            caseType Maybe[Type] t2
-              (caseType Maybe[Type] t3
-                (just Type t2)
-                (nothing Type))
-              (caseType Maybe[Type] t3
-                (nothing Type)
-                (just Type t2)))))))
-  }
-}
-
-
-----------------
---  Var feature
-----------------
-
-type VarAlg[E] = {
-  var : String -> E,
-  decl : String -> E -> E -> E
-}
-
--- Evaluator algebra
-trait evalVarAlg { self =>
-  def var (n : String) : IEval = { eval = \env -> lookup Value n env }
-  def decl (n : String) (e : IEval) (b : IEval) : IEval = { eval = \env ->
-    bind Value Value (e.eval env) (\v ->
-      b.eval (insert Value n v env))
-  }
-}
-
--- Pretty printer algebra
-trait ppVarAlg : VarAlg[IPrint] { self =>
-  def var n      = { print = n }
-  def decl n e b = { print = "var " ++ n ++ " = " ++ e.print ++ "; " ++ b.print }
-}
-
--- Type checker algebra
-trait tcVarAlg : VarAlg[ITC] { self =>
-  def var n      = { tcheck = \env -> lookup Type n env }
-  def decl n e b = { tcheck = \env ->
-    bind Type Type (e.tcheck env) (\t ->
-      b.tcheck (insert Type n t env))
-  }
-}
-
-
------------------------------
---  Function feature
------------------------------
-
-type TFunAlg[E] = {
-  call : String -> E -> E
-}
-
-
-
-
----------------------------------------
--- Languages:
--- ArithL, BoolArithL, VarArithL, Mini-JS
----------------------------------------
-
-------------
--- ArithL
-------------
-
--- AST
-type ArithL = { accept : forall E. ArithAlg[E] -> E }
-
--- Evaluator
-def evalArith (e : ArithL) : IEval = e.accept IEval (new[ArithAlg[IEval]] evalArithAlg)
-
--- Pretty printer
-def ppArith (e : ArithL) : IPrint = e.accept IPrint (new[ArithAlg[IPrint]] ppArithAlg)
-
-
--------------
--- BoolArithL
--------------
-
--- AST
-type BoolArithAlg[E] = BoolAlg[E] & ArithAlg[E]
-type BoolArithL = { accept : forall E. BoolArithAlg[E] -> E }
-
--- Evaluator
-def evalBoolArith (e : BoolArithL) = e.accept IEval (new[BoolArithAlg[IEval]] evalBoolAlg & evalArithAlg)
-
--- Pretty printer
-def ppBoolArith (e : BoolArithL) = e.accept IPrint (new[BoolArithAlg[IPrint]] ppBoolAlg & ppArithAlg)
-
--- Type checker
-trait tcBoolArithAlg inherits tcBoolAlg { self =>
+-- Type check algebra
+trait tcNatAlg { self =>
   def num (n : Double) : ITC = { tcheck = \_ -> just Type tnum }
   def add (e1 : ITC) (e2 : ITC) : ITC = { tcheck = \env ->
     bind Type Type (e1.tcheck env) (\t1 ->
@@ -372,27 +215,402 @@ trait tcBoolArithAlg inherits tcBoolAlg { self =>
         (nothing Type))
   }
 }
-def tcBoolArith (e : BoolArithL) = e.accept ITC (new[BoolArithAlg[ITC]] tcBoolArithAlg)
 
 
--------------
--- VarArithL
--------------
+-----------------
+--  bool feature
+-----------------
 
--- BEGIN_VARARITHL
+type BoolAlg[E] = {
+  bool : Bool -> E,
+  iff  : E -> E -> E -> E
+}
+
+
+-- Evaluator algebra
+trait evalBoolAlg : BoolAlg[IEval] { self =>
+  def bool b          = { eval = \_ -> just Value (boolV b) }
+  def iff e1 e2 e3 = { eval = \env ->
+    bind Value Value (e1.eval env) (\b ->
+      if fromBool b
+      then e2.eval env
+      else e3.eval env)
+  }
+}
+
+-- Pretty printer algebra
+trait ppBoolAlg : BoolAlg[IPrint] { self =>
+  def bool b          = { print = b.toString }
+  def iff e1 e2 e3    = { print = "(if " ++ e1.print ++ " then " ++ e2.print ++ " else " ++ e3.print ++ ")" }
+}
+
+-- Type checker algebra
+trait tcBoolAlg : BoolAlg[ITC] { self =>
+  def bool b   = { tcheck = \_ -> just Type tbool }
+  def iff e1 e2 e3 = { tcheck = \env ->
+    bind Type Type (e1.tcheck env) (\t1 ->
+      caseType Maybe[Type] t1
+        (nothing Type)
+        (bind Type Type (e2.tcheck env) (\t2 ->
+          (bind Type Type (e3.tcheck env) (\t3 ->
+            caseType Maybe[Type] t2
+              (caseType Maybe[Type] t3
+                (just Type t2)
+                (nothing Type))
+              (caseType Maybe[Type] t3
+                (nothing Type)
+                (just Type t2)))))))
+  }
+}
+
+
+----------------
+--  comp feature
+----------------
+
+type CompAlg[E] = {
+  eq   : E -> E -> E,
+  lt   : E -> E -> E
+}
+
+-- Evaluator algebra
+trait evalCompAlg : CompAlg[IEval] { self =>
+  def eq e1 e2        = { eval = \env ->
+    bind Value Value (e1.eval env) (\v1 ->
+      bind Value Value (e2.eval env) (\v2 ->
+        just Value (boolV (fromNum v1 == fromNum v2))))
+  }
+  def lt e1 e2        = { eval = \env ->
+    bind Value Value (e1.eval env) (\v1 ->
+      bind Value Value (e2.eval env) (\v2 ->
+        just Value (boolV (fromNum v1 < fromNum v2))))
+  }
+}
+
+
+-- Pretty printer algebra
+trait ppCompAlg : CompAlg[IPrint] { self =>
+  def eq e1 e2        = { print = "(" ++ e1.print ++ " == " ++ e2.print ++ ")" }
+  def lt e1 e2        = { print = "(" ++ e1.print ++ " < " ++ e2.print ++ ")" }
+}
+
+-- Type checker algebra
+trait tcCompAlg : CompAlg[ITC] { self =>
+  def eq e1 e2 = { tcheck = \env ->
+    bind Type Type (e1.tcheck env) (\t1 ->
+      caseType Maybe[Type] t1
+        (bind Type Type (e2.tcheck env) (\t2 ->
+          caseType Maybe[Type] t2
+            (just Type tbool)
+            (nothing Type)))
+        (nothing Type))
+  }
+  def lt e1 e2 = { tcheck = \env ->
+    bind Type Type (e1.tcheck env) (\t1 ->
+      caseType Maybe[Type] t1
+        (bind Type Type (e2.tcheck env) (\t2 ->
+          caseType Maybe[Type] t2
+            (just Type tbool)
+            (nothing Type)))
+        (nothing Type))
+  }
+}
+
+
+----------------
+--  logic feature
+----------------
+
+type LogicAlg[E] = {
+  and : E -> E -> E,
+  or : E -> E -> E
+}
+
+-- Evaluator algebra
+trait evalLogicAlg : LogicAlg[IEval] { self =>
+  def and e1 e2        = { eval = \env ->
+    bind Value Value (e1.eval env) (\v1 ->
+      bind Value Value (e2.eval env) (\v2 ->
+        just Value (boolV (fromBool v1 && fromBool v2))))
+  }
+  def or e1 e2        = { eval = \env ->
+    bind Value Value (e1.eval env) (\v1 ->
+      bind Value Value (e2.eval env) (\v2 ->
+        just Value (boolV (fromBool v1 || fromBool v2))))
+  }
+}
+
+-- Pretty printer algebra
+trait ppLogicAlg : LogicAlg[IPrint] { self =>
+  def and e1 e2        = { print = "(" ++ e1.print ++ " && " ++ e2.print ++ ")" }
+  def or e1 e2        = { print = "(" ++ e1.print ++ " || " ++ e2.print ++ ")" }
+}
+
+-- Type checker algebra
+trait tcLogicAlg : LogicAlg[ITC] { self =>
+  def and e1 e2 = { tcheck = \env ->
+    bind Type Type (e1.tcheck env) (\t1 ->
+      caseType Maybe[Type] t1
+        (nothing Type)
+        (bind Type Type (e2.tcheck env) (\t2 ->
+          caseType Maybe[Type] t2
+            (nothing Type)
+            (just Type tbool))))
+  }
+  def or e1 e2 = { tcheck = \env ->
+    bind Type Type (e1.tcheck env) (\t1 ->
+      caseType Maybe[Type] t1
+        (nothing Type)
+        (bind Type Type (e2.tcheck env) (\t2 ->
+          caseType Maybe[Type] t2
+            (nothing Type)
+            (just Type tbool))))
+  }
+}
+
+
+
+----------------
+--  var feature
+----------------
+
+type VarAlg[E] = {
+  var : String -> E,
+  decl : String -> E -> E -> E
+}
+
+-- Evaluator algebra
+trait evalVarAlg { self =>
+  def var (n : String) : IEval = { eval = \env -> lookup Value n env }
+  def decl (n : String) (e : IEval) (b : IEval) : IEval = { eval = \env ->
+    bind Value Value (e.eval env) (\v ->
+      b.eval (insert Value n v env))
+  }
+}
+
+-- Pretty printer algebra
+trait ppVarAlg : VarAlg[IPrint] { self =>
+  def var n      = { print = n }
+  def decl n e b = { print = "var " ++ n ++ " = " ++ e.print ++ "; " ++ b.print }
+}
+
+-- Type checker algebra
+trait tcVarAlg : VarAlg[ITC] { self =>
+  def var n      = { tcheck = \env -> lookup Type n env }
+  def decl n e b = { tcheck = \env ->
+    bind Type Type (e.tcheck env) (\t ->
+      b.tcheck (insert Type n t env))
+  }
+}
+
+
+
+-----------------------------
+--  function feature
+-----------------------------
+
+type TFunAlg[E] = {
+  call : String -> E -> E
+}
+
+
+-- Pretty printer algebra
+trait ppFunAlg : TFunAlg[IPrint] { self =>
+  def call f arg = { print = f ++ "(" ++ arg.print ++ ")" }
+}
+
+-- Type checker algebra
+type FTEnv = EnvF[Pair[Type, Type]]
+
+trait tcFunAlg(ftenv : FTEnv) : TFunAlg[ITC] { self =>
+  def call f arg = { tcheck = \env ->
+    bind Pair[Type,Type] Type (lookup Pair[Type,Type] f ftenv) (\p ->
+      casePair Type Type Maybe[Type] p (\a b ->
+        bind Type Type (arg.tcheck env) (\a' ->
+          if eqTypes a a' then just Type b else nothing Type)))
+  }
+}
+
+
+---------------------------------------
+-- Languages
+---------------------------------------
+
+------------
+-- simplenat
+------------
+
 -- AST
-type VarArithAlg[E] = BoolArithAlg[E] & VarAlg[E]
-type VarArithL = { accept : forall E. VarArithAlg[E] -> E }
+type SNat = { accept : forall E. NatAlg[E] -> E }
+
 -- Evaluator
-def evalVarArith (e : VarArithL) : IEval =
-  e.accept IEval (new[VarArithAlg[IEval]] evalBoolAlg & evalArithAlg & evalVarAlg)
+def evalNat (e : SNat) : IEval = e.accept IEval (new[NatAlg[IEval]] evalNatAlg)
+
 -- Pretty printer
-def ppVarArith (e : VarArithL) : IPrint =
-  e.accept IPrint (new[VarArithAlg[IPrint]] ppBoolAlg & ppArithAlg  & ppVarAlg)
+def ppNat (e : SNat) : IPrint = e.accept IPrint (new[NatAlg[IPrint]] ppNatAlg)
+
+
+------------
+-- simplebool
+------------
+
+-- AST
+type SBool = { accept : forall E. BoolAlg[E] -> E }
+
+-- Evaluator
+def evalBool (e : SBool) : IEval = e.accept IEval (new[BoolAlg[IEval]] evalBoolAlg)
+
+-- Pretty printer
+def ppBool (e : SBool) : IPrint = e.accept IPrint (new[BoolAlg[IPrint]] ppBoolAlg)
+
+
+------------
+-- varbool
+------------
+
+type VarBoolAlg[E] = BoolAlg[E] & VarAlg[E]
+type VarBool = { accept : forall E. VarBoolAlg[E] -> E }
+
+
+-- Evaluator
+def evalVarBool (e : VarBool) : IEval = e.accept IEval (new[VarBoolAlg[IEval]] evalBoolAlg & evalVarAlg)
+
+-- Pretty printer
+def ppVarBool (e : VarBool) : IPrint = e.accept IPrint (new[VarBoolAlg[IPrint]] ppBoolAlg & ppVarAlg)
+
+
+------------
+-- varnat
+------------
+
+type VarNatAlg[E] = NatAlg[E] & VarAlg[E]
+type VarNat = { accept : forall E. VarNatAlg[E] -> E }
+
+
+-- Evaluator
+def evalVarNat (e : VarNat) : IEval = e.accept IEval (new[VarNatAlg[IEval]] evalNatAlg & evalVarAlg)
+
+-- Pretty printer
+def ppVarNat (e : VarNat) : IPrint = e.accept IPrint (new[VarNatAlg[IPrint]] ppNatAlg & ppVarAlg)
+
+
+
+-------------
+-- simplelogic
+-------------
+
+type BoolLogicAlg[E] = BoolAlg[E] & LogicAlg[E]
+type BoolLogic = { accept : forall E. BoolLogicAlg[E] -> E }
+
+
+-- Evaluator
+def evalBoolLogic (e : BoolLogic) : IEval = e.accept IEval (new[BoolLogicAlg[IEval]] evalBoolAlg & evalLogicAlg)
+
+-- Pretty printer
+def ppBoolLogic (e : BoolLogic) : IPrint = e.accept IPrint (new[BoolLogicAlg[IPrint]] ppBoolAlg & ppLogicAlg)
+
+
+----------------
+-- arith
+----------------
+
+type ArithAlg[E] = BoolAlg[E] & NatAlg[E] & CompAlg[E]
+type Arith = { accept : forall E. ArithAlg[E] -> E }
+
+
+-- Evaluator
+def evalArith (e : Arith) : IEval =
+  e.accept IEval (new[ArithAlg[IEval]] evalBoolAlg & evalNatAlg & evalCompAlg)
+
+-- Pretty printer
+def ppArith (e : Arith) : IPrint =
+  e.accept IPrint (new[ArithAlg[IPrint]] ppBoolAlg & ppNatAlg & ppCompAlg)
+
 -- Type checker
-def tcVarArith (e : VarArithL) : ITC =
-  e.accept ITC (new[VarArithAlg[ITC]] tcBoolArithAlg & tcVarAlg)
--- END_VARARITHL
+def tcArith (e : Arith) =
+  e.accept ITC (new[ArithAlg[ITC]] tcBoolAlg & tcNatAlg & tcCompAlg)
+
+
+----------------
+-- arithlogic
+----------------
+
+type ArithLogicAlg[E] = BoolAlg[E] & NatAlg[E] & CompAlg[E] & LogicAlg[E]
+type ArithLogic = { accept : forall E. ArithLogicAlg[E] -> E }
+
+
+-- Evaluator
+def evalArithLogic (e : ArithLogic) : IEval =
+  e.accept IEval (new[ArithLogicAlg[IEval]] evalBoolAlg & evalNatAlg & evalCompAlg & evalLogicAlg)
+
+-- Pretty printer
+def ppArithLogic (e : ArithLogic) : IPrint =
+  e.accept IPrint (new[ArithLogicAlg[IPrint]] ppBoolAlg & ppNatAlg & ppCompAlg & ppLogicAlg)
+
+-- Type checker
+def tcArithLogic (e : ArithLogic) =
+  e.accept ITC (new[ArithLogicAlg[ITC]] tcBoolAlg & tcNatAlg & tcCompAlg & tcLogicAlg)
+
+
+----------------
+-- varlogic
+----------------
+
+type VarLogicAlg[E] = BoolAlg[E] & LogicAlg[E] & VarAlg[E]
+type VarLogic = { accept : forall E. VarLogicAlg[E] -> E }
+
+
+-- Evaluator
+def evalVarLogic (e : VarLogic) : IEval =
+  e.accept IEval (new[VarLogicAlg[IEval]] evalBoolAlg & evalLogicAlg & evalVarAlg)
+
+-- Pretty printer
+def ppVarLogic (e : VarLogic) : IPrint =
+  e.accept IPrint (new[VarLogicAlg[IPrint]] ppBoolAlg & ppLogicAlg & ppVarAlg)
+
+
+----------------
+-- vararith
+----------------
+
+type VarArithAlg[E] = BoolAlg[E] & NatAlg[E] & CompAlg[E] & VarAlg[E]
+type VarArith = { accept : forall E. VarArithAlg[E] -> E }
+
+
+-- Evaluator
+def evalVarArith (e : VarArith) : IEval =
+  e.accept IEval (new[VarArithAlg[IEval]] evalBoolAlg & evalNatAlg & evalCompAlg & evalVarAlg)
+
+-- Pretty printer
+def ppVarArith (e : VarArith) : IPrint =
+  e.accept IPrint (new[VarArithAlg[IPrint]] ppBoolAlg & ppNatAlg & ppCompAlg & ppVarAlg)
+
+-- Type checker
+def tcVarArith (e : VarArith) =
+  e.accept ITC (new[VarArithAlg[ITC]] tcBoolAlg & tcNatAlg & tcCompAlg & tcVarAlg)
+
+
+
+-----------------------
+-- var + logic + arith
+-----------------------
+
+type VarArithLogicAlg[E] = BoolAlg[E] & NatAlg[E] & CompAlg[E] & VarAlg[E] & LogicAlg[E]
+type VarArithLogic = { accept : forall E. VarArithLogicAlg[E] -> E }
+
+
+-- Evaluator
+def evalVarArithLogic (e : VarArithLogic) : IEval =
+  e.accept IEval (new[VarArithLogicAlg[IEval]] evalBoolAlg & evalNatAlg & evalCompAlg & evalVarAlg & evalLogicAlg)
+
+-- Pretty printer
+def ppVarArithLogic (e : VarArithLogic) : IPrint =
+  e.accept IPrint (new[VarArithLogicAlg[IPrint]] ppBoolAlg & ppNatAlg & ppCompAlg & ppVarAlg & ppLogicAlg)
+
+-- Type checker
+def tcVarArithLogic (e : VarArithLogic) =
+  e.accept ITC (new[VarArithLogicAlg[ITC]] tcBoolAlg & tcNatAlg & tcCompAlg & tcVarAlg & tcLogicAlg)
+
 
 
 ------------
@@ -400,7 +618,7 @@ def tcVarArith (e : VarArithL) : ITC =
 ------------
 
 -- AST
-type MiniJSAlg[E] = VarArithAlg[E] & TFunAlg[E]
+type MiniJSAlg[E] = VarArithLogicAlg[E] & TFunAlg[E]
 type MiniJS = { accept : forall E. MiniJSAlg[E] -> E }
 
 type FunAlg[E] = {
@@ -427,7 +645,8 @@ def casePgm E (p : Program) (f: FEnv -> MiniJS -> E) : E = p.accept E { pgm = f 
 
 
 -- Evaluator algbebra
-trait evalFunAlg(fenv : FEnv) inherits evalBoolAlg & evalArithAlg & evalVarAlg : MiniJSAlg[IEval] { self : MiniJSAlg[IEval] =>
+trait evalFunAlg(fenv : FEnv) inherits evalBoolAlg & evalNatAlg & evalCompAlg & evalVarAlg & evalLogicAlg
+  : MiniJSAlg[IEval] { self : MiniJSAlg[IEval] =>
   def call f arg = { eval = \env ->
     bind Function Value (lookup Function f fenv) (\fn ->
       caseFn Maybe[Value] fn
@@ -437,32 +656,17 @@ trait evalFunAlg(fenv : FEnv) inherits evalBoolAlg & evalArithAlg & evalVarAlg :
   }
 }
 
--- Pretty printer algebra
-trait ppFunAlg : TFunAlg[IPrint] { self =>
-  def call f arg = { print = f ++ "(" ++ arg.print ++ ")" }
-}
-
--- Type checker algebra
-type FTEnv = EnvF[Pair[Type, Type]]
-
-trait tcFunAlg(ftenv : FTEnv) : TFunAlg[ITC] { self =>
-  def call f arg = { tcheck = \env ->
-    bind Pair[Type,Type] Type (lookup Pair[Type,Type] f ftenv) (\p ->
-      casePair Type Type Maybe[Type] p (\a b ->
-        bind Type Type (arg.tcheck env) (\a' ->
-          if eqTypes a a' then just Type b else nothing Type)))
-  }
-}
-
 
 -- Evaluator
 def evalMiniJS (e : MiniJS) (fenv : FEnv) : IEval = e.accept IEval (new[MiniJSAlg[IEval]] evalFunAlg(fenv))
 
 -- Pretty printer
-def ppMiniJS (e : MiniJS) : IPrint = e.accept IPrint (new[MiniJSAlg[IPrint]] ppArithAlg & ppBoolAlg & ppVarAlg & ppFunAlg)
+def ppMiniJS (e : MiniJS) : IPrint =
+  e.accept IPrint (new[MiniJSAlg[IPrint]] ppBoolAlg & ppNatAlg & ppCompAlg & ppVarAlg & ppLogicAlg & ppFunAlg)
 
 -- Type checker
-def tcMiniJS (e : MiniJS) (ftenv : FTEnv) : ITC = e.accept ITC (new[MiniJSAlg[ITC]] tcBoolArithAlg & tcVarAlg & tcFunAlg(ftenv))
+def tcMiniJS (e : MiniJS) (ftenv : FTEnv) : ITC =
+  e.accept ITC (new[MiniJSAlg[ITC]] tcBoolAlg & tcNatAlg & tcCompAlg & tcVarAlg & tcLogicAlg & tcFunAlg(ftenv))
 
 
 
