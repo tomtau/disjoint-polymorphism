@@ -465,6 +465,25 @@ def ppBool (e : SBool) : IPrint = e.accept IPrint (new[BoolAlg[IPrint]] ppBoolAl
 
 
 ------------
+-- natbool
+------------
+
+-- AST
+type NatBoolAlg[E] = NatAlg[E] & BoolAlg[E]
+type NatBool = { accept : forall E. NatBoolAlg[E] -> E }
+
+-- Evaluator
+def evalNatBool (e : NatBool) : IEval = e.accept IEval (new[NatBoolAlg[IEval]] evalNatAlg & evalBoolAlg)
+
+-- Pretty printer
+def ppNatBool (e : NatBool) : IPrint = e.accept IPrint (new[NatBoolAlg[IPrint]] ppNatAlg & ppBoolAlg)
+
+-- Type checker
+def tcNatBool (e : NatBool) = e.accept ITC (new[NatBoolAlg[ITC]] tcNatAlg & tcBoolAlg)
+
+
+
+------------
 -- varbool
 ------------
 
@@ -514,49 +533,49 @@ def ppBoolLogic (e : BoolLogic) : IPrint = e.accept IPrint (new[BoolLogicAlg[IPr
 -- arith
 ----------------
 
-type ArithAlg[E] = BoolAlg[E] & NatAlg[E] & CompAlg[E]
+type ArithAlg[E] = NatBoolAlg[E] & CompAlg[E]
 type Arith = { accept : forall E. ArithAlg[E] -> E }
 
 
 -- Evaluator
 def evalArith (e : Arith) : IEval =
-  e.accept IEval (new[ArithAlg[IEval]] evalBoolAlg & evalNatAlg & evalCompAlg)
+  e.accept IEval (new[ArithAlg[IEval]] evalNatAlg & evalBoolAlg & evalCompAlg)
 
 -- Pretty printer
 def ppArith (e : Arith) : IPrint =
-  e.accept IPrint (new[ArithAlg[IPrint]] ppBoolAlg & ppNatAlg & ppCompAlg)
+  e.accept IPrint (new[ArithAlg[IPrint]] ppNatAlg & ppBoolAlg & ppCompAlg)
 
 -- Type checker
 def tcArith (e : Arith) =
-  e.accept ITC (new[ArithAlg[ITC]] tcBoolAlg & tcNatAlg & tcCompAlg)
+  e.accept ITC (new[ArithAlg[ITC]] tcNatAlg & tcBoolAlg & tcCompAlg)
 
 
 ----------------
 -- arithlogic
 ----------------
 
-type ArithLogicAlg[E] = BoolAlg[E] & NatAlg[E] & CompAlg[E] & LogicAlg[E]
+type ArithLogicAlg[E] = ArithAlg[E] & LogicAlg[E]
 type ArithLogic = { accept : forall E. ArithLogicAlg[E] -> E }
 
 
 -- Evaluator
 def evalArithLogic (e : ArithLogic) : IEval =
-  e.accept IEval (new[ArithLogicAlg[IEval]] evalBoolAlg & evalNatAlg & evalCompAlg & evalLogicAlg)
+  e.accept IEval (new[ArithLogicAlg[IEval]] evalNatAlg & evalBoolAlg & evalCompAlg & evalLogicAlg)
 
 -- Pretty printer
 def ppArithLogic (e : ArithLogic) : IPrint =
-  e.accept IPrint (new[ArithLogicAlg[IPrint]] ppBoolAlg & ppNatAlg & ppCompAlg & ppLogicAlg)
+  e.accept IPrint (new[ArithLogicAlg[IPrint]] ppNatAlg & ppBoolAlg & ppCompAlg & ppLogicAlg)
 
 -- Type checker
 def tcArithLogic (e : ArithLogic) =
-  e.accept ITC (new[ArithLogicAlg[ITC]] tcBoolAlg & tcNatAlg & tcCompAlg & tcLogicAlg)
+  e.accept ITC (new[ArithLogicAlg[ITC]] tcNatAlg & tcBoolAlg & tcCompAlg & tcLogicAlg)
 
 
 ----------------
 -- varlogic
 ----------------
 
-type VarLogicAlg[E] = BoolAlg[E] & LogicAlg[E] & VarAlg[E]
+type VarLogicAlg[E] = BoolLogicAlg[E] & VarAlg[E]
 type VarLogic = { accept : forall E. VarLogicAlg[E] -> E }
 
 
@@ -573,21 +592,21 @@ def ppVarLogic (e : VarLogic) : IPrint =
 -- vararith
 ----------------
 
-type VarArithAlg[E] = BoolAlg[E] & NatAlg[E] & CompAlg[E] & VarAlg[E]
+type VarArithAlg[E] = ArithAlg[E] & VarAlg[E]
 type VarArith = { accept : forall E. VarArithAlg[E] -> E }
 
 
 -- Evaluator
 def evalVarArith (e : VarArith) : IEval =
-  e.accept IEval (new[VarArithAlg[IEval]] evalBoolAlg & evalNatAlg & evalCompAlg & evalVarAlg)
+  e.accept IEval (new[VarArithAlg[IEval]] evalNatAlg & evalBoolAlg & evalCompAlg & evalVarAlg)
 
 -- Pretty printer
 def ppVarArith (e : VarArith) : IPrint =
-  e.accept IPrint (new[VarArithAlg[IPrint]] ppBoolAlg & ppNatAlg & ppCompAlg & ppVarAlg)
+  e.accept IPrint (new[VarArithAlg[IPrint]] ppNatAlg & ppBoolAlg & ppCompAlg & ppVarAlg)
 
 -- Type checker
 def tcVarArith (e : VarArith) =
-  e.accept ITC (new[VarArithAlg[ITC]] tcBoolAlg & tcNatAlg & tcCompAlg & tcVarAlg)
+  e.accept ITC (new[VarArithAlg[ITC]] tcNatAlg & tcBoolAlg & tcCompAlg & tcVarAlg)
 
 
 
@@ -595,21 +614,20 @@ def tcVarArith (e : VarArith) =
 -- var + logic + arith
 -----------------------
 
-type VarArithLogicAlg[E] = BoolAlg[E] & NatAlg[E] & CompAlg[E] & VarAlg[E] & LogicAlg[E]
+type VarArithLogicAlg[E] = ArithLogicAlg[E] & VarAlg[E]
 type VarArithLogic = { accept : forall E. VarArithLogicAlg[E] -> E }
-
 
 -- Evaluator
 def evalVarArithLogic (e : VarArithLogic) : IEval =
-  e.accept IEval (new[VarArithLogicAlg[IEval]] evalBoolAlg & evalNatAlg & evalCompAlg & evalVarAlg & evalLogicAlg)
+  e.accept IEval (new[VarArithLogicAlg[IEval]] evalNatAlg & evalBoolAlg & evalCompAlg & evalLogicAlg & evalVarAlg)
 
 -- Pretty printer
 def ppVarArithLogic (e : VarArithLogic) : IPrint =
-  e.accept IPrint (new[VarArithLogicAlg[IPrint]] ppBoolAlg & ppNatAlg & ppCompAlg & ppVarAlg & ppLogicAlg)
+  e.accept IPrint (new[VarArithLogicAlg[IPrint]] ppNatAlg & ppBoolAlg & ppCompAlg & ppLogicAlg & ppVarAlg)
 
 -- Type checker
 def tcVarArithLogic (e : VarArithLogic) =
-  e.accept ITC (new[VarArithLogicAlg[ITC]] tcBoolAlg & tcNatAlg & tcCompAlg & tcVarAlg & tcLogicAlg)
+  e.accept ITC (new[VarArithLogicAlg[ITC]] tcNatAlg & tcBoolAlg & tcCompAlg & tcLogicAlg & tcVarAlg)
 
 
 
@@ -645,7 +663,7 @@ def casePgm E (p : Program) (f: FEnv -> MiniJS -> E) : E = p.accept E { pgm = f 
 
 
 -- Evaluator algbebra
-trait evalFunAlg(fenv : FEnv) inherits evalBoolAlg & evalNatAlg & evalCompAlg & evalVarAlg & evalLogicAlg
+trait evalFunAlg(fenv : FEnv) inherits evalNatAlg & evalBoolAlg &  evalCompAlg & evalLogicAlg & evalVarAlg
   : MiniJSAlg[IEval] { self : MiniJSAlg[IEval] =>
   def call f arg = { eval = \env ->
     bind Function Value (lookup Function f fenv) (\fn ->
@@ -658,7 +676,8 @@ trait evalFunAlg(fenv : FEnv) inherits evalBoolAlg & evalNatAlg & evalCompAlg & 
 
 
 -- Evaluator
-def evalMiniJS (e : MiniJS) (fenv : FEnv) : IEval = e.accept IEval (new[MiniJSAlg[IEval]] evalFunAlg(fenv))
+def evalMiniJS (e : MiniJS) (fenv : FEnv) : IEval =
+  e.accept IEval (new[MiniJSAlg[IEval]] evalFunAlg(fenv))
 
 -- Pretty printer
 def ppMiniJS (e : MiniJS) : IPrint =

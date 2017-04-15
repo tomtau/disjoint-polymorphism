@@ -33,6 +33,8 @@ data Exp = Num Int
          | Var String
          | Decl String Exp Exp
          | Call String Exp
+         | And Exp Exp
+         | Or Exp Exp
 
 
 -- Evaluator
@@ -79,6 +81,14 @@ evaluate e en fenv = eval e en
       Function (n, _) body <- lookup fun fenv
       v <- eval arg env
       eval body ((n, v) : env)
+    eval (And e1 e2) env = do
+      (BoolV e1') <- eval e1 env
+      (BoolV e2') <- eval e1 env
+      return (BoolV (e1' && e2'))
+    eval (Or e1 e2) env = do
+      (BoolV e1') <- eval e1 env
+      (BoolV e2') <- eval e1 env
+      return (BoolV (e1' || e2'))
 
 -- Type checker
 tcheck :: Exp -> TEnv -> TFunEnv -> Maybe Type
@@ -130,6 +140,14 @@ tcheck e tenv ftenv = tcheck' e tenv
       if t1 == t
         then return t2
         else Nothing
+    tcheck' (And a b) env =
+      case (tcheck' a env, tcheck' b env) of
+        (Just TBool, Just TBool) -> Just TBool
+        _ -> Nothing
+    tcheck' (Or a b) env =
+      case (tcheck' a env, tcheck' b env) of
+        (Just TBool, Just TBool) -> Just TBool
+        _ -> Nothing
 
 
 -- Pretty printer
@@ -146,3 +164,5 @@ pretty (Lt exp1 exp2) = "(" ++ pretty exp1 ++ " < " ++ pretty exp2 ++ ")"
 pretty (Var s) = s
 pretty (Decl n e1 e2) = "var " ++ n ++ " = " ++ pretty e1 ++ "; " ++ pretty e2
 pretty (Call n arg) = n ++ "(" ++ pretty arg ++ ")"
+pretty (And exp1 exp2) = "(" ++ pretty exp1 ++ " && " ++ pretty exp2 ++ ")"
+pretty (Or exp1 exp2) = "(" ++ pretty exp1 ++ " || " ++ pretty exp2 ++ ")"
