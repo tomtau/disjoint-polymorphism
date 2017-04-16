@@ -143,19 +143,17 @@ deviation from traditional class-based models is not only because of its
 simplicity, but also because we need a very \textit{dynamic} form of
 inheritance, as has been elaborated throughout the paper.
 
-Compared to the traditional trait mode, traits in \name have the following differences:
-\begin{itemize}
-\item Traditional traits cannot be instantiated but only composed with a class,
-  whereas traits in our language can be instantiated directly.
-\item Traditional traits cannot take constructor parameters whereas ours can. As
-  shown in Section~\ref{sec:traits}, traits in \name have a single constructor.
-\item The trait system in \name lacks a proper notation of inheritance relationship. For
-  example in the traditional trait mode, if the same method (i.e., from the same
-  trait) is obtained more than once via different paths, there is no conflict.
-  This is not the case in \name.
-\item Traits in \name support dynamic inheritance. In the traditional trait
-  model, when it comes to inheritance, the traits must be statically known.
-\end{itemize}
+Compared to the traditional trait mode, traits in \name have the following
+differences: 1) traditional traits cannot be instantiated but only composed with
+a class, whereas traits in our language can be instantiated directly; 2)
+traditional traits cannot take constructor parameters whereas ours can. As shown
+in Section~\ref{sec:traits}, traits in \name have a single constructor; 3) the
+trait system in \name lacks a proper notation of inheritance relationship. For
+example in the traditional trait model, if the same method (i.e., from the same
+trait) is obtained more than once via different paths, there is no conflict.
+This is not the case in \name; and 4) traits in \name support dynamic
+inheritance. In the traditional trait model, when it comes to inheritance, the
+traits must be statically known.
 
 
 

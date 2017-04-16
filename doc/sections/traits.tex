@@ -156,7 +156,7 @@ geometry and its functions. In case of circles, we already have a trait
 \lstinline{circle} representing its geometry. We now proceed to define its
 functions by another trait (\lstinline{T} is the top type which has a single
 value \lstinline{()}).
-\lstinputlisting[linerange=27-34]{../examples/box.txt}% APPLY:linerange=CIRCLE_FNS
+\lstinputlisting[linerange=27-31]{../examples/box.txt}% APPLY:linerange=CIRCLE_FNS
 
 \noindent Note how in \lstinline$circleFns$ the type of the self-reference is
 \lstinline$Circle$, which declares a \lstinline{radius} field that is needed for
@@ -169,7 +169,7 @@ a similar result can be achieved via trait requirements.
 Requirements are satisfied at object creation time. When \lstinline$circleFns$
 is instantiated and composed with other traits, it must be composed with an
 implementation of \lstinline$Circle$. For example:
-\lstinputlisting[linerange=38-38]{../examples/box.txt}% APPLY:linerange=CIRCLE_FULL
+\lstinputlisting[linerange=35-35]{../examples/box.txt}% APPLY:linerange=CIRCLE_FULL
 
 The object \lstinline{circleWithFns} enables us to call
 methods from different traits on a single object.
@@ -203,19 +203,19 @@ bit contrived, illustrates this point.
 
 \paragraph{Multiple trait inheritance} To further demonstrate multiple
 trait inheritance, consider adding buttons. The trait of buttons and its type are:
-\lstinputlisting[linerange=43-44]{../examples/box.txt}% APPLY:linerange=BUTTON_DEF
+\lstinputlisting[linerange=40-41]{../examples/box.txt}% APPLY:linerange=BUTTON_DEF
 
 Similarly we define functions for buttons as well.
-\lstinputlisting[linerange=48-53]{../examples/box.txt}% APPLY:linerange=BUTTON_FNS
+\lstinputlisting[linerange=45-48]{../examples/box.txt}% APPLY:linerange=BUTTON_FNS
 
 \noindent To make a round button from the existing traits the trait
 \lstinline{roundButton} just inherits everything from the traits
 \lstinline{circle} and \lstinline{button}:
-\lstinputlisting[linerange=57-59]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_DEF
+\lstinputlisting[linerange=52-54]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_DEF
 
 \noindent Finally we create a round button on the fly and test its functionality
 as follows:
-\lstinputlisting[linerange=112-115]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST
+\lstinputlisting[linerange=107-110]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST
 
 \subsection{Detecting And Resolving Conflicts in Trait Composition}
 \label{sec:conflicts}
@@ -229,11 +229,11 @@ system.
 
 The following example shows how conflicting methods in two traits are detected
 and resolved. Let us introduce an oval shape.
-\lstinputlisting[linerange=64-66]{../examples/box.txt}% APPLY:linerange=ASOVAL_DEF
+\lstinputlisting[linerange=59-61]{../examples/box.txt}% APPLY:linerange=ASOVAL_DEF
 
 The following trait gets rejected because both \lstinline{asOval} and
 \lstinline{circle} have a conflicting \lstinline{radius} field.
-\lstinputlisting[linerange=71-73]{../examples/box.txt}% APPLY:linerange=CONFLICT_DEF
+\lstinputlisting[linerange=66-68]{../examples/box.txt}% APPLY:linerange=CONFLICT_DEF
 
 \noindent As mentioned in Section~\ref{sec:intro}, \name's type system is based
 on intersection types. More concretely, \name uses a type system based on
@@ -249,7 +249,7 @@ To resolve the conflict, the programmer needs to explicitly state which
 \textit{exclusion} operator (denoted by \lstinline{\}), which allows one to
 avoid a conflict before it occurs. The following is one choice, and is accepted
 by \name again.
-\lstinputlisting[linerange=79-80]{../examples/box.txt}% APPLY:linerange=CONFLICT_RESOLVE
+\lstinputlisting[linerange=74-75]{../examples/box.txt}% APPLY:linerange=CONFLICT_RESOLVE
 
 % \noindent Note that because of the disjointness conditions, the exclusion
 % operator is able to pinpoint the exact field given a label and a type.
@@ -266,7 +266,7 @@ first-class values and can be passed around or returned from other functions.
 
 Let us extend the functions of circles by another method \lstinline{inCircle},
 which, given a point, tests if the point lies inside the circle.
-\lstinputlisting[linerange=93-95]{../examples/box.txt}% APPLY:linerange=CIRCLE_FNS2
+\lstinputlisting[linerange=88-90]{../examples/box.txt}% APPLY:linerange=CIRCLE_FNS2
 
 \lstinline{CircleFns2} extends \lstinline{CircleFns} by another method
 \lstinline{inCircle}, which, as shown in trait \lstinline{circleFns2}, is
@@ -274,11 +274,11 @@ implemented by invoking the \lstinline{norm} method from something of type
 \lstinline{Circle & Norm}. So what is this \lstinline{Norm} type? It consists of
 a single method \lstinline{norm} -- distance of a point to the origin. We
 provide two different norms via two traits.
-\lstinputlisting[linerange=84-89]{../examples/box.txt}% APPLY:linerange=NORM_DEF
+\lstinputlisting[linerange=79-84]{../examples/box.txt}% APPLY:linerange=NORM_DEF
 
 To facilitate creating round buttons with different norms baked in, we define a
 factory that takes a trait \lstinline$norm$ and produces a round button:
-\lstinputlisting[linerange=99-101]{../examples/box.txt}% APPLY:linerange=POINT_FUNC
+\lstinputlisting[linerange=94-96]{../examples/box.txt}% APPLY:linerange=POINT_FUNC
 
 \noindent Here \lstinline{norm}, which is a trait used in the object creation of
 \lstinline{roundButtonFac}, is \emph{parameterized}. To express the
@@ -289,7 +289,7 @@ on \lstinline{Point}. This gives us the
 flexibility to choose different norms at \emph{run-time}. Below is a
 round button that provides \lstinline{inCircle} method with Euclidean norm baked
 in.
-\lstinputlisting[linerange=105-105]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST2
+\lstinputlisting[linerange=100-100]{../examples/box.txt}% APPLY:linerange=ROUNDBUTTON_TEST2
 
 This concludes our running example of presenting graphical objects.
 

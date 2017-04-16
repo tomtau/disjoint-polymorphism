@@ -92,16 +92,12 @@ methods becoming record fields. The self-reference is adjusted to be the last
 parameter of the declaration. For example
 \begin{lstlisting}
 trait point(x : Int, y: Int) { self : Point =>
-  def x() = x
-  def y() = self.x()
-}
+  def x = x
+  def y = self.x }
 \end{lstlisting}
 becomes
 \begin{lstlisting}
-def point (x : Int) (y : Int) (self : Point) =
-{ x = \_ -> x
-, y = \_ -> self.x()
-}
+def point (x : Int) (y : Int) (self : Point) = { x = x , y = self.x }
 \end{lstlisting}
 Now it is clear that \lstinline{self} is not a special keyword: it can have any
 name.
@@ -201,7 +197,7 @@ most essential parts for \name to work as we wanted it. In regard to the
 subtyping rules, in addition to what have been presented in
 \citet{alpuimdisjoint}, we have an additional rule, which we found helpful for
 enabling the composition of Object Algebras. For brevity, we only show a
-simplified version below: \ottusedrule{\ottdruleSubXXR{}} By this rule, we can
+simplified version below: \ottusedrule{\ottdruleSubXXR{}} By this rule, one can
 derive for example, $[[ { l : Int -> String} ]] <: [[ { l : Int & Bool -> String & Bool}]]$.
 We believe this rule would
 not endanger the type system, as it is orthogonal to the other subtyping rules.

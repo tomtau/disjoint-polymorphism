@@ -1,9 +1,7 @@
---> "((5.0 - (2.0 + 3.0)) + 3.0) = 3.0\n(2.0 + 3.0) = 5.0"
+--> "((5.0 - (2.0 + 3.0)) + 3.0) = 3.0 and (2.0 + 3.0) = 5.0"
 
 -- BEGIN_ALGEBRA_DEF
-type ExpAlg[E] = {
-  lit : Double -> E,
-  add : E -> E -> E }
+type ExpAlg[E] = {lit : Double -> E, add : E -> E -> E }
 -- END_ALGEBRA_DEF
 
 -- BEGIN_MKVALUE_DEF
@@ -79,9 +77,7 @@ def e3 : ExtExp = add e2 (lit 3)
 -}
 
 -- BEGIN_VISITOR_EG
-main = print e3 ++ " = " ++ (eval e3).toString ++ "\n" ++
+main = print e3 ++ " = " ++ (eval e3).toString ++ " and " ++
        print e1 ++ " = " ++ (eval e1).toString 
--- Output: 
---    ((5.0 - (2.0 + 3.0)) + 3.0) = 3.0
---    (2.0 + 3.0) = 5.0
+-- Output: "((5.0 - (2.0 + 3.0)) + 3.0) = 3.0 and (2.0 + 3.0) = 5.0"
 -- END_VISITOR_EG

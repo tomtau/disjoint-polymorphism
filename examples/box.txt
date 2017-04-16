@@ -24,10 +24,7 @@ def circleTest  = new[Circle] circle(pointTest, 3)
 -- END_CIRCLE_TEST
 
 -- BEGIN_CIRCLE_FNS
-type CircleFns = {
-  area   : T -> Double,
-  grow   : T -> Double,
-  shrink : T -> Double }
+type CircleFns = { area : T -> Double, grow : T -> Double, shrink : T -> Double }
 trait circleFns { self : Circle =>
   def area()   = self.radius * self.radius * 3.14
   def grow()   = self.radius + 1
@@ -45,9 +42,7 @@ trait button(label : String) { self => def label = label }
 -- END_BUTTON_DEF
 
 -- BEGIN_BUTTON_FNS
-type ButtonFns = {
-  hover : Bool -> String,
-  press : Bool -> String }
+type ButtonFns = { hover : Bool -> String, press : Bool -> String }
 trait buttonFns { self : Button =>
   def hover (b : Bool) = if b then "hoverring..." else "no hoverring"
   def press (b : Bool) = if b then "pressing..." else "no pressing" }
