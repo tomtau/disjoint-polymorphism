@@ -10,16 +10,15 @@ $(MAIN).pdf: $(wildcard ../examples/*.txt) $(wildcard sections/*.ott) $(wildcard
 	@latexmk -pdf $(@:.pdf=.tex)
 
 submit: $(MAIN).pdf
-	xelatex annotated_reviews.tex
 	rm -Rf impl && mkdir -p impl
 	rsync --relative --files-from submit.txt ../ impl
-	tar zcf bundle.tar.gz README.md appendix.pdf impl
-	mkdir -p upload
-	mv bundle.tar.gz $(MAIN).pdf annotated_reviews.pdf upload/
+	tar zcf bundle.tar.gz impl
+	rm -Rf upload && mkdir -p upload
+	mv bundle.tar.gz $(MAIN).pdf upload/
 
 clean:
 	@rm -f $(MAIN).pdf $(MAIN).bbl *.aux *.fls *.out *.synctex.gz *.log *.fdb_latexmk *.blg bundle.tar.gz
 	@rm -f notes/memo.tex appendix.pdf
 	@rm -Rf auto/ sections/auto/ impl upload/
 
-.PHONY: all clean submit appendix
+.PHONY: all clean submit

@@ -25,6 +25,10 @@ doc/paper/*.fls
 
 doc/sections/*-old
 doc/*-old
+doc/impl/*
+doc/bundle.tar.gz
+bundle.tar.gz
+doc/upload/*
 
 /doc/footempfile.txt
 /doc/pipeline.graffle
