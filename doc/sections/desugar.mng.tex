@@ -195,8 +195,11 @@ most critical parts in \name. In regard to the subtyping rules, in addition to w
 been presented~\citep{alpuimdisjoint}, we have an additional rule, which we
 found helpful for enabling the composition of Object Algebras. For brevity, we
 only show a simplified version below: \ottusedrule{\ottdruleSubXXR{}} By this
-rule, one can derive for example, $[[ { l : Int -> String} ]] <: [[ { l : Int &
-  Bool -> String & Bool}]]$. We believe this rule would not endanger the type
+rule, one can derive for example,
+$$
+[[ { l : Int -> String} & { l : Bool -> Bool}]] <: [[ { l : Int & Bool -> String & Bool}]]
+$$
+We believe this rule would not endanger the type
 system, as it is orthogonal to the other subtyping rules. Besides, our
 preliminary meta-theory study shows that the new subtype system enjoys the same
 properties as before.
