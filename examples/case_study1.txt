@@ -6,7 +6,7 @@
 -----------------------------
 
 type MaybeAlg[B, A] = {
-  nothing : T -> B,
+  nothing : B,
   just : A -> B
 }
 
@@ -14,22 +14,22 @@ type Maybe[A] = {
    match : forall C. MaybeAlg[C,A] -> C
 }
 
-def nothing A : Maybe[A] = { match = /\C. \f -> f.nothing() }
+def nothing A : Maybe[A] = { match = /\C. \f -> f.nothing }
 
 def just A (x : A) : Maybe[A] = { match = /\C. \f -> f.just x }
 
 def bind A B (x : Maybe[A]) (f : A -> Maybe[B]) : Maybe[B] =
-  x.match Maybe[B] { nothing = \_ -> nothing B, just = \a -> f a }
+  x.match Maybe[B] { nothing = nothing B, just = \a -> f a }
 
 def fromJust A (x : Maybe[A]) : A =
-  x.match A { nothing = \_ -> undefined, just = \b -> b }
+  x.match A { nothing = undefined, just = \b -> b }
 
 def isJust A (x : Maybe[A]) : Bool =
-  x.match Bool { nothing = \_ -> false, just = \_ -> true }
+  x.match Bool { nothing = false, just = \_ -> true }
 
 type EnvF[E] = String -> Maybe[E]
 
-def empty A : EnvF[A] = \_ -> {match = /\C. \f -> f.nothing()}
+def empty A : EnvF[A] = \_ -> {match = /\C. \f -> f.nothing}
 
 def lookup A (s : String) (env : EnvF[A]) = env s
 

@@ -38,7 +38,7 @@ instance Show Value where
   show (VPair (CExp e1 _) (CExp e2 _)) = "(" ++ show (pprint e1) ++ ", " ++ show (pprint e2) ++ ")"
   show VUnit = "()"
   show (VStr s) = show s
-  show _ = "Cannot show functions"
+  show (VClosure{}) = "<<closure>>"
 
 type M = FreshMT (Reader Env)
 
@@ -92,6 +92,7 @@ eval (UToString e) = do
 eval (USqrt e) = do
   (VLit n) <- eval e
   return $ VLit (sqrt n)
+eval Bot = error "Evaluation would not terminate"
 
 evalOp :: Operation -> Value -> Value -> Value
 evalOp (Arith Add) (VLit x) (VLit y) = VLit $ x + y
@@ -101,6 +102,11 @@ evalOp (Arith Div) (VLit x) (VLit y) = VLit $ x / y
 evalOp (Comp Equ) (VLit x) (VLit y) = VBool $ x == y
 evalOp (Comp Equ) (VStr x) (VStr y) = VBool $ x == y
 evalOp (Comp Equ) (VBool x) (VBool y) = VBool $ x == y
+evalOp (Comp Lt) (VLit x) (VLit y) = VBool $ x < y
+evalOp (Comp Gt) (VLit x) (VLit y) = VBool $ x > y
+evalOp (Comp Neq) (VLit x) (VLit y) = VBool $ x /= y
+evalOp (Comp Neq) (VStr x) (VStr y) = VBool $ x /= y
+evalOp (Comp Neq) (VBool x) (VBool y) = VBool $ x /= y
 evalOp (Logical LAnd) (VBool x) (VBool y) = VBool $ x && y
 evalOp (Logical LOr) (VBool x) (VBool y) = VBool $ x || y
 evalOp Append (VStr x) (VStr y) = VStr $ x ++ y

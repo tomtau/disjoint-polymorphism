@@ -238,8 +238,8 @@ atype :: { Type }
   | topT                          { TopT }
   | record_type                   { $1 }
   | '(' type ')'                  { $2 }
-  | Trait '[' type ',' type ']'   { Arr (Arr TopT $3) $5 }
-  | Trait '[' type ']'            { Arr (Arr TopT TopT) $3 }
+  | Trait '[' type ',' type ']'   { Arr $3 $5 }
+  | Trait '[' type ']'            { Arr TopT $3 }
   | UPPER_IDENT                   { tvar $1 }
 
 -- record types

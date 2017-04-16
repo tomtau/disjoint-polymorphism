@@ -36,7 +36,7 @@ desugarTrait trait =
    TmBind
      tname
      typarams
-     ((map (second Just) params) ++ [(s2n self, Just (Arr TopT st))])
+     ((map (second Just) params) ++ [(s2n self, Just st)])
      -- if no supers, return body
      -- otherwise merge them to body
      (maybe body (flip Merge body) (foldl1May Merge supers))
@@ -49,8 +49,7 @@ desugarTrait trait =
     (self, st) = selfType trait
     supers = traitSuper trait
     tb' = resolveDecls tb -- We substitute away all type declarations in traits
-    body =
-      subst (s2n self) (App (evar self) Top) (mkRecds (map normalizeTmDecl tb'))
+    body = mkRecds (map normalizeTmDecl tb')
 
 
 

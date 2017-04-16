@@ -14,7 +14,7 @@ import           Environment
 import           PrettyPrint
 import           Source.Parser (parseExpr)
 import           Source.Typing
-import qualified Target.Dynamics as C
+import qualified Target.CBN as C
 
 type Result = Either Doc String
 
@@ -37,7 +37,7 @@ eval inp =
       let res = runTcMonad emptyCtx (tcModule abt)
       in case res of
            Left err -> ret err
-           Right (_, tar) -> return . show . C.evaluate $ tar
+           Right (_, tar, tEnv) -> return . show . C.evaluate tEnv $ tar
 
 evalFile :: FilePath -> IO ((Doc, Maybe Doc), Bool)
 evalFile path = do

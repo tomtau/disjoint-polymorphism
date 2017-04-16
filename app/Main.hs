@@ -10,7 +10,7 @@ import           Source.Typing
 import           System.Console.Repline
 import           System.Environment (getArgs)
 import           System.Exit
-import qualified Target.Dynamics as T
+import qualified Target.CBN as CBN
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 
 
@@ -50,10 +50,10 @@ exec source =
       env <- getCtx
       let res = runTcMonad (replCtx env) (tcModule abt)
       case res of
-        Right (typ, tar) -> do
+        Right (typ, tar, tEnv) -> do
           putMsg "Typing result"
           ppMsg $ colon <+> blue (pprint typ)
-          let r = T.evaluate tar
+          let r = CBN.evaluate tEnv tar
           putMsg "\nEvaluation result"
           ppMsg $ text "=>" <+> blue (text (show r))
         Left err -> ppMsg err
