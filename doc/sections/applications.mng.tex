@@ -54,8 +54,8 @@ printer, and type checker.
               && $\mid$ & $ [[e1 && e2]] \mid [[e1 || e2]] $ & $\mathit{logicF}$ \\
               && $\mid$ & $[[x]] \mid [[var x = e1 ; e2]]$  &  $\mathit{varF}$ \\
               && $\mid$ & $[[e1 e2]]$ & $\mathit{funcF}$ \\
-  Programs & $[[jpgm]]$ & ::= & $[[jdecl1 .. jdecln e]]$ &  \\
-  Functions & $[[jdecl]]$ & ::= & $[[function f ( x : t ) { e }]]$ & \\
+  Programs & $[[jpgm]]$ & ::= & $[[jdecl1 .. jdecln e]]$ &  $\mathit{funcF}$ \\
+  Functions & $[[jdecl]]$ & ::= & $[[function f ( x : t ) { e }]]$ &  $\mathit{funcF}$ \\
   Values & $v$ & ::= & $[[N]] \mid [[BL]]$ & \\
   Types  & $t$ & ::= & $[[int]] \mid [[bool]]$ &
 \end{tabular}
