@@ -22,7 +22,7 @@ superclass; and it creates a subtype.
 
 \end{itemize}
 
-The covariant model has been sucessefully used for over 50 years,
+The covariant model has been successfully used for over 50 years,
 so it clearly has demonstrated its value in practice. 
 Part of this success can probably be attributed 
 to its relative simplicity. In particular, programmers do not have to think carefully 
@@ -44,7 +44,7 @@ However, as \citeauthor{cook1989inheritance}'s work famously demonstrated this i
 case. The essential implication of this is that the covariant model cannot
 express well programs where inheritance and subtyping do not go along together.
 Following their observations about inheritance and subtyping, \citeauthor{cook1989inheritance}
-suggest a more general and flexible programing model (which we call the
+suggest a more general and flexible programming model (which we call the
 \emph{flexible model}) with the following properties:
 
 \begin{itemize}
@@ -66,7 +66,7 @@ functions are not strictly covariant.  A function of type $A \to B$ is
 a subtype of another function $C \to D$ when $B$ is a subtype of $D$
 and $A$ is a \emph{supertype} of $C$. This means, for example that a
 function of type $Cat \to Int$ \emph{cannot not be subtype} of a
-function with type $Animal \to Int$ (assumming that $Cat$ is a subtype
+function with type $Animal \to Int$ (assuming that $Cat$ is a subtype
 of $Animal$). In fact, only the opposite can
 happen: $Animal \to Int$ can be a subtype of $Cat \to Int$.  This is
 at odds with the covariant view. Most mainstream OOP languages, such as Java or C\#, address this
@@ -118,11 +118,11 @@ We believe that there are two primary reasons for the lack of adoption
 of their model.  Firstly, the mental programming model is not
 as simple as the covariant model. In the flexible model programmers have to
 think more carefully on whether extensions produce subtypes or not,
-for example.  Thus, it is crutial for programmers to understand the
+for example.  Thus, it is crucial for programmers to understand the
 difference between subtyping and inheritance.
 Secondly, and perhaps more importantly, there are not many compelling applications in
 the literature where the need for a more flexible OOP model is
-necessary. Thus language designers may argue that the costs outweight 
+necessary. Thus language designers may argue that the costs outweigh
 the benefits, and may decide to stick instead to the covariant 
 model, which is simple, and well-understood by programmers. 
 %Indeed a famous instance of this is the design of DART
@@ -238,7 +238,7 @@ In summary the contributions of this paper are:
   based on the work by \citet{cook1989denotational} on the denotational semantics of
   inheritance.
 
-\item {\bf Implementation and modularization case study:} \name is implementated
+\item {\bf Implementation and modularization case study:} \name is implemented
   and available online. To evaluate \name in terms of its support for more
   modular design we conduct a case study, based on \citeauthor{poplcook}'s undergraduate
   Programming Languages book~\cite{poplcook}, where the features of a small

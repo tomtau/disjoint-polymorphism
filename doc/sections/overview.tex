@@ -60,7 +60,7 @@ that {\bf Inheritance is not Subtyping}. \ldots
 
 In the covariant model extensions are always subtypes. However, 
 there are situations where extensions are actually
-\emph{supertypes} (or can even have no relation to the extended type). Unfortunatelly this is not supported in the
+\emph{supertypes} (or can even have no relation to the extended type). Unfortunately this is not supported in the
 covariant model. Using some imaginary syntax for a Java-like language, 
 what we would like to express is:
 
@@ -137,7 +137,7 @@ interface ExtExp super Exp { // An extended AST becomes a supertype of the origi
 	<A> A accept(ExtExpVisitor<A> v); // Contravariant argument refinement
 }
 \end{lstlisting}
-\caption{Extensible Visitors in an hyphotetical
+\caption{Extensible Visitors in an hypothetical
   extension of Java with \emph{retroactive super types} and \emph{contravariant
   type refinement}.}
 \label{fig:JVis}
@@ -182,7 +182,7 @@ Although such code cannot be expressed in Java, it is expressible in
 \name, as shown in Section~\ref{sec:OA}. In fact statically-typed
 OO languages using structural types (and which also support
 contravariant type refinement!) should be able to express 
-the example, as the subtyping relations are implict. 
+the example, as the subtyping relations are implicit.
 
 \subsection{An Overly Conservative Restriction on Multiple Inheritance}
 
@@ -209,7 +209,7 @@ trait C[A] {def m(x : A) = x}
 trait D extends C[Int] with C[Boolean]
 \end{lstlisting}
 
-\noindent Here we create a \emph{parametrized} trait \lstinline{C}, 
+\noindent Here we create a \emph{parameterized} trait \lstinline{C},
 defining a method \lstinline{m}. Then the trait \lstinline{D} attempts 
 to inherit from \lstinline{C} twice: the first time with the type
 parameter instantiated to \lstinline{Int}, and the second time with
@@ -239,7 +239,7 @@ Object Algebras, as we shall see in Section~\ref{sec:dynamic}.
 \subsection{No Dynamic Inheritance}
 \label{sec:scala-merge}
 
-The final limitation is that maistream OOP languages use a class-based static
+The final limitation is that mainstream OOP languages use a class-based static
 inheritance model. This means that when both inheritance is used and objects are
 created, the \emph{classes involved must be statically known}.
 \begin{comment}
@@ -288,7 +288,7 @@ in a second-class status. Although \lstinline{merge} returns an intersection
 type, it is hard to build values with such types.
 
 Exactly the same situation arises when using inheritance. In Scala, if we try
-to create a trait parametrized by an unknown supertype, for example
+to create a trait parameterized by an unknown supertype, for example
 \lstinline[language=scala]{trait T[A] extends A}, we face problems. Here the
 intention would be to capture, once and for all, a family of traits that extend
 multiple different traits/classes with the same method. However, this definition
