@@ -9,10 +9,7 @@ $(MAIN).pdf: $(wildcard ../examples/*.txt) $(wildcard sections/*.ott) $(wildcard
 	@ruby $(SCRIPT).rb
 	@latexmk -pdf $(@:.pdf=.tex)
 
-appendix:
-	@latexmk -pdf appendix.tex
-
-submit: $(MAIN).pdf appendix
+submit: $(MAIN).pdf
 	xelatex annotated_reviews.tex
 	rm -Rf impl && mkdir -p impl
 	rsync --relative --files-from submit.txt ../ impl

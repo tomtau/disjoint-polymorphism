@@ -3,11 +3,11 @@ version: 0.1.0.0
 synopsis: A prototype-based, statically typed language
 description: Please see README.md
 category: Language
-author: The University of Hong Kong
-maintainer: bixuanxbi@gmail.com
-copyright: 2016-2017, The University of Hong Kong
+author: Anonymous
+maintainer: anonymous@gmail.com
+copyright: 2016-2017, Anonymous
 license: BSD3
-github: bixuanzju/disjoint-polymorphism
+github: anonymous/disjoint-polymorphism
 dependencies:
   - ansi-wl-pprint
   - base >=4.7 && <5

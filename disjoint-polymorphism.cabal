@@ -6,20 +6,20 @@ name:                disjoint-polymorphism
 version:             0.1.0.0
 synopsis:            A prototype-based, statically typed language
 description:         Please see README.md
-homepage:            https://github.com/bixuanzju/disjoint-polymorphism#readme
-bug-reports:         https://github.com/bixuanzju/disjoint-polymorphism/issues
+homepage:            https://github.com/anonymous/disjoint-polymorphism#readme
+bug-reports:         https://github.com/anonymous/disjoint-polymorphism/issues
 license:             BSD3
 license-file:        LICENSE
-author:              The University of Hong Kong
-maintainer:          bixuanxbi@gmail.com
-copyright:           2016-2017, The University of Hong Kong
+author:              Anonymous
+maintainer:          anonymous@gmail.com
+copyright:           2016-2017, Anonymous
 category:            Language
 build-type:          Simple
 cabal-version:       >= 1.10
 
 source-repository head
   type: git
-  location: https://github.com/bixuanzju/disjoint-polymorphism
+  location: https://github.com/anonymous/disjoint-polymorphism
 
 library
   hs-source-dirs:
