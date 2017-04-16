@@ -37,7 +37,7 @@ instance Pretty LogicalOp where
 instance Pretty Operation where
   ppr (Arith a) = ppr a
   ppr (Logical a) = ppr a
-  ppr (Logical a) = ppr a
+  ppr (Comp a) = ppr a
   ppr Append = return $ text "++"
 
 

@@ -12,7 +12,7 @@ following 3 terms when comparing related work with ours.
 \item{{\bf Static inheritance:}} Static inheritance refers to what the typical
   model of inheritance in class-based languages. The inheritance model is said
   to be static because when using class extension, the extended classes are
-  statically known at compile-type.
+  statically known at compile-time.
 \item{{\bf Mutable Inheritance:}} Prototype-based languages allow another model
   of inheritance, which we call \emph{mutable inheritance}. In this inheritance
   model, self-references can be changed at any point.
@@ -76,7 +76,7 @@ slots may be assigned new values at run-time. Mutable inheritance is rather
 unstructured, and oftentimes access to any clashing methods will generate a
 ``messageAmbiguous'' error at run-time. Although \name's dynamic inheritance is
 not as powerful as mutable inheritance, its static type system can guarantee
-that no such errors could occur at run-time.
+that no such error could occur at run-time.
 
 There is not much work on statically-typed, delegation-based languages.
 \citet{kniesel1999type} provides a good overview of problems when combining
@@ -100,14 +100,14 @@ inherited objects have inherited types, not subtypes. An interesting aspect of
 their calculus is the \textbf{with} construct, used to join two records. This is
 somewhat similar to our merge construct. However two major differences are worth
 pointing out: 1) the \textbf{with} construct operates only on records; and 2) it
-is a biased operator, meaning the conflict is resolved by favoring values from
-its right argument. This biased operator is good at modeling mixins, but not
-traits. In particular, the \textbf{with} construct is unable to merge two
-arbitrary (and possible polymorphic) values, which is essential to express the
-\lstinline{merge} operation in Section~\ref{sec:traits}, and which is only
-possible with disjointness constraint in \name. The \textit{onion} construct in
-the Big Bang language~\cite{palmer2015building,menon2012big} has a similar
-problem -- it is a left-associative operator which gives rightmost precedence.
+is a biased operator, favoring values from its right argument. This biased
+operator is good at modeling mixins, but not traits. In particular, the
+\textbf{with} construct is unable to merge two arbitrary (and possible
+polymorphic) values, which is essential to express the \lstinline{merge}
+operation in Section~\ref{sec:traits}, and which is only possible with
+disjointness constraint in \name. The \textit{onion} construct in the Big Bang
+language~\cite{palmer2015building,menon2012big} has a similar problem -- it is a
+left-associative operator which gives rightmost precedence.
 
 
 
@@ -134,7 +134,7 @@ mechanism in a dynamically typed version of Smalltalk. Since then many
 formalizations of traits have been
 proposed~\cite{scharli2003traitsformal,ducasse2006traits,bettini2010prototypical}.
 For example \citet{fisher2004typed} presented a statically-typed calculus that
-models traits. Conflict detection is kind of the hallmark of trait-based
+models traits. Conflict detection is the hallmark of trait-based
 inheritance, compared with mixin-based inheritance. One important difference
 with \name is that those systems support \textit{classes} in addition to traits,
 and consider the interaction between them, whereas \name is prototype (or
@@ -145,15 +145,14 @@ inheritance, as has been elaborated throughout the paper.
 
 Compared to the traditional trait mode, traits in \name have the following
 differences: 1) traditional traits cannot be instantiated but only composed with
-a class, whereas traits in our language can be instantiated directly; 2)
-traditional traits cannot take constructor parameters whereas ours can. As shown
-in Section~\ref{sec:traits}, traits in \name have a single constructor; 3) the
-trait system in \name lacks a proper notation of inheritance relationship. For
-example in the traditional trait model, if the same method (i.e., from the same
-trait) is obtained more than once via different paths, there is no conflict.
-This is not the case in \name; and 4) traits in \name support dynamic
-inheritance. In the traditional trait model, when it comes to inheritance, the
-traits must be statically known.
+a class, whereas traits in \name can be instantiated directly; 2) traditional
+traits cannot take constructor parameters whereas ours can; 3) the trait system
+in \name lacks a proper notation of inheritance relationship. For example in the
+traditional trait model, if the same method (i.e., from the same trait) is
+obtained more than once via different paths, there is no conflict. This is not
+the case in \name; and 4) traits in \name support dynamic inheritance. In the
+traditional trait model, when it comes to inheritance, the traits being
+inherited must be statically known.
 
 
 
@@ -232,15 +231,13 @@ standard classes, programmers can also define incomplete classes, whose
 instances are incomplete objects. Incomplete objects can be composed (by object
 composition) with complete objects, yielding new complete objects at run-time,
 while ensuring statically that the composition is type-safe. Incomplete objects
-are quite flexible, and support a sort of dynamic inheritance since composition
-permits supplying at run-time the missing methods with those of other objects.
-However, object composition in IFJ is quite restrictive, compared to \name, in
-that it can only compose an incomplete object with a complete object. In that
-regard, and also because IFJ's type system is not polymorphic, IFJ is unable to
-encode composition operators of Object Algebras.
-\citeauthor{ostermann2002dynamically}'s delegation
+are quite flexible, and support dynamic inheritance. However, object composition
+in IFJ is quite restrictive, compared to \name, in that it can only compose an
+incomplete object with a complete object. In that regard, and also because IFJ's
+type system is not polymorphic, IFJ is unable to encode composition operators of
+Object Algebras. \citeauthor{ostermann2002dynamically}'s delegation
 layers~\citep{ostermann2002dynamically} use delegation for doing dynamic
-composition in a system with virtual classes. This in contrast with most other
+composition in a system with virtual classes. This is in contrast with most other
 approaches that use class-based composition, but closer to the dynamic
 composition that we use in \name.
 
@@ -248,8 +245,8 @@ There are many other class-based OO languages that are equipped with more
 advanced forms of
 inheritance~\cite{meyer1987eiffel,buchi2000generic,ostermann2001object,kniesel1999type}.
 Most of them are heavyweight and are specific to classes. \name is
-trait-centered, more lightweight, and is dedicated to express extensible designs
-in a simpler way.
+object-centered, more lightweight, and is dedicated to express extensible
+designs in a simpler way.
 
 
 % Eiffel~\cite{meyer1987eiffel} is a class-based language that is based on the

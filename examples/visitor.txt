@@ -77,7 +77,6 @@ def e3 : ExtExp = add e2 (lit 3)
 -}
 
 -- BEGIN_VISITOR_EG
-main = print e3 ++ " = " ++ (eval e3).toString ++ " and " ++
-       print e1 ++ " = " ++ (eval e1).toString 
+main = print e3 ++ " = " ++ (eval e3).toString ++ " and " ++ print e1 ++ " = " ++ (eval e1).toString 
 -- Output: "((5.0 - (2.0 + 3.0)) + 3.0) = 3.0 and (2.0 + 3.0) = 5.0"
 -- END_VISITOR_EG

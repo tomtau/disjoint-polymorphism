@@ -77,7 +77,7 @@ def eval (e : Exp) : Double = ...
 \end{lstlisting}
 
 \noindent where \lstinline{Exp} here is supposed to represent a
-concrete type for values built using Object Algebras. Unfortunatelly, in languages
+concrete type for values built using Object Algebras. Unfortunately, in languages
 such as Java, it is hard to define such concrete type for values
 without giving up extensibility and the expected subtyping  relations.
 
@@ -85,21 +85,20 @@ without giving up extensibility and the expected subtyping  relations.
 In \name the actual type of arithmetic expressions is:
 \lstinputlisting[linerange=12-12]{../examples/visitor.txt}% APPLY:linerange=CHURCH_DEF
 An attentive reader may immediately recognize this is a variant of the \textsc{Visitor}
-pattern. Indeed, as already noted by \citet{oliveira2012extensibility}, Object
+pattern. Indeed, as already noted by \citeauthor{oliveira2012extensibility}, Object
 Algebras are closely related to internal visitors~\cite{Oliveira_2008}. However, \emph{Object
 Algebras in languages like Java or Scala do not define the type
 \lstinline{Exp} because this would preclude extensibility in those
 languages}. Nevertheless in \name it is still possible to define
 \lstinline{Exp} and retain extensibility. In essence, the type
 \lstinline{Exp} simply encapsulates the type
-of the \lstinline{mkX} methods used in the original formulation of the
-pattern. With \lstinline{Exp}, the expression \lstinline{2 + 3} is
+of the \lstinline{mkExp} method. With \lstinline{Exp}, the expression \lstinline{2 + 3} is
 built as:
 
 \lstinputlisting[linerange=66-66]{../examples/visitor.txt}% APPLY:linerange=EXPRESSION1_EG
 
 \noindent \name provides a lightweight syntax for writing first-class functions,
-i.e., \lstinline{\x -> x + 1}, and big lambda (\lstinline{/\}) to introduce type
+e.g., \lstinline{\x -> x + 1}, and big lambda (\lstinline{/\}) to introduce type
 variables. Note that the code is almost the same as before, but the expression
 now has a concrete type, rather than being a function. With \lstinline{Exp} we
 can easily abstract over values, as we will see later.
@@ -142,12 +141,13 @@ pretty printing feature is modeled as:
 The implementation is straightforward:
 \lstinputlisting[linerange=51-54]{../examples/visitor.txt}% APPLY:linerange=PRINT_IMPL
 
-\paragraph{Abstracting over Object Algebra values.} Values of \lstinline{Exp} and
-\lstinline{ExtExp} are first-class, meaning they can be passed around or
-returned from other functions. For example the evaluator and
-pretty-printer for expressions with subtraction (\lstinline{ExtExp}) are defined as follows:
+\paragraph{Abstracting over Object Algebra values.} We now can abstract over
+values of \lstinline{Exp} and \lstinline{ExtExp}. For example the evaluator and
+pretty-printer for expressions with subtraction (\lstinline{ExtExp}) are defined
+as follows:
 \lstinputlisting[linerange=61-62]{../examples/visitor.txt}% APPLY:linerange=EVAL_PRINT
-To test our functions we create some values of type \lstinline{ExtExp} as follows:
+To test our functions we create some values of type \lstinline{ExtExp} as
+follows:
 %We define two expressions, one of type \lstinline{Exp}, the other
 %\lstinline{ExtExp}:
 \lstinputlisting[linerange=69-70]{../examples/visitor.txt}% APPLY:linerange=EXPRESSION2_EG
@@ -161,7 +161,7 @@ of \lstinline{ExpAlg}.
 The following example illustrates a simple test program of the
 functionality, using \lstinline{print} and \lstinline{eval}, as well
 as the values defined previously:
-\lstinputlisting[linerange=80-82]{../examples/visitor.txt}% APPLY:linerange=VISITOR_EG
+\lstinputlisting[linerange=80-81]{../examples/visitor.txt}% APPLY:linerange=VISITOR_EG
 
 \noindent Note how \lstinline{print} and \lstinline{eval} can be
 safely applied to \lstinline{e1} (of type \lstinline{Exp}) since

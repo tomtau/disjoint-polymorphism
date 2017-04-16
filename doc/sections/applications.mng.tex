@@ -26,12 +26,13 @@ various operations baked in.
 
 \subsection{Overview}
 
-A \textit{feature} is an increment in program functionality~\citep{zave1999faq}.
-Figure~\ref{fig:mini-js} presents the syntax of the expressions, values and
-types provided by the features; each line is annotated with the corresponding
-feature. Starting from a simple arithmetic language, we gradually introduce new
-features and combine them with some of the existing features to form various
-languages. Below we briefly explain what constitutes each feature:
+A \textit{feature} is an increment in program
+functionality~\citep{zave1999faq,lopez2005evaluating}. Figure~\ref{fig:mini-js}
+presents the syntax of the expressions, values and types provided by the
+features; each line is annotated with the corresponding feature. Starting from a
+simple arithmetic language, we gradually introduce new features and combine them
+with some of the existing features to form various languages. Below we briefly
+explain what constitutes each feature:
 \begin{itemize}
 \item $\mathit{natF}$ contains numerical literals, addition, subtraction, among
   others.
@@ -92,7 +93,7 @@ printer, and type checker.
 
 \end{figure}
 
-Having the feature set, we can synthesize different language by selecting one or
+Having the feature set, we can synthesize different languages by selecting one or
 more operations, and one or more data variants, as shown in
 Figure~\ref{fig:langs}. For example \lstinline{arith} is a simple language of
 arithmetic expressions. On top of that, we also define an evaluator, a pretty
@@ -146,29 +147,29 @@ operations defined for \lstinline{arith} can safely apply to expressions of \lst
 To evaluate \name's implementation of the case study, Figure~\ref{fig:sloc}
 compares the number of source lines of code (SLOC, lines of code without
 counting empty lines and comments) for \name's implementation with the vanilla
-AST-based implementation in Haskell. Since Haskell is a more concise language
-than \name, we omit lines of code that are for infrastructure purpose. In the
-left part, for each feature, we count lines of the Object Algebra interface
-(number beside the feature name), and the Object Algebras for the operations. In the
-right part, for each language, we count lines of defining the AST, and the code
-to combine previously defined operations. For example, here is the code that is
-needed to make the \lstinline{arith} language.
+AST-based implementation in Haskell. Since \name is a fairly new languages, we
+had to write various code that is provided in Haskell by the standard library,
+so they are not counted for fairness of comparison. In the left part, for each
+feature, we count lines of the algebra interface (number beside the feature
+name), and the algebras for the operations. In the right part, for each
+language, we count lines of defining the AST, and those to combine previously
+defined operations. For example, here is the code that is needed to make the
+\lstinline{arith} language.
 
 \lstinputlisting[linerange=537-547]{../examples/case_study1.txt}% APPLY:linerange=ARITH
 
-\noindent As we can see, there are 2 lines of code to define the AST
-(\lstinline{Arith}), and 6 lines of code to combine the operations, so we only
-need 8 lines in total.
+\noindent We only need 8 lines in total: 2 lines to define the AST
+(\lstinline{Arith}), and 6 lines to combine the operations.
 
-Therefore, the total number of the \name's implementation is the sum of all the
-lines in the feature and language parts (237 (SLOC for all features) plus 84
+Therefore, the total SLOC of \name's implementation is the sum of all the
+lines in the feature and language parts (237 (SLOC of all features) plus 84
 (ASTs and operations)). Although \name is considerably more verbose than a
 functional language like Haskell, \name's implementation for 12 languages and 30
 operations in total reduces approximately 58\% in terms of SLOC. The reason is
 that, the more frequently a feature is reused by other languages directly or
 indirectly, the more reduction we see in the total SLOC. For example,
 $\mathit{natF}$ is used across many languages. Even though \lstinline{simplenat}
-itself alone has almost twice SLOC ($40 = 7+23+7+3$) than that of Haskell (which
+itself \textit{alone} has almost twice SLOC ($40 = 7+23+7+3$) than that of Haskell (which
 has 29), we still get a huge gain when implementing other languages.
 
 
@@ -202,131 +203,6 @@ has 29), we still get a huge gain when implementing other languages.
   \label{fig:sloc}
 \end{figure}
 
-
-\begin{comment}
-
-\subsection{The Base Language (Arith)}
-
-We start with a very simple language of arithmetic expressions, as shown on the
-left hand side of Figure~\ref{fig:base-lang}. The base language has features
-such as literals, addition, subtraction among others. As with examples in
-Section~\ref{sec:extensibility}, we use visitors to encode datatypes. The
-right hand side of Figure~\ref{fig:base-lang} defines the interfaces of the
-operations.
-
-\begin{figure}[t]
-  \centering
-  \begin{tabular}{cc}
-    \begin{subfigure}[t]{0.45\textwidth}
-      \centering
-      \lstinputlisting[linerange=-]{}% APPLY:linerange=BASE_DEF
-    \end{subfigure}
-    &
-    \begin{subfigure}[t]{0.45\textwidth}
-      \centering
-      \lstinputlisting[linerange=-]{}% APPLY:linerange=INTERFACE
-    \end{subfigure}
-  \end{tabular}
-  \caption{The base language (left) and the interfaces of the operations (right)}
-  \label{fig:base-lang}
-\end{figure}
-
-\subsubsection{Evaluator}
-
-The evaluation interface (\lstinline{IEval}) contains the \lstinline{eval}
-method, which is a function from an evaluation environment (\lstinline{Env}) to
-\lstinline{Maybe[Value]}. At this stage, the evaluation environment is not used,
-but will be useful when we have variables. The evaluation of the base language
-is quite straightforward, so we only show part of the code below:
-\lstinputlisting[linerange=-]{}% APPLY:linerange=BASE_EVALUATOR
-To reduce boilerplate code when dealing with \lstinline{Maybe} values, like in
-Haskell, we encode the bind operator \lstinline{bind} of the \lstinline{Maybe}
-monad.
-
-\subsubsection{Pretty printer and type checker}
-
-Pretty printer and type checker are constructed in a similar manner, as is shown
-in Figure~\ref{fig:printer} and~\ref{fig:checker}.
-
-\begin{figure}[t]
-  \centering
-  \lstinputlisting[linerange=-]{}% APPLY:linerange=PRETTY_BASE
-  \caption{An object algebra for pretty printing. }
-  \label{fig:printer}
-\end{figure}
-
-\begin{figure}[t]
-  \centering
-  \lstinputlisting[linerange=-]{}% APPLY:linerange=TYPECHECKER_BASE
-  \caption{An object algebra for type checking. }
-  \label{fig:checker}
-\end{figure}
-
-
-\subsection{Adding Conditional Expressions (Bool)}
-
-Now we extend the base language with conditional expressions.
-\lstinputlisting[linerange=-]{}% APPLY:linerange=CONDITIONAL
-The augmented language now has Boolean literals, comparison features
-(\lstinline{eq} and \lstinline{le}) and if expressions.
-
-We omit the code of the operations as they follow the same pattern as we
-described in Section~\ref{sec:extensibility}.
-
-% Here is the extended evaluator. Now we need Boolean values.
-% \lstinputlisting[linerange=-]{}% APPLY:linerange=EVALUATOR_CONDITIONAL
-% Note that we didn't touch anything from \lstinline{evalArithAlg} but extend it
-% to from a new evaluator. Now because the language can produce two kinds of
-% values, it is worth noting that \lstinline{fromNum} (or \lstinline{fromBool}) is
-% partial, meaning that it can diverge at run-time if the value is not a number
-% (or Boolean). This is why we need a type checker to make sure such things cannot
-% happen at run-time.
-
-% Same goes for the pretty printer and the type checker.
-% \lstinputlisting[linerange=-]{}% APPLY:linerange=PRETTY_CONDITIONAL
-% \lstinputlisting[linerange=-]{}% APPLY:linerange=TYPECHECKER_CONDITIONAL
-
-
-
-\subsection{Adding Variable Declarations (Var)}
-
-Next we extend our language again with local variables and variable
-declarations. We add two new constructors \lstinline{var} and \lstinline{decl}.
-\lstinputlisting[linerange=-]{}% APPLY:linerange=VARIABLE
-For simplicity, we encode variables using strings. \lstinline{decl} takes three
-arguments, the first is the variable to be declared, the second is the
-expression bound with the variable, and the third is the body within which the
-declared variable is in scope. Now the language is interesting enough to express
-something like \lstinline{var x = 3; x + 1}.
-
-The evaluator finally makes use of the evaluation environment, which is a
-mapping from variables to values.
-\lstinputlisting[linerange=-]{}% APPLY:linerange=EVALUATOR_VARIABLE
-For the variable case, we look it up in the environment to find its bound value.
-For the declaration case, we evaluate the body expression in the augmented
-environment.
-
-We omit the code of pretty printer and type checker for the space reason.
-
-\subsection{Adding Top-level Functions (Function)}
-
-We add, as the final piece, top-level functions to the language. The only
-extension is a call expression that takes a function name and an actual
-argument expression\footnote{For simplicity, we only allow functions with one
-  argument.}.
-\lstinputlisting[linerange=-]{}% APPLY:linerange=TOP_LEVEL
-
-Top-level functions are collected into a function environment, a list of
-bindings of function names to function definitions. A program is then a function
-environment together with a main expression. We omit the code here, and refer an
-interested reader to the supplementary materials.
-
-\end{comment}
-
-
-% \bruno{I think the part of the following is the only thing that should
-% that could be mentioned here, in a discussion about what does it take
-% to assemble a language from components. } \jeremy{done}
 
 
 \begin{comment}

@@ -279,7 +279,6 @@ infer (Acc e "toString") = do
   (_, e') <- infer e
   return (StringT, T.UToString e')
 
--- ad-hoc extension of toString method
 infer (Acc e "sqrt") = do
   e' <- tcheck e NumT
   return (NumT, T.USqrt e')

@@ -13,6 +13,9 @@ def pointTest  = new[Point] point(3, 4)
 
 def abs (x : Double) = if x < 0 then (0 - x) else x
 
+def square (x : Double) = x * x
+
+
 -- BEGIN_CIRCLE_DEF
 type Circle = Point & {radius : Double}
 trait circle(center : Point, radius : Double) inherits point(center.x, center.y) { self =>
@@ -78,8 +81,7 @@ trait oval(shortRadius : Double, longRadius : Double, center: Point)
 -- BEGIN_NORM_DEF
 type Norm = { norm : Double -> Double -> Double }
 trait euclideanNorm { self : Point =>
-  def norm (x : Double) (y : Double) =
-    ((self.x - x) * (self.x - x) + (self.y - y) * (self.y - y)).sqrt }
+  def norm (x : Double) (y : Double) = (square(self.x - x)  + square(self.y - y)).sqrt }
 trait manhattanNorm { self : Point =>
   def norm (x : Double) (y : Double) = abs((self.x - x)) + abs((self.y - y)) }
 -- END_NORM_DEF
