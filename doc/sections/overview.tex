@@ -92,10 +92,10 @@ class A inherits B super B {}
 becomes possible to inherit code without creating any subtype
 relation. This is for example the situation that is discussed by \citet{cook1989inheritance}.
 
-\paragraph{Contravariant Type Refinement of Arguments}
+\paragraph{Contravariant Type Refinement}
 Another feature that is missing from mainstream OOP languages is 
 contravariant refinement of argument types. Most Java-like OOP languages support covariant return type 
-refinement. That is:
+refinement:
 
 \begin{lstlisting}[language=java]
 interface A  {A m();} 
@@ -111,12 +111,12 @@ following example illustrates this:
 
 \begin{lstlisting}[language=java]
 interface A  {Int m(String s);} 
-interface B  extends A {Int m(Object s);} // INVALID: B extends and refines the return type of m()
+interface B  extends A {Int m(Object s);} // Invalid: B extends and refines the argument type of m()
 \end{lstlisting}
 
 \noindent Here the intention is to refine the argument of method
 \lstinline{m} with a supertype (\lstinline{Object}) so that the
-interface \lstinline{B} becomes a subtype. Unfortunately this is invalid Java code, since Java
+interface \lstinline{B} becomes a subtype. Unfortunately this is invalid in Java, since Java
 does not support contravariant type refinement of arguments. 
 A possible reason for not having such feature is that there are not
 many applications where this feature \emph{in isolation} seems necessary. 
@@ -195,7 +195,7 @@ class (or trait) cannot be inherited twice. We illustrate this restriction using
 Scala traits (which provide a form of multiple implementation inheritance):
 
 \begin{lstlisting}[language=scala]
-trait A {def m(x : A) = x}
+trait A { def m(x : A) = x }
 trait B extends A with A {}
 \end{lstlisting}
 
@@ -205,7 +205,7 @@ reasonable. However consider the following variant of the example
 above:
 
 \begin{lstlisting}[language=scala]
-trait C[A] {def m(x : A) = x}	
+trait C[A] { def m(x : A) = x }
 trait D extends C[Int] with C[Boolean]
 \end{lstlisting}
 
@@ -221,8 +221,8 @@ inherited twice. To overcome this problem, a possible solution would
 be to create two specialized versions of \lstinline{C}:
 
 \begin{lstlisting}[language=scala]
-trait CInt {def m(x : Int) = x}
-trait CBoolean {def m(x : Boolean) = x}
+trait CInt { def m(x : Int) = x }
+trait CBoolean { def m(x : Boolean) = x }
 trait D extends CInt with CBoolean
 \end{lstlisting}
 
@@ -282,15 +282,15 @@ example, the following code:
   def merge[A,B] (x: A) (y: B) : A with B = new x with y
 \end{lstlisting}
 is rejected by the Scala compiler. The problem is that the \lstinline[language=scala]$with$
-construct for Scala expression can only be used to mixin traits or classes, not
+construct in Scala can only be used to mixin traits or classes, not
 arbitrary objects. This limitation essentially puts intersection types in Scala
 in a second-class status. Although \lstinline{merge} returns an intersection
 type, it is hard to build values with such types.
 
-Exactly the same situation arises when using inheritance. In Scala, if we try
-to create a trait parameterized by an unknown supertype, for example
+Exactly the same situation arises when using inheritance. In Scala, if we try to
+create a trait parameterized by an unknown supertype, for example
 \lstinline[language=scala]{trait T[A] extends A}, we face problems. Here the
-intention would be to capture, once and for all, a family of traits that extend
+intention would be to capture a family of traits that extend
 multiple different traits/classes with the same method. However, this definition
 is rejected in Scala because \lstinline[language=scala]{extends} can only be
 used with concrete classes (and not type parameters).
