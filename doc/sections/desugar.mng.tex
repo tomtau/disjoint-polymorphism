@@ -86,14 +86,10 @@ The left part of Figure~\ref{fig:trans-trait} presents the translation of trait
 declarations. Essentially traits are translated into term declarations, with
 methods becoming record fields. The self-reference is adjusted to be the last
 parameter of the declaration. For example
-\begin{lstlisting}
-trait point(x : Int, y: Int) { self : Point =>
-  def x = x
-  def y = self.x }
-\end{lstlisting}
+\lstinputlisting[linerange=13-13]{../examples/point.txt}% APPLY:linerange=DESUGAR1
 becomes
 \begin{lstlisting}
-def point (x : Int) (y : Int) (self : Point) = { x = x , y = self.x }
+def point3D (x : Double) (y : Double) (self : Point3D) = point x y self ,, { z = self.x }
 \end{lstlisting}
 Now it is clear that \lstinline{self} is not a special keyword: it can have any
 name.
@@ -111,7 +107,7 @@ instantiation. Specifically, the self-reference gets passed to each trait $m_1$
 to $m_n$, as each of them is an open term after translation. The results are
 then merged to form a new term. \lstinline{new} instantiates a trait by
 taking the \textit{lazy fixpoints} of the resulting term. For example,
-\lstinline{new[Point] point(3,4)} is translated into \lstinline{let self : Point = point 3 4 self in self}.
+\lstinline{new[Point3D] point3D(3,4)} is translated into \lstinline{let self : Point3D = point3D 3 4 self in self}.
 \name has a lazy (and possibly recursive) \lstinline{let} construct.
 
 
