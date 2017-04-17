@@ -41,7 +41,7 @@ such restriction as illustrated next.
 \paragraph{Simple expressions}
 To start, we begin with a very simple system modeling arithmetic expressions and
 evaluation. The initial system constitutes expressions with two variants
-(literals and addition), as depicted below:
+(literals and additions), as depicted below:
 \lstinputlisting[linerange=4-4]{../examples/visitor.txt}% APPLY:linerange=ALGEBRA_DEF
 
 \noindent The type \lstinline{ExpAlg[E]}, constitutes the so-called Object
@@ -136,7 +136,7 @@ of \lstinline{Exp}.
 
 \paragraph{Add a new operation.} The second type of extension is adding a new
 operation, such as pretty printing. Similar to evaluation, the interface of the
-pretty printing feature is modeled as:
+pretty printing feature is modelled as:
 \lstinputlisting[linerange=46-46]{../examples/visitor.txt}% APPLY:linerange=PRINT_DEF
 The implementation is straightforward:
 \lstinputlisting[linerange=51-54]{../examples/visitor.txt}% APPLY:linerange=PRINT_IMPL
@@ -224,7 +224,7 @@ construct) it is possible to compose two Object Algebras in a trivial way:
 \lstinputlisting[linerange=59-59]{../examples/visitor3.txt}% APPLY:linerange=COMBINE_DEF
 
 That is it. None of the boilerplate in other approaches~\cite{oliveira2012extensibility}, or type-unsafe
-meta-programming techniques~\cite{oliveira2013feature,rendel14attributes} of other approaches are needed! Three points
+meta-programming techniques~\cite{oliveira2013feature,rendel14attributes} of other approaches are needed! Three points are
 worth noting: 1) \lstinline{combine} relies on \textit{dynamic inheritance}.
 Notice how we let \lstinline{combine} inherit \lstinline{f & g}, for which the
 implementation is unknown statically; 2) \name supports multiple inheritance of
