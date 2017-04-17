@@ -1,7 +1,13 @@
 --> true
 
 
--- BEGIN_EVEN_ODD
+{-
+
+An example where we show two mutually dependent traits
+
+-}
+
+
 type EvenOdd = {
   isEven : Double -> Bool,
   isOdd  : Double -> Bool }
@@ -10,4 +16,3 @@ trait even { self : EvenOdd =>
 trait odd { self : EvenOdd =>
   def isOdd(n : Double)   = if n == 0 then false else self.isEven(n - 1) }
 main = (new[EvenOdd] even & odd).isEven(42) -- Output: true
--- END_EVEN_ODD

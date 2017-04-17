@@ -609,7 +609,7 @@ def tcVarArith (e : VarArith) =
 
 
 -----------------------
--- var + logic + arith
+-- vararithlogic
 -----------------------
 
 type VarArithLogicAlg[E] = ArithLogicAlg[E] & VarAlg[E]
@@ -696,7 +696,7 @@ def checkFEnv (fenv : FEnv) : FTEnv = \n ->
     caseFn Maybe[Pair[Type, Type]] f (\arg typ ret body ->
     (just Pair[Type,Type] (mkPair Type Type typ ret))))
 
--- Combined Algebra
+-- Combined Algebra, supporting evaluator, pretty printer and type checker
 type SuperAlg = IEval & IPrint & ITC
 def combineAlg (fenv : FEnv) : MiniJSAlg[SuperAlg] =
   let ftenv : FTEnv = checkFEnv fenv in
@@ -725,7 +725,7 @@ def test : Program = {accept = /\E. \p -> p.pgm fenv { accept = /\F. \f ->
           (f.add (f.var "x") (f.num 2))
           (f.add (f.var "y") (f.num 3)))))}}
 
--- BEGIN_SUPER_DEF
+-- A function that ensures "well-typed programs cannot go wrong"
 def evalPgm (p : Program) : String =
   casePgm String p (\fenv m ->
     let ftenv : FTEnv = checkFEnv fenv in
@@ -733,7 +733,6 @@ def evalPgm (p : Program) : String =
     then (ppMiniJS m).print ++ " = " ++
          (fromNum (fromJust Value ((evalMiniJS m fenv).eval (empty Value)))).toString
     else "Type error!")
--- END_SUPER_DEF
 
 -- BEGIN_TEST_TEST
 main = evalPgm test

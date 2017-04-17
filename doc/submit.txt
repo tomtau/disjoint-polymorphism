@@ -3,11 +3,10 @@
 ../examples/avg.txt
 ../examples/birds.txt
 ../examples/box.txt
-../examples/case_study1.txt
+../examples/case_study.txt
 ../examples/comment.txt
 ../examples/evenOdd.txt
 ../examples/expression.txt
-../examples/expression2.txt
 ../examples/fact.txt
 ../examples/fst.txt
 ../examples/haskell/Arith.hs

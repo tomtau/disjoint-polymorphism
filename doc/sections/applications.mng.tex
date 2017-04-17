@@ -156,7 +156,7 @@ language, we count lines of defining the AST, and those to combine previously
 defined operations. For example, here is the code that is needed to make the
 \lstinline{arith} language.
 
-\lstinputlisting[linerange=537-547]{../examples/case_study1.txt}% APPLY:linerange=ARITH
+\lstinputlisting[linerange=537-547]{../examples/case_study.txt}% APPLY:linerange=ARITH
 
 \noindent We only need 8 lines in total: 2 lines to define the AST
 (\lstinline{Arith}), and 6 lines to combine the operations.
@@ -215,7 +215,7 @@ has 29), we still get a huge gain when implementing other languages.
 
 To demonstrate the usage of the final language \lstinline{MiniJS}, here is a function that
 makes sure ``well-typed programs cannot go wrong'':
-\lstinputlisting[linerange=729-735]{../examples/case_study1.txt}% APPLY:linerange=SUPER_DEF
+\lstinputlisting[linerange=-]{}% APPLY:linerange=SUPER_DEF
 It type checks the program before passing it to the evaluator and pretty
 printer.
 
@@ -227,7 +227,7 @@ printer.
 % the \lstinline{add1} function.
 
 % Finally we apply it to the program we have just created:
-% \lstinputlisting[linerange=739-740]{../examples/case_study1.txt}% APPLY:linerange=TEST_TEST
+% \lstinputlisting[linerange=738-739]{../examples/case_study.txt}% APPLY:linerange=TEST_TEST
 % Everything works as expected!
 \end{comment}
 
@@ -253,7 +253,7 @@ particular case study, we find HOAS convenient. HOAS represents object language
 abstractions as \name abstractions and object variables as \name variables. By
 utilizing the infrastructure of the meta-language, we are free of issues such as
 variable capture. Here is the interface of the object language.
-\lstinputlisting[linerange=24-29]{../examples/hoas.txt}% APPLY:linerange=TYPED_LAMBDA
+\lstinputlisting[linerange=-]{}% APPLY:linerange=TYPED_LAMBDA
 Embedded object expressions of type \lstinline{A} are represented as \name
 values of the type \lstinline{Expr[A]}. The \lstinline{bot} constructor, which
 represents non-terminating computation, is there for the purpose of illustrating
@@ -264,12 +264,12 @@ abstractions. This is intentional! Evaluators with different evaluation
 strategies only differ in the interpretation for abstractions, as will be shown
 later on. For this reason, \lstinline{lam} is moved to a separate interface of
 its own.
-\lstinputlisting[linerange=16-18]{../examples/hoas.txt}% APPLY:linerange=ABSTRACTION
+\lstinputlisting[linerange=-]{}% APPLY:linerange=ABSTRACTION
 
 
 \paragraph{Well-typed evaluator}
 The benefit of typeful embedding shows up when defining the evaluator.
-\lstinputlisting[linerange=33-38]{../examples/hoas.txt}% APPLY:linerange=TYPED_EVAL
+\lstinputlisting[linerange=-]{}% APPLY:linerange=TYPED_EVAL
 Unlike the evaluator in the first case study, there is no need for a separate
 \lstinline{Value} datatype for values, as they are directly modeled by \name
 values. Note that the resulting evaluator is \textit{type preserving} by
@@ -280,7 +280,7 @@ Our evaluator defined in the first case study inherits the evaluation strategy
 from the meta-language. We now show call-by-name and call-by-value evaluators.
 The two evaluators are quite alike, sharing most of the code. As said before,
 the only difference is the interpretation for \lstinline{lam}.
-\lstinputlisting[linerange=68-73]{../examples/hoas.txt}% APPLY:linerange=CBN_CBV
+\lstinputlisting[linerange=-]{}% APPLY:linerange=CBN_CBV
 The call-by-name \lstinline{lam}, when applied, will receive an unevaluated
 argument expression, use it as it is. The call-by-value \lstinline{lam}, as in
 the call-by-name evaluator, receives an unevaluated argument expression,
@@ -289,9 +289,9 @@ evaluates it before passing its result to the abstraction body \lstinline{f}.
 Now to make an evaluator parameterized over the evaluation order, we just take a
 trait \lstinline{o} with unknown implementation, compose it with other language
 features.
-\lstinputlisting[linerange=82-83]{../examples/hoas.txt}% APPLY:linerange=MAKE_EVAL
+\lstinputlisting[linerange=-]{}% APPLY:linerange=MAKE_EVAL
 Here is the call-by-name evaluator at work:
-\lstinputlisting[linerange=88-93]{../examples/hoas.txt}% APPLY:linerange=CBN_TEST
+\lstinputlisting[linerange=-]{}% APPLY:linerange=CBN_TEST
 On the other hand, \lstinline{(evaluator evalBindCBV ex)()} would result in a
 infinite loop. The complete code with several examples can be found in the
 supplementary materials.

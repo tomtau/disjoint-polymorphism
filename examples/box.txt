@@ -23,7 +23,7 @@ trait circle(center : Point, radius : Double) inherits point(center.x, center.y)
 -- END_CIRCLE_DEF
 
 -- BEGIN_CIRCLE_TEST
-def circleTest  = new[Circle] circle(pointTest, 3)
+def circleTest = new[Circle] circle(pointTest, 3)
 -- END_CIRCLE_TEST
 
 -- BEGIN_CIRCLE_FNS

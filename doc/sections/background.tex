@@ -182,13 +182,13 @@ Unlike most record systems, restriction is not a primitive operation in \name.
 Instead, \name uses subtyping for restriction. Combined with disjoint
 quantification, we can encode a \lstinline{remove} function that removes a given
 field from a record:
-\lstinputlisting[linerange=5-5]{../examples/record.txt}% APPLY:linerange=RCD_DEF
+\lstinputlisting[linerange=-]{}% APPLY:linerange=RCD_DEF
 \lstinline{remove} takes a value x which contains a record of type
 \lstinline${low : Int}$ as well as some extra information of type \lstinline{B}.
 The disjointness constraint ensures that the value of type \lstinline{B} does
 not contain a record with type \lstinline${low : Int}$. The following examples
 shows removing the \lstinline{low} field:
-\lstinputlisting[linerange=10-11]{../examples/record.txt}% APPLY:linerange=RCD_EG
+\lstinputlisting[linerange=-]{}% APPLY:linerange=RCD_EG
 \end{comment}
 
 

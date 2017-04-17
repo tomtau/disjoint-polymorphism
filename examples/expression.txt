@@ -27,12 +27,16 @@ def printAlg : SubExpAlg[IPrint] = {
 }
 
 
--- We don't have to manually write the combination as follows, subtyping handles that
---
--- def combine A [B * A] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A & B] = {
---   lit = \x -> f.lit x ,, g.lit x,
---   add = \x y -> f.add x y ,, g.add x y
--- }
+{-
+
+We don't have to manually write the combination as follows, subtyping handles that
+
+def combine A [B * A] (f : ExpAlg[A]) (g : ExpAlg[B]) : ExpAlg[A & B] = {
+  lit = \x -> f.lit x ,, g.lit x,
+  add = \x y -> f.add x y ,, g.add x y
+}
+
+-}
 
 def combine A [B * A] (f : SubExpAlg[A]) (g : SubExpAlg[B]) = f ,, g
 

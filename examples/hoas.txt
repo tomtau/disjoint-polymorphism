@@ -12,36 +12,29 @@ http://okmij.org/ftp/tagless-final/call_by_any.ml
 
 type Arr[A, B] = (T -> A) -> (T -> B)
 
--- BEGIN_ABSTRACTION
 type BindAlg[Expr[_]] = {
   lam : forall A B. (Expr[A] -> Expr[B]) -> Expr[Arr[A,B]]
 }
--- END_ABSTRACTION
 
 type IEval[E] = T -> E
 
--- BEGIN_TYPED_LAMBDA
 type ExprAlg[Expr[_]] = {
   lit : Double -> Expr[Double],
   add : Expr[Double] -> Expr[Double] -> Expr[Double],
   app : forall A B. Expr[Arr[A,B]] -> Expr[A] -> Expr[B],
   bot : forall A. Expr[A]
 }
--- END_TYPED_LAMBDA
 
--- BEGIN_TYPED_EVAL
 trait evalAlg : ExprAlg[IEval] { self =>
   def lit n = \_ -> n
   def add e1 e2 = \_ -> e1() + e2()
   def app A B e1 e2 = \_ -> e1() e2()
   def bot A = \_ -> let x : A = x in x
 }
--- END_TYPED_EVAL
 
 type MulAlg[Expr[_]] = ExprAlg[Expr] & {
   mul : Expr[Double] -> Expr[Double] -> Expr[Double]
 }
-
 
 trait evalMul inherits evalAlg : MulAlg[IEval] { self =>
   def mul e1 e2 = \_ -> e1() * e2()
@@ -64,34 +57,27 @@ trait evalBool inherits evalMul : BoolAlg[IEval] { self =>
 
 type TermAlg[Expr[_]] = BoolAlg[Expr] & BindAlg[Expr]
 
--- BEGIN_CBN_CBV
 trait evalBindCBN : BindAlg[IEval] { self =>
   def lam A B f = \_ -> f
 }
 trait evalBindCBV  : BindAlg[IEval] { self =>
   def lam A B f = \_ -> \y -> let yv : A = y() in f (\_ -> yv)
 }
--- END_CBN_CBV
 
 type Term = {
   accept : TermAlg[IEval] -> IEval[Double]
 }
 
 
--- BEGIN_MAKE_EVAL
 def evaluator (o : Trait[BindAlg[IEval]]) (e : Term)  =
   e.accept (new[TermAlg[IEval]] evalBool & o)
--- END_MAKE_EVAL
 
 
--- BEGIN_CBN_TEST
 -- (\x -> 4) bot
 def ex : Term = {
   accept = \f -> f.app Double Double (f.lam Double Double (\x -> f.lit 4)) (f.bot Double)
 }
 main = (evaluator evalBindCBN ex)()
--- Output: 4.0
--- END_CBN_TEST
 
 
 {-

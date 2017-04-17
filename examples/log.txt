@@ -15,7 +15,6 @@ trait consoleLogger { self =>
 val jim = new[Person & Loggable] person("jim", true) & consoleLogger
 
 
--- BEGIN_CONFLICT_WRONG
 type Employee = {name : String, male : String}
 trait employee(n : String, s: String) { self =>
   def name = n
@@ -23,12 +22,10 @@ trait employee(n : String, s: String) { self =>
 }
 -- The following doesn't type check
 -- val fool = new[Employee & Person] employee("Tom", "yes") & person("Jim", true)
--- END_CONFLICT_WRONG
 
 -- The following type checks
 -- Though the type looks ugly
 val fool = new[(T & {male : String}) & Person] employee("Tom", "yes") \ { name : String } & person("Jim", true)
-
 
 main = jim.log ()
 

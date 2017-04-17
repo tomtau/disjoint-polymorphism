@@ -221,7 +221,7 @@ construct) it is possible to compose two Object Algebras in a trivial way:
 %system behind \name is powerful enough to derive such definition for us:
 %\lstinline{combine} is no more than just the merge of two algebras!
 
-\lstinputlisting[linerange=59-59]{../examples/visitor3.txt}% APPLY:linerange=COMBINE_DEF
+\lstinputlisting[linerange=57-57]{../examples/visitor3.txt}% APPLY:linerange=COMBINE_DEF
 
 That is it. None of the boilerplate in other approaches~\cite{oliveira2012extensibility}, or type-unsafe
 meta-programming techniques~\cite{oliveira2013feature,rendel14attributes} of other approaches are needed! Three points are
@@ -241,7 +241,7 @@ coherence guarantees.
 With \lstinline{combine} at hand, we can finally have an object \lstinline{o}
 that is able to print and evaluate at the same time:
 
-\lstinputlisting[linerange=68-71]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_TEST
+\lstinputlisting[linerange=66-69]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_TEST
 
 
 \begin{comment}
@@ -264,7 +264,7 @@ The combinator is defined by the \lstinline{combine} trait, which takes two
 algebras to create a combined algebra. It does so by appropriately delegating
 behaviours in each component algebra to the combined algebra.
 
-\lstinputlisting[linerange=49-53]{../examples/visitor3.txt}% APPLY:linerange=COMBINE1_DEF
+\lstinputlisting[linerange=-]{}% APPLY:linerange=COMBINE1_DEF
 
 \bruno{Well, the previous subsection already introduces parametric
   polymorphism, so this discussion comes too late!}

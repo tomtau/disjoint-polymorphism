@@ -33,4 +33,3 @@ val l2 = new[IPrint] litP(3)
 val l3 = new[IPrint] addP(l1, l2)
 val e  = new[IPrint] subP(l3, l2)
 main = e.print ++ " = " ++ e.eval.toString
--- Output: "((4 + 3) - 3) = 4"
