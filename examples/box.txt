@@ -81,19 +81,19 @@ trait oval(shortRadius : Double, longRadius : Double, center: Point)
 -- BEGIN_NORM_DEF
 type Norm = { norm : Double -> Double -> Double }
 trait euclideanNorm { self : Point =>
-  def norm (x : Double) (y : Double) = (square(self.x - x)  + square(self.y - y)).sqrt }
+  def norm (x : Double) (y : Double) = (square(self.x - x) + square(self.y - y)).sqrt }
 trait manhattanNorm { self : Point =>
   def norm (x : Double) (y : Double) = abs((self.x - x)) + abs((self.y - y)) }
 -- END_NORM_DEF
 
 -- BEGIN_CIRCLE_FNS2
-type CircleFns2 = CircleFns & { inCircle : Double -> Double -> Bool}
+type CircleFns2 = CircleFns & { inCircle : Double -> Double -> Bool }
 trait circleFns2 inherits circleFns { self : Circle & Norm =>
   def inCircle (x : Double) (y : Double) = self.norm x y < self.radius }
 -- END_CIRCLE_FNS2
 
 -- BEGIN_POINT_FUNC
-def roundButtonFac (radius : Double) (center : Point) (norm : Trait [Point, Norm]) =
+def roundButtonFac (radius : Double) (center : Point) (norm : Trait[Point, Norm]) =
   new[RoundButton & CircleFns2 & ButtonFns & Norm]
     roundButton(radius, center, "Round button") & circleFns2 & buttonFns & norm
 -- END_POINT_FUNC
