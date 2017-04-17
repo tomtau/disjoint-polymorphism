@@ -15,17 +15,18 @@ following 3 terms when comparing related work with ours.
   statically known at compile-time.
 \item{{\bf Mutable Inheritance:}} Prototype-based languages allow another model
   of inheritance, which we call \emph{mutable inheritance}. In this inheritance
-  model, self-references can be changed at any point.
+  model, self-references are mutable and changeable at any point.
 \item{{\bf Dynamic Inheritance:}} Dynamic inheritance is a less well-known model
   which stands in between static and mutable inheritance. Unlike the static
-  inheritance model, with dynamic inheritance objects can inherits from other
+  inheritance model, with dynamic inheritance objects can inherit from other
   objects which are not statically known. However, unlike mutable inheritance,
   the self-reference is not mutable and cannot be arbitrarily changed at
   run-time.
 \end{itemize}
 
 Figure~\ref{fig:comparision} shows the comparison between \name and various
-similar languages, as we will explain below.
+similar languages that follow Cook et. al's ``Inheritance is not
+Subtyping'' (i.e. the flexible model), as we will explain below.
 
 \begin{figure}[t]
   \centering
@@ -45,7 +46,8 @@ similar languages, as we will explain below.
     IFJ & \cmark & \xmark & \cmark & Dynamic \\
   \end{tabular}
   \end{small}
-  \caption{Comparison between \name and various similar languages.}
+  \caption{Comparison between \name and various similar languages that
+  adopt the \emph{flexible model}.}
   \label{fig:comparision}
 \end{figure}
 
@@ -76,7 +78,7 @@ slots may be assigned new values at run-time. Mutable inheritance is rather
 unstructured, and oftentimes access to any clashing methods will generate a
 ``messageAmbiguous'' error at run-time. Although \name's dynamic inheritance is
 not as powerful as mutable inheritance, its static type system can guarantee
-that no such error could occur at run-time.
+that no such errors occur at run-time.
 
 There is not much work on statically-typed, delegation-based languages.
 \citet{kniesel1999type} provides a good overview of problems when combining
@@ -88,12 +90,12 @@ able to detect statically when a message might be ambiguously defined as a
 result of multiple inheritance or multiple dispatching. However, one major
 omission of Cecil, which is also one of the interesting features of \name, is
 dynamic inheritance. There are other
-work~\cite{fisher1995delegation,anderson2003can} on delegation in a
+works~\cite{fisher1995delegation,anderson2003can} on delegation in a
 statically-typed setting, but none of them provide means (such as the merge
-construct, disjointness constraint, etc.) that are needed for extensible
+construct, disjointness constraints, etc.) that are needed for extensible
 designs.
 
-\citet{cook1989inheritance} are the first to propose a typed model of
+\citet{cook1989inheritance} were the first to propose a typed model of
 inheritance where subtyping and inheritance are two separate concepts. In
 particular, they introduce the notion of \textit{type inheritance} and show that
 inherited objects have inherited types, not subtypes. An interesting aspect of
@@ -101,15 +103,14 @@ their calculus is the \textbf{with} construct, used to join two records. This is
 somewhat similar to our merge construct. However two major differences are worth
 pointing out: 1) the \textbf{with} construct operates only on records; and 2) it
 is a biased operator, favoring values from its right argument. This biased
-operator is good at modeling mixins, but not traits. In particular, the
-\textbf{with} construct is unable to merge two arbitrary (and possible
-polymorphic) values, which is essential to express the \lstinline{merge}
-operation in Section~\ref{sec:traits}, and which is only possible with
-disjointness constraint in \name. The \textit{onion} construct in the Big Bang
-language~\cite{palmer2015building,menon2012big} has a similar problem -- it is a
-left-associative operator which gives rightmost precedence.
-
-
+operator is good for modeling mixins, but not traits. The
+\textbf{with} construct seems to be unable to merge two arbitrary (and possible
+polymorphic) values, since this seems to require something like
+\emph{row polymorphism}~\cite{}\bruno{reference}, which is not available in their language. 
+The \textit{onion} construct in the Big Bang
+language~\cite{palmer2015building,menon2012big} has a similar bias problem -- it is a
+left-associative operator which gives rightmost precedence to one
+implementation when conflicts exist.
 
 \paragraph{Mixin-based inheritance}
 
@@ -122,8 +123,8 @@ composed linearly, and as such, conflicts are resolved implicitly (mixins
 appearing later overwrite all the identically named features of earlier mixins).
 In comparison, the trait model in \name requires conflicts be resolved
 explicitly. We want to emphasize that this conflict detection is essential in
-expressing composition operators for Object Algebras, otherwise we could run
-into incoherence.
+expressing composition operators for Object Algebras, without running
+into ambiguities.
 
 
 \paragraph{Trait-based inheritance}
@@ -137,8 +138,9 @@ For example \citet{fisher2004typed} presented a statically-typed calculus that
 models traits. Conflict detection is the hallmark of trait-based
 inheritance, compared with mixin-based inheritance. One important difference
 with \name is that those systems support \textit{classes} in addition to traits,
-and consider the interaction between them, whereas \name is prototype (or
-delegation) based -- the mechanism for code reuse is purely traits. The
+and consider the interaction between them, whereas \name is 
+delegation based and the mechanism for code reuse is purely traits
+(i.e. there are no classes in \name). The
 deviation from traditional class-based models is not only because of its
 simplicity, but also because we need a very \textit{dynamic} form of
 inheritance, as has been elaborated throughout the paper.
@@ -150,9 +152,11 @@ traits cannot take constructor parameters whereas ours can; 3) the trait system
 in \name lacks a proper notation of inheritance relationship. For example in the
 traditional trait model, if the same method (i.e., from the same trait) is
 obtained more than once via different paths, there is no conflict. This is not
-the case in \name; and 4) traits in \name support dynamic inheritance. In the
-traditional trait model, when it comes to inheritance, the traits being
-inherited must be statically known.
+the case in \name; and 4) traits in \name support dynamic
+inheritance. 
+%In the
+%traditional trait model, when it comes to inheritance, the traits being
+%inherited must be statically known.
 
 
 
