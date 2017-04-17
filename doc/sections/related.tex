@@ -102,7 +102,7 @@ somewhat similar to our merge construct. However two major differences are worth
 pointing out: 1) the \textbf{with} construct operates only on records; and 2) it
 is a biased operator, favoring values from its right argument. This biased
 operator is good at modeling mixins, but not traits. In particular, the
-\textbf{with} construct is unable to merge two arbitrary (and possible
+\textbf{with} construct is unable to merge two arbitrary (and possibly
 polymorphic) values, which is essential to express the \lstinline{merge}
 operation in Section~\ref{sec:traits}, and which is only possible with
 disjointness constraint in \name. The \textit{onion} construct in the Big Bang
