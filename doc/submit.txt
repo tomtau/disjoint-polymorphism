@@ -1,5 +1,5 @@
 ../app/Main.hs
-../disjoint-polymorphism.cabal
+../SEDEL.cabal
 ../examples/avg.txt
 ../examples/birds.txt
 ../examples/box.txt

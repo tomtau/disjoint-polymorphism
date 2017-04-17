@@ -1,7 +1,7 @@
 all: build run
 
 run:
-	@stack exec disjoint-polymorphism-exe
+	@stack exec SEDEL-exe
 
 build:
 	@stack build

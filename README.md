@@ -1,11 +1,10 @@
-# Disjoint Polymorphism
+# SEDEL: Safe and Expressive Delegation-Based Programming
 
 [![wercker status](https://app.wercker.com/status/f8efc6b9552b883a408799e75a4b87f3/s/master "wercker status")](https://app.wercker.com/project/byKey/f8efc6b9552b883a408799e75a4b87f3)
 
-A delegation-based, statically typed language that supports dynamic composable
-traits, disjoint polymorphism, intersection types and a merge operator. For the
-underlying theory, please refer
-to [Disjoint Polymorphism](http://i.cs.hku.hk/~bruno/papers/ESOP2017.pdf).
+SEDEL is a new statically-typed and delegation-based object-oriented programming
+language that supports dynamic composable traits, disjoint polymorphism,
+intersection types and a merge construct.
 
 ## Build and Run
 
@@ -16,13 +15,13 @@ This project can be built with `cabal` or `stack`.
 cabal sandbox init
 cabal install --only-dependencies
 cabal build
-cabal exec disjoint-polymorphism-exe
+cabal exec SEDEL-exe
 ```
 
 * stack
 ```
 stack build
-stack exec disjoint-polymorphism-exe
+stack exec SEDEL-exe
 ```
 
 ## REPL
@@ -41,7 +40,7 @@ Evaluation result
 => 2.0
 ```
 
-## Syntax of the source langauge
+## Syntax of the source language
 
 * Primitive type: `Double`, `Bool`, `String`
 * Top type/value: `() : T`
@@ -57,4 +56,8 @@ Evaluation result
 
 ## Examples
 
-See [examples/](./examples/)
+See [examples/](./examples/). All examples can be tested:
+
+```
+stack test
+```
