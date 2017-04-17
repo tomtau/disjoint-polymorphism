@@ -98,7 +98,7 @@ more operations, and one or more data variants, as shown in
 Figure~\ref{fig:langs}. For example \lstinline{arith} is a simple language of
 arithmetic expressions. On top of that, we also define an evaluator, a pretty
 printer, and a type checker. Note that for some languages (e.g.,
-\lstinline{simplenat}), since it has only one kind of value, we only define an
+\lstinline{simplenat}), since they have only one kind of value, we only define an
 evaluator and a pretty printer. We thus obtain 12 languages and 30 operations in
 total. The complete language \lstinline{mini-JS} has all the features and
 operations. Besides, we also define a new algebra with the combined behavior of
@@ -147,7 +147,7 @@ operations defined for \lstinline{arith} can safely apply to expressions of \lst
 To evaluate \name's implementation of the case study, Figure~\ref{fig:sloc}
 compares the number of source lines of code (SLOC, lines of code without
 counting empty lines and comments) for \name's implementation with the vanilla
-AST-based implementation in Haskell. Since \name is a fairly new languages, we
+AST-based implementation in Haskell. Since \name is a fairly new language, we
 had to write various code that is provided in Haskell by the standard library,
 so they are not counted for fairness of comparison. In the left part, for each
 feature, we count lines of the algebra interface (number beside the feature

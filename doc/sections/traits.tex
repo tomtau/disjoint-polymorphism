@@ -97,7 +97,7 @@ Scala self type declarations) where the self-reference is explicitly named and
 can optionally be given a type. When there is no type annotation on
 \lstinline{self}, this means that the trait requires nothing. In this case the
 type of \lstinline{self} is the \emph{top} type. This is different from typical
-OO languages, where the default type of a class is the same as the class being
+OO languages, where the default type of the self-reference is the same as the class being
 defined.
 
 %The purpose of
@@ -303,7 +303,7 @@ Upon finishing this tour, let us revisit the problematic \lstinline{merge}
 operation. As pointed out in Section~\ref{sec:scala-merge}, intersection types
 in Scala are not completely first class, since it is hard to build values of
 intersections with unknown components. In \name, however, this is trivial. The
-\lstinline{merge} operation discussed in~\ref{sec:scala-merge} can be written as:
+\lstinline{merge} operation discussed in Section~\ref{sec:scala-merge} can be written as:
 \lstinputlisting[linerange=4-4]{../examples/merge.txt}% APPLY:linerange=MERGE_EG
 
 \noindent Firstly \name supports parametric polymorphism, and type variables are
