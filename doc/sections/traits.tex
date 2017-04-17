@@ -2,7 +2,7 @@
 \label{sec:traits}
 
 This section introduces and showcases the main features of \name. In particular
-we focus on \name's native support for \textit{dynamically composable traits}.
+we focus on \name's support for \textit{dynamically composable traits}.
 Along the way, we also explain briefly various other features of \name.
 As a running example, we describe a representation of graphical objects such as
 circles, ovals, or buttons. The example is illustrative of typical uses of
@@ -47,7 +47,7 @@ Trait composition is
 a symmetric operation, and trait systems provide conflict detection.
 
 Here is a simple trait \lstinline{point} with its two coordinates \lstinline{x}
-and \lstinline{y}\footnote{\name only has floating numbers.}.
+and \lstinline{y}. %\footnote{\name only has floating numbers.}.
 \lstinputlisting[linerange=4-7]{../examples/box.txt}% APPLY:linerange=POINT_DEF
 
 %The syntax is very similar to Scala's, with the \lstinline{def} keyword
@@ -154,14 +154,14 @@ of a trait.
 In our example, each graphical object can be decomposed into two aspects -- its
 geometry and its functions. In case of circles, we already have a trait
 \lstinline{circle} representing its geometry. We now proceed to define its
-functions by another trait (\lstinline{T} is the top type which has a single
+functions by another trait (\lstinline{T} is the top type which has a canonical
 value \lstinline{()}).
 \lstinputlisting[linerange=30-34]{../examples/box.txt}% APPLY:linerange=CIRCLE_FNS
 
 \noindent Note how in \lstinline$circleFns$ the type of the self-reference is
 \lstinline$Circle$, which declares a \lstinline{radius} field that is needed for
 the definitions of the methods in the trait. Note also that the trait itself
-does not actually contains a \lstinline{radius} definition. In many other OO
+does not actually contain a \lstinline{radius} definition. In many other OO
 models a similar program could be achieved by having an \emph{abstract} radius
 definition. In \name there are no abstract definitions (methods or fields), but
 a similar result can be achieved via trait requirements.
@@ -317,6 +317,7 @@ by \lstinline{,,}). The merge construct~\cite{dunfield2014elaborating} allows
 two arbitrary (and possible polymorphic) values to be merged, with the resulting type
 being an intersection type.
 
-Disjoint polymorphism~\cite{alpuimdisjoint} sets apart \name
+Disjoint polymorphism~\cite{alpuimdisjoint} is one of the features
+that sets \name apart
 from other OO languages, and enables extensible designs as is elaborated in
 Section~\ref{sec:OA}.
