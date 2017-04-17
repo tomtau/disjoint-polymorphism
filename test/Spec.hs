@@ -6,7 +6,7 @@ import System.FilePath
 import Data.List (isSuffixOf)
 import System.Directory
 import Text.PrettyPrint.ANSI.Leijen (Doc)
-import Utility
+import SEDEL
 
 data TestResult = Res Doc Bool
 

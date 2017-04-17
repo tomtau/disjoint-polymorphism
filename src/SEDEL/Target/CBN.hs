@@ -1,18 +1,18 @@
 
-module Target.CBN
+module SEDEL.Target.CBN
   ( Env
   , evaluate
   , extendCtx
   , emptyEnv
   ) where
 
-
-import           Common
 import           Control.Monad.Reader
 import qualified Data.Map.Strict as M
-import           PrettyPrint
-import           Target.Syntax
 import           Unbound.LocallyNameless
+
+import           SEDEL.Common
+import           SEDEL.PrettyPrint
+import           SEDEL.Target.Syntax
 
 data ClosureExp = CExp UExpr Env deriving Show
 

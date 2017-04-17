@@ -1,16 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module PrettyPrint
+module SEDEL.PrettyPrint
   ( pprint
   , warn
   , info
   ) where
 
-import           Common
-import qualified Source.Syntax as S
-import qualified Target.Syntax as T
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 import           Unbound.LocallyNameless
+
+import           SEDEL.Common
+import qualified SEDEL.Source.Syntax as S
+import qualified SEDEL.Target.Syntax as T
 
 
 class Pretty p where

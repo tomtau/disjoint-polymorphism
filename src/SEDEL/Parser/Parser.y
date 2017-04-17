@@ -1,14 +1,13 @@
 {
-module Source.Parser (parseExpr) where
+module SEDEL.Parser.Parser (parseExpr) where
 
 import Data.Char (isDigit, isSpace, isAlpha)
 import Data.List (stripPrefix)
-import Source.Syntax
+import SEDEL.Source.Syntax
 import Unbound.LocallyNameless
-import Common
-import Lexer
-import PrettyPrint
-import Source.SrcLoc
+import SEDEL.Common
+import SEDEL.Parser.Lexer
+import SEDEL.PrettyPrint
 }
 
 

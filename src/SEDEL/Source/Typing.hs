@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts, PatternGuards, NoImplicitPrelude, LambdaCase, OverloadedStrings #-}
 
-module Source.Typing
+module SEDEL.Source.Typing
   ( tcModule
   ) where
 
@@ -12,14 +12,14 @@ import           Text.PrettyPrint.ANSI.Leijen hiding ((<>), (<$>), Pretty)
 import           Unbound.LocallyNameless hiding (restrict)
 
 
-import           Common
-import           Environment
-import           PrettyPrint
-import           Source.Desugar
-import           Source.Subtyping
-import           Source.Syntax
-import qualified Target.CBN as TC
-import qualified Target.Syntax as T
+import           SEDEL.Common
+import           SEDEL.Environment
+import           SEDEL.PrettyPrint
+import           SEDEL.Source.Desugar
+import           SEDEL.Source.Subtyping
+import           SEDEL.Source.Syntax
+import qualified SEDEL.Target.CBN as TC
+import qualified SEDEL.Target.Syntax as T
 
 
 -- Type check a module

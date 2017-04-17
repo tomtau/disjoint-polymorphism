@@ -6,9 +6,9 @@
            , UndecidableInstances
 #-}
 
-module Source.Syntax where
+module SEDEL.Source.Syntax where
 
-import Common
+import SEDEL.Common
 import Unbound.LocallyNameless
 
 -- | Modules

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, FlexibleContexts, NoImplicitPrelude #-}
 
-module Environment
+module SEDEL.Environment
   ( lookupVarTy
   , lookupTVarConstraint
   , lookupTVarConstraintMaybe
@@ -28,7 +28,7 @@ import           Protolude hiding (Type)
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 import           Unbound.LocallyNameless
 
-import           Source.Syntax
+import           SEDEL.Source.Syntax
 
 
 type M a = FreshMT (ReaderT a (Except Doc))

@@ -3,16 +3,16 @@ module Main where
 import           Control.Exception (SomeException, try)
 import           Control.Monad.State.Strict
 import           Data.List (isPrefixOf)
-import           Environment
-import           PrettyPrint
-import           Source.Parser (parseExpr)
-import           Source.Typing
 import           System.Console.Repline
 import           System.Environment (getArgs)
 import           System.Exit
-import qualified Target.CBN as CBN
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 
+import           SEDEL.Environment
+import           SEDEL.Parser.Parser (parseExpr)
+import           SEDEL.PrettyPrint
+import           SEDEL.Source.Typing
+import qualified SEDEL.Target.CBN as CBN
 
 data ReplState = ReplState {
   replCtx   :: Ctx

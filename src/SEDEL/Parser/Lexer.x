@@ -1,6 +1,6 @@
 {
 
-module Lexer (
+module SEDEL.Parser.Lexer (
   Token(..),
   TokenClass(..),
   lexer,

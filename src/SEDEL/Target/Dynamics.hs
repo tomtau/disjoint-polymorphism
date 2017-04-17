@@ -1,14 +1,14 @@
 {-# LANGUAGE RecursiveDo #-}
 
 
-module Target.Dynamics where
+module SEDEL.Target.Dynamics where
 
-
-import Common
 import Control.Monad.Reader
-import Target.Syntax
 import Unbound.LocallyNameless
 import qualified Data.Map as M
+
+import SEDEL.Common
+import SEDEL.Target.Syntax
 
 
 ------------------------

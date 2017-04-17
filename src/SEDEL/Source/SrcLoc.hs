@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE DeriveTraversable #-}
 
-module Source.SrcLoc where
+module SEDEL.Source.SrcLoc where
 
 -- import Text.PrettyPrint.ANSI.Leijen
 

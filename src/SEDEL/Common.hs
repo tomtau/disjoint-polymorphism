@@ -6,7 +6,7 @@
             , UndecidableInstances
 #-}
 
-module Common where
+module SEDEL.Common where
 
 import           Unbound.LocallyNameless
 

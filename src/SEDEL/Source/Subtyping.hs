@@ -5,7 +5,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ViewPatterns #-}
 
-module Source.Subtyping
+module SEDEL.Source.Subtyping
   ( subtype
   ) where
 
@@ -16,11 +16,11 @@ import           Protolude hiding (Type)
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 import           Unbound.LocallyNameless
 
-import           PrettyPrint
-import           Source.Syntax
-import qualified Target.Syntax as T
-import Environment
-import           Source.Desugar
+import           SEDEL.Environment
+import           SEDEL.PrettyPrint
+import           SEDEL.Source.Desugar
+import           SEDEL.Source.Syntax
+import qualified SEDEL.Target.Syntax as T
 
 ----------------------------
 -- A <: B ~> E

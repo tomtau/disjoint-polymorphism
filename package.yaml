@@ -33,20 +33,20 @@ library:
   - alex
   - happy
   exposed-modules:
-    - Lexer
-    - Environment
-    - Common
-    - PrettyPrint
-    - Utility
-    - Source.Parser
-    - Source.Syntax
-    - Source.Subtyping
-    - Source.Typing
-    - Source.Desugar
-    - Source.SrcLoc
-    - Target.Syntax
-    - Target.Dynamics
-    - Target.CBN
+    - SEDEL.Parser.Lexer
+    - SEDEL.Parser.Parser
+    - SEDEL.Environment
+    - SEDEL.Common
+    - SEDEL.PrettyPrint
+    - SEDEL.Source.Syntax
+    - SEDEL.Source.Subtyping
+    - SEDEL.Source.Typing
+    - SEDEL.Source.Desugar
+    - SEDEL.Source.SrcLoc
+    - SEDEL.Target.Syntax
+    - SEDEL.Target.Dynamics
+    - SEDEL.Target.CBN
+    - SEDEL
   dependencies:
     - unbound
 

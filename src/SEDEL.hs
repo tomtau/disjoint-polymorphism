@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings, ViewPatterns #-}
 
 
-module Utility
+module SEDEL
   ( evalFile
   ) where
 
@@ -10,11 +10,11 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 
-import           Environment
-import           PrettyPrint
-import           Source.Parser (parseExpr)
-import           Source.Typing
-import qualified Target.CBN as C
+import           SEDEL.Environment
+import           SEDEL.Parser.Parser (parseExpr)
+import           SEDEL.PrettyPrint
+import           SEDEL.Source.Typing
+import qualified SEDEL.Target.CBN as C
 
 type Result = Either Doc String
 

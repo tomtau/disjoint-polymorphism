@@ -35,24 +35,24 @@ result
 ```
 > 2
 Typing result
-: Int
+: Double
 
 Evaluation result
-=> 2
+=> 2.0
 ```
 
 ## Syntax of the source langauge
 
-* Primitive type: `Int`, `Bool`, `String`
+* Primitive type: `Double`, `Bool`, `String`
 * Top type/value: `() : T`
-* Type annotation: `2 : Int`
+* Type annotation: `2 : Double`
 * Merge: `true ,, 3`
-* Intersection type: `Bool & (Int -> Int)`
+* Intersection type: `Bool & (Double -> Double)`
 * If: `if x == 0 then true else false`
-* λ term: `(\x -> x+1) : Int -> Int`
-* Λ term: `/\ (A * Int) . (\x -> x) : A -> A`
+* λ term: `(\x -> x+1) : Double -> Double`
+* Λ term: `/\ (A * Double) . (\x -> x) : A -> A`
 * Disjoint (universal) quantification: `forall (A*Int) . A -> A`
-* Term declaration: `def id [A] (x : A) = x;`
+* Term declaration: `def id A (x : A) = x;`
 * Type declaration: `type Person = {name : String, male : Bool};`
 
 ## Examples

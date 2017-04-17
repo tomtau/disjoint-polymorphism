@@ -1,9 +1,10 @@
 {-# LANGUAGE MultiParamTypeClasses, TemplateHaskell, ScopedTypeVariables, FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
 
-module Target.Syntax where
+module SEDEL.Target.Syntax where
 
-import Common
 import Unbound.LocallyNameless
+
+import SEDEL.Common
 
 
 ---------------------------

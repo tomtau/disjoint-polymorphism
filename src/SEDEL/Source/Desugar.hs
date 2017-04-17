@@ -3,7 +3,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 
-module Source.Desugar
+module SEDEL.Source.Desugar
   ( desugar
   , resolveDecls
   , normalizeTmDecl
@@ -14,8 +14,8 @@ import Protolude hiding (Type)
 
 import Unbound.LocallyNameless
 
-import Environment
-import Source.Syntax
+import SEDEL.Environment
+import SEDEL.Source.Syntax
 
 
 
