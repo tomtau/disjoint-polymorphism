@@ -47,7 +47,7 @@ trait button(label : String) { self => def label = label }
 -- BEGIN_BUTTON_FNS
 type ButtonFns = { hover : Bool -> String, press : Bool -> String }
 trait buttonFns { self : Button =>
-  def hover (b : Bool) = if b then "hoverring..." else "no hoverring"
+  def hover (b : Bool) = if b then "hovering..." else "no hovering"
   def press (b : Bool) = if b then "pressing..." else "no pressing" }
 -- END_BUTTON_FNS
 
