@@ -65,7 +65,7 @@ singleton records.
 \begin{tabular}{lrcl}
   Types  & $[[A]], [[B]]$ & ::= & $[[top]] \mid [[Int]] \mid [[A -> B]] \mid [[A & B]] \mid  [[{ l : A }]] \mid [[a]] \mid [[forall ( a ** A ) . B]] \mid [[ T [ B1 , .. , Bn ] ]]$ \\
   Expressions & $[[E]]$ & ::= & $[[()]] \mid [[N]] \mid [[x]] \mid [[\ x . E]] \mid [[E1 E2]] \mid [[blam ( a ** A ) . E]] \mid [[E A]] \mid [[E1 ,, E2]] $ \\
-         & & $\mid$ & $[[{ l = E }]] \mid [[E . l]] \mid [[E -- { l : A }]] $ \\
+         & & $\mid$ & $[[let x : A = E1 in E2]] \mid [[{ l = E }]] \mid [[E . l]] \mid [[E -- { l : A }]] $ \\
   Programs & $[[pgm]]$ & ::= & $[[decl1 .. decln E]]$ \\
   Declarations & $[[decl]]$ & ::= & $[[ def f ( x1 : A1 ) .. ( xn : An ) : B = E ]] \mid [[ type T [ a1 , .. , an ] = A ]]$ \\ \\
 \end{tabular}
