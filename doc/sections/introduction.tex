@@ -186,7 +186,27 @@ traits~\cite{scharli2003traits}, but based on dynamic inheritance.
 
 The theoretical foundations of \name are grounded on the work by
 \citet{oliveira2016disjoint} on disjoint intersection types, and the work by
-\citet{alpuimdisjoint} on disjoint polymorphism. However
+\citet{alpuimdisjoint} on disjoint polymorphism. They develop core calculi that supports an
+expressive form of \emph{intersection
+  types}~\cite{coppo1981functional,pottinger1980type} with a \emph{merge
+  construct}~\cite{dunfield2014elaborating}, while ensuring
+type-safety and coherence. Since \name is built on top of disjoint
+intersection types and polymorphism, it inherits those properties for
+free. The coherence property ensures that the semantics of
+\name is unambiguous. In particular this property is useful to ensure that
+programs using multiple dynamic inheritance are free of conflicts/ambiguities
+(even when the types of the object parts being composed are not statically
+know).
+
+This paper shows how dynamically composable traits 
+and OO mechanisms for delegation-based programming can be built on top
+of a calculus with disjoint intersection types and polymorphism.
+In essence, \name's subtyping is modelled with
+disjoint intersection types, and inheritance is modelled with the merge
+construct.
+
+\begin{comment}
+However
 \citeauthor{oliveira2016disjoint} and \citeauthor{alpuimdisjoint}
  do not show how to build high-level OOP constructs for
 delegation-based programming, discuss the applications to extensible designs, or
@@ -197,12 +217,10 @@ expressive form of \emph{intersection
   construct}~\cite{dunfield2014elaborating}. In \name subtyping is modelled with
 disjoint intersection types, and inheritance is modelled with the merge
 construct. \name inherits the key properties of these calculi, which are
-type-safety and coherence. The coherence property ensures that the semantics of
-\name is unambiguous. In particular this property is useful to ensure that
-programs using multiple dynamic inheritance are free of conflicts/ambiguities
-(even when the types of the object parts being composed are not statically
-know).
-  
+type-safety and coherence. 
+\end{comment}  
+
+
 \begin{comment}
 The
 novelty of the work in this paper is a three-fold. Firstly we show how
@@ -229,7 +247,9 @@ In summary the contributions of this paper are:
 
 \item {\bf A practical example where ``Inheritance is not Subtyping'' matters:}
   This paper shows that extensible Object-Algebras/Visitors suffer from the
-  ``inheritance is not subtyping'' problem.
+  ``inheritance is not subtyping'' problem. We think this is a
+  compelling application where distinguishing inheritance from
+  subtyping is important. 
 
 \item {\bf Elaboration of dynamically composable traits into disjoint
     intersection types/polymorphism:} We show that, with a simple syntax directed layer of
@@ -244,8 +264,7 @@ In summary the contributions of this paper are:
   Programming Languages book~\cite{poplcook}, where the features of a small
   subset of a JavaScript-like language are modularized using \name's improved
   support for Object Algebras\footnote{{\bf Note to reviewers:} Due to the
-    anonymous submission process, the code for the implementation and the case
-    study are submitted as supplementary material.}.
+    anonymous submission process, all code is submitted as supplementary material.}.
 
 \end{itemize}
 
