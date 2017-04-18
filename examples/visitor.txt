@@ -1,7 +1,7 @@
 --> "((5.0 - (2.0 + 3.0)) + 3.0) = 3.0 and (2.0 + 3.0) = 5.0"
 
 -- BEGIN_ALGEBRA_DEF
-type ExpAlg[E] = {lit : Double -> E, add : E -> E -> E }
+type ExpAlg[E] = { lit : Double -> E, add : E -> E -> E }
 -- END_ALGEBRA_DEF
 
 -- BEGIN_MKVALUE_DEF
