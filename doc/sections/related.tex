@@ -45,6 +45,8 @@ Subtyping'' (i.e. the flexible model), as we will explain below.
     \hline
     IFJ & \cmark & \xmark & \cmark & Dynamic \\
     \hline
+    \textsc{Darwin} & \cmark & \xmark & \xmark & Dynamic \\
+    \hline
   \end{tabular}
   \end{small}
   \caption{Comparison between \name and various similar languages that
@@ -240,18 +242,21 @@ are quite flexible, and support dynamic inheritance. However, object composition
 in IFJ is quite restrictive, compared to \name, in that it can only compose an
 incomplete object with a complete object. In that regard, and also because IFJ's
 type system is not polymorphic, IFJ is unable to encode composition operators of
-Object Algebras. \citeauthor{ostermann2002dynamically}'s delegation
+Object Algebras. \citet{kniesel1999type} showed that type-safe integration of
+delegation with subtyping into a class-based model is possible, resulting in the
+\textsc{Darwin} model. In \textsc{Darwin}, the type of the parent object must be
+a declared class and this limits the flexibility of dynamic composition.
+\citeauthor{ostermann2002dynamically}'s delegation
 layers~\citep{ostermann2002dynamically} use delegation for doing dynamic
-composition in a system with virtual classes. This is in contrast with most other
-approaches that use class-based composition, but closer to the dynamic
+composition in a system with virtual classes. This is in contrast with most
+other approaches that use class-based composition, but closer to the dynamic
 composition that we use in \name.
 
 There are many other class-based OO languages that are equipped with more
 advanced forms of
-inheritance~\cite{meyer1987eiffel,buchi2000generic,ostermann2001object,kniesel1999type}.
-Most of them are heavyweight and are specific to classes. \name is
-object-centered, more lightweight, and is dedicated to express extensible
-designs in a simpler way.
+inheritance~\cite{meyer1987eiffel,buchi2000generic,ostermann2001object}. Most of
+them are heavyweight and are specific to classes. \name is object-centered, more
+lightweight, and is dedicated to express extensible designs in a simpler way.
 
 
 % Eiffel~\cite{meyer1987eiffel} is a class-based language that is based on the

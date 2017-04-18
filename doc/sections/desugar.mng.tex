@@ -36,7 +36,8 @@ applications $[[ T [ B1 , .. , Bn ] ]]$.
 In correspondence with types, terms include merges $[[E1 ,, E2]]$, abstraction
 of type variables over terms $[[blam ( a ** A ) . E]]$, applications of terms to
 types $[[E A]]$, and singleton records $[[ { l = E } ]]$. Record operations are
-projections $[[E.l]]$ and exclusions $[[E -- { l : A }]]$.
+projections $[[E.l]]$ and exclusions $[[E -- { l : A }]]$. We also have
+recursive \lstinline{let} bindings.
 
 \paragraph{Type and term declarations}
 
@@ -108,7 +109,7 @@ to $m_n$, as each of them is an open term after translation. The results are
 then merged to form a new term. \lstinline{new} instantiates a trait by
 taking the \textit{lazy fixpoints} of the resulting term. For example,
 \lstinline{new[Point3D] point3D(3,4)} is translated into \lstinline{let self : Point3D = point3D 3 4 self in self}.
-\name has a lazy (and possibly recursive) \lstinline{let} construct.
+% \name has a lazy (and possibly recursive) \lstinline{let} construct.
 
 
 % Lazy fixpoints are implemented in \name using the built-in \lstinline{let}
