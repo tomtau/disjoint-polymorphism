@@ -12,22 +12,22 @@ the following is expected in the covariant model:
 
 \begin{itemize}
 
-\item {\bf Extensions always produce subtypes:} In the covariant model, when a 
-subclass \emph{extends} a class it automatically becomes a 
+\item {\bf Extensions always produce subtypes:} In the covariant model, when a
+subclass \emph{extends} a class it automatically becomes a
 \emph{subtype} of the superclass.
 
 \item{\bf Inheritance and subtyping go along together:}
 Class extension does two things at once: it inherits code from the
-superclass; and it creates a subtype. 
+superclass; and it creates a subtype.
 
 \end{itemize}
 
 The covariant model has been successfully used for over 50 years,
-so it clearly has demonstrated its value in practice. 
-Part of this success can probably be attributed 
-to its relative simplicity. In particular, programmers do not have to think carefully 
+so it clearly has demonstrated its value in practice.
+Part of this success can probably be attributed
+to its relative simplicity. In particular, programmers do not have to think carefully
 about the difference between subtyping and inheritance (indeed many
-programmers confuse the two concepts). 
+programmers confuse the two concepts).
 
 Nevertheless the study of the theoretical foundations of OOP has taught us that
 the story is not quite so simple. Since the earliest works on the theory of OOP
@@ -49,13 +49,13 @@ suggest a more general and flexible programming model (which we call the
 
 \begin{itemize}
 
-\item {\bf Inheritance and subtyping should be decoupled:} 
-That is, there should be different mechanisms for class inheritance 
-and class/interface subtyping. 
+\item {\bf Inheritance and subtyping should be decoupled:}
+That is, there should be different mechanisms for class inheritance
+and class/interface subtyping.
 
-\item {\bf Extensions do not always produce subtypes:} 
-There are cases where classes can inherit from other classes without 
-producing subtypes. 
+\item {\bf Extensions do not always produce subtypes:}
+There are cases where classes can inherit from other classes without
+producing subtypes.
 
 \end{itemize}
 
@@ -70,37 +70,37 @@ function with type $Animal \to Int$ (assuming that $Cat$ is a subtype
 of $Animal$). In fact, only the opposite can
 happen: $Animal \to Int$ can be a subtype of $Cat \to Int$.  This is
 at odds with the covariant view. Most mainstream OOP languages, such as Java or C\#, address this
-disturbance of the covariant view by making methods \emph{invariant} on 
+disturbance of the covariant view by making methods \emph{invariant} on
 their argument types. In other words, if a class $A$ with method $m$
-extends a class $B$ with method $m$, then $A.m$ can only override 
-$B.m$ if the parameters types in both method signatures are \emph{exactly 
+extends a class $B$ with method $m$, then $A.m$ can only override
+$B.m$ if the parameters types in both method signatures are \emph{exactly
 the same}. Thus mainstream OOP languages restrict the natural subtyping of
-functions. Various other issues related to covariance are known. 
+functions. Various other issues related to covariance are known.
 For example...
 
 Cook et al.'s work on ``\emph{Inheritance is not Subtyping}''~\cite{}
-is another example of how the theory of  OOP languages contradicts 
+is another example of how the theory of  OOP languages contradicts
 the simple covariant model. As Cook et al. argued inheritance and
-subtyping are different relations: subtyping being a relation on types 
-and inheritance being a relation on objects. In the covariant model 
-the subtype relation is based on the inheritance hierarchy. This 
-works very well if extensions produce 
-subtypes. However, as Cook et al.'s work famously demonstrated 
+subtyping are different relations: subtyping being a relation on types
+and inheritance being a relation on objects. In the covariant model
+the subtype relation is based on the inheritance hierarchy. This
+works very well if extensions produce
+subtypes. However, as Cook et al.'s work famously demonstrated
 this is not always the case. The essential implication of this is that
-the covariant model cannot express programs that do not follow the 
-covariant view of objects well. Following their observations about 
-inheritance and subtyping, Cook et al. suggest a more general and 
+the covariant model cannot express programs that do not follow the
+covariant view of objects well. Following their observations about
+inheritance and subtyping, Cook et al. suggest a more general and
 flexible programming model (which we call the \emph{flexible model}) with the following properties:
 
 \begin{itemize}
 
-\item {\bf Inheritance and subtyping should be decoupled:} 
-That is, there should be different mechanisms for class inheritance 
-and class/interface subtyping. 
+\item {\bf Inheritance and subtyping should be decoupled:}
+That is, there should be different mechanisms for class inheritance
+and class/interface subtyping.
 
-\item {\bf Extensions do not always produce subtypes:} 
-There are cases where classes can inherit from other classes without 
-producing subtypes. 
+\item {\bf Extensions do not always produce subtypes:}
+There are cases where classes can inherit from other classes without
+producing subtypes.
 
 \end{itemize}
 
@@ -111,9 +111,9 @@ OOP, \citeauthor{cook1989inheritance}'s paper has not had much impact on the des
 languages (although it has influenced the design of several academic
 languages~\cite{america1991designing,graver1989type,chambers1992object,bruce1995polytoil}).
 %Certainly this is not because
-%researchers or designer of OOP language are unaware of the subtleties 
+%researchers or designer of OOP language are unaware of the subtleties
 %of covariance and contravariance. Indeed over the years, and for other
-%reasons various features have been added to programming languages to 
+%reasons various features have been added to programming languages to
 We believe that there are two primary reasons for the lack of adoption
 of their model.  Firstly, the mental programming model is not
 as simple as the covariant model. In the flexible model programmers have to
@@ -123,8 +123,8 @@ difference between subtyping and inheritance.
 Secondly, and perhaps more importantly, there are not many compelling applications in
 the literature where the need for a more flexible OOP model is
 necessary. Thus language designers may argue that the costs outweigh
-the benefits, and may decide to stick instead to the covariant 
-model, which is simple, and well-understood by programmers. 
+the benefits, and may decide to stick instead to the covariant
+model, which is simple, and well-understood by programmers.
 %Indeed a famous instance of this is the design of DART
 
 This paper has three primary goals. The first goal is to argue that the
@@ -198,7 +198,7 @@ programs using multiple dynamic inheritance are free of conflicts/ambiguities
 (even when the types of the object parts being composed are not statically
 know).
 
-This paper shows how dynamically composable traits 
+This paper shows how dynamically composable traits
 and OO mechanisms for delegation-based programming can be built on top
 of a calculus with disjoint intersection types and polymorphism.
 In essence, \name's subtyping is modelled with
@@ -217,8 +217,8 @@ expressive form of \emph{intersection
   construct}~\cite{dunfield2014elaborating}. In \name subtyping is modelled with
 disjoint intersection types, and inheritance is modelled with the merge
 construct. \name inherits the key properties of these calculi, which are
-type-safety and coherence. 
-\end{comment}  
+type-safety and coherence.
+\end{comment}
 
 
 \begin{comment}
@@ -243,13 +243,13 @@ In summary the contributions of this paper are:
 
 \item {\bf Improved variants of extensible designs:} We present
   improved variants of \emph{Object
-    Algebras} and \emph{Extensible Visitors} in \name. 
+    Algebras} and \emph{Extensible Visitors} in \name.
 
 \item {\bf A practical example where ``Inheritance is not Subtyping'' matters:}
   This paper shows that extensible Object-Algebras/Visitors suffer from the
   ``inheritance is not subtyping'' problem. We think this is a
   compelling application where distinguishing inheritance from
-  subtyping is important. 
+  subtyping is important.
 
 \item {\bf Elaboration of dynamically composable traits into disjoint
     intersection types/polymorphism:} We show that, with a simple syntax directed layer of
@@ -272,15 +272,15 @@ In summary the contributions of this paper are:
 
 \paragraph{\bf JavaScript-style Mixin-Based Programming}
 A common programming pattern in JavaScript is based on a variant of
-Mixins. This programming style is very flexible and enables forms 
+Mixins. This programming style is very flexible and enables forms
 of reuse not usually available in more statically typed languages like Java.
 However, mixins in JavaScript fundamentally rely on an \emph{object-level composition}
 operator for inheritance~\cite{}. This requires a very dynamic form of
-inheritance/delegation that is not available in most class-based 
-statically-typed OO languages. Ideally the essence of such 
-form of mixins should be capturable in statically-typed languages. 
+inheritance/delegation that is not available in most class-based
+statically-typed OO languages. Ideally the essence of such
+form of mixins should be capturable in statically-typed languages.
 Languages such as TypeScript do attempt to provide better static
-type-checking support for those patterns. However, as recently illustrated 
+type-checking support for those patterns. However, as recently illustrated
 by the work of \citet{alpuimdisjoint}, there are several issues with such an
 approach, including type-unsoundness!
 

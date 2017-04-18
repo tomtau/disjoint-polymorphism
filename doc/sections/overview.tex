@@ -230,7 +230,7 @@ trait D extends CInt with CBoolean
 the original definition of \lstinline{C}. 
 
 In general, while for non-parametric classes/traits the restriction
-that inheriting the same class twice makes sense, for parametric
+that the same class cannot be inherited twice makes sense, for parametric
 classes there are situations where it would make sense to inherit 
 from the same class/trait twice. As it turns out similar situations 
 do arise in practice when defining composition operators for
@@ -249,7 +249,7 @@ intersection types, and some languages have adopted them in one form or another.
 
 In Java, for example,
 \begin{lstlisting}[language=java]
-  interface AwithB extends A, B {}
+interface AwithB extends A, B {}
 \end{lstlisting}
 introduces a new interface \lstinline$AwithB$ that satisfies the interface of
 both \lstinline{A} and \lstinline{B}. 
@@ -258,9 +258,9 @@ In Scala, given two concrete traits, it is
 possible to use \textit{mixin composition} to create an object that implements
 both traits.
 \begin{lstlisting}[language=scala]
-  trait A
-  trait B
-  val newAB : A with B = new A with B
+trait A
+trait B
+val newAB : A with B = new A with B
 \end{lstlisting}
 \noindent Here the type \lstinline[language=scala]{A with B} is an intersection type,
 and the expression \lstinline[language=scala]{new A with B} allows creating a new
@@ -269,7 +269,7 @@ object from the combination of the traits \lstinline{A} and
 
 Scala also allows intersections of type parameters. For example,
 \begin{lstlisting}[language=scala]
-  def merge[A,B] (x: A) (y: B) : A with B = ...
+def merge[A,B] (x: A) (y: B) : A with B = ...
 \end{lstlisting}
 uses the anonymous intersection of two type parameters \lstinline{A} and
 \lstinline{B}.
@@ -278,8 +278,8 @@ However, in Scala it is not possible to dynamically compose two
 (statically unknown) \emph{objects}. For
 example, the following code:
 \begin{lstlisting}[language=scala]
-  // Invalid Scala code:
-  def merge[A,B] (x: A) (y: B) : A with B = new x with y
+// Invalid Scala code:
+def merge[A,B] (x: A) (y: B) : A with B = new x with y
 \end{lstlisting}
 is rejected by the Scala compiler. The problem is that the \lstinline[language=scala]$with$
 construct in Scala can only be used to mixin traits or classes, not
