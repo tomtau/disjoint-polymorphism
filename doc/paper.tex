@@ -219,9 +219,10 @@ based languages \name is statically typed;
 has an expressive polymorphic type system; and it
 supports a powerful form of \emph{conflict-free} multiple dynamic
 inheritance mechanism called \emph{dynamically composable traits}. 
-The design of \name and its type system have two primary goals:
-guaranteeing important \emph{safety} properties; and 
-ensuring a high-degree of programming \emph{flexibility}.
+The design of \name and its type system is based on previous work 
+on disjoint intersection types and disjoint polymorphism. This 
+guarantees important \emph{safety} properties, and 
+ensures a high-degree of programming \emph{flexibility}.
 In terms of safety \name's type system provides, not only the usual 
 type-safety property, but also coherence. The coherence property
 ensures that the semantics of \name is unambiguous. In particular 
@@ -233,7 +234,10 @@ In terms of flexibility, the polymorphic type system provides
 an expressive form of polymorphism and intersection types that 
 can type-check various delegation-based programs and patterns. 
 We show how the mechanisms of \name improve extensibility design patterns 
-such as Extensible Visitors and Object Algebras. 
+such as Extensible Visitors and Object Algebras. Furthermore we show 
+how the high-level OO mechanisms of \name can be elaborated using 
+a thin-layer of syntactic sugar into a core calculus with disjoint
+intersection types and polymorphism.
 
 \end{abstract}
 
