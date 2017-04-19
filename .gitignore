@@ -10,18 +10,10 @@ doc/*.synctex.gz
 doc/*.fls
 doc/*.fdb_latexmk
 doc/*.pdf
+doc/*.nav
+doc/*.snm
+doc/*.toc
 doc/**/auto/
-doc/notes/memo.tex
-
-doc/paper/*.aux
-doc/paper/*.log
-doc/paper/*.bbl
-doc/paper/*.out
-doc/paper/*.blg
-doc/paper/*.pdf
-doc/paper/*.ptb
-doc/paper/*.fdb_latexmk
-doc/paper/*.fls
 
 doc/sections/*-old
 doc/*-old

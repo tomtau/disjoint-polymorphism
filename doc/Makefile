@@ -2,12 +2,17 @@ MAIN = paper
 
 SCRIPT = script
 
+SLIDE = slide
+
 all: $(MAIN).pdf
 
 $(MAIN).pdf: $(wildcard ../examples/*.txt) $(wildcard sections/*.ott) $(wildcard sections/*.tex) $(MAIN).tex paper.bib
 	make -C sections
 	@ruby $(SCRIPT).rb
 	@latexmk -pdf $(@:.pdf=.tex)
+
+slide : $(MAIN).pdf
+	@latexmk -pdf $(SLIDE).tex
 
 submit: $(MAIN).pdf
 	rm -Rf impl && mkdir -p impl
@@ -17,8 +22,7 @@ submit: $(MAIN).pdf
 	mv bundle.tar.gz $(MAIN).pdf upload/
 
 clean:
-	@rm -f $(MAIN).pdf $(MAIN).bbl *.aux *.fls *.out *.synctex.gz *.log *.fdb_latexmk *.blg bundle.tar.gz
-	@rm -f notes/memo.tex appendix.pdf
+	@rm -f $(MAIN).pdf $(MAIN).bbl $(SLIDE).pdf *.aux *.fls *.out *.synctex.gz *.log *.fdb_latexmk *.blg bundle.tar.gz
 	@rm -Rf auto/ sections/auto/ impl upload/
 
 .PHONY: all clean submit

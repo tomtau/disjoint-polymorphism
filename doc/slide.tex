@@ -1,0 +1,97 @@
+\documentclass{beamer}
+
+%% Some recommended packages.
+\usepackage{booktabs}   %% For formal tables:
+                        %% http://ctan.org/pkg/booktabs
+\usepackage{subcaption} %% For complex figures with subfigures/subcaptions
+                        %% http://ctan.org/pkg/subcaption
+
+
+% AMS packages
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{mdwlist}
+\usepackage{pifont}
+
+% Hyper links
+\usepackage{url}
+\usepackage{hyperref}
+\hypersetup{
+   colorlinks,
+   citecolor=black,
+   filecolor=black,
+   linkcolor=black,
+   urlcolor=black
+}
+
+% Miscellaneous
+\usepackage{paralist}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{float}
+\usepackage{supertabular}
+\usepackage{multirow}
+
+
+% Code highlighting
+\usepackage{listings}
+\lstset{%
+  basicstyle=\ttfamily\small, % the size of the fonts that are used for the code
+  keywordstyle=\sffamily\bfseries,
+  captionpos=none,
+  columns=flexible,
+  lineskip=-1pt,
+  keepspaces=true,
+  showspaces=false,               % show spaces adding particular underscores
+  showstringspaces=false,         % underline spaces within strings
+  showtabs=false,                 % show tabs within strings adding particular underscores
+  breaklines=true,                % sets automatic line breaking
+  breakatwhitespace=true,         % sets if automatic breaks should only happen at whitespace
+  escapeinside={(*}{*)},
+  sensitive=true
+}
+
+\lstdefinestyle{sedel}{
+  tabsize=2, % sets default tabsize to 2 spaces
+  morekeywords={class, interface, super, type,trait,new,def, defrec, if, then, else, new, inherits, Trait, let, in},
+  morecomment=[l]{--},
+  morecomment=[l]{//},
+  morestring=[b]", % 'b' means inside a string delimiters are escaped by a backslash.
+  morestring=[b]',
+  literate={->}{{$\rightarrow$}}1 {=>}{{$\Rightarrow$}}1 {/\\}{{$\Lambda$}}1,
+}
+
+\lstset{style=sedel}
+
+% Revision tools
+\usepackage{xspace}
+\usepackage{xcolor}
+\usepackage{comment}
+
+\input{macros.tex}
+% Ott includes
+\input{sections/miniJS.ott.tex}
+
+
+\usetheme{metropolis}           % Use metropolis theme
+\title{\name: Safe and Expressive Delegation-Based Programming}
+\date{\today}
+\author{Xuan Bi}
+\institute{The University of Hong Kong}
+
+
+\begin{document}
+  \maketitle
+  \section{Introduction}
+
+  \begin{frame}{First Frame}
+
+    \lstinline{let x : A = b in c}
+
+  \end{frame}
+
+
+
+\end{document}
