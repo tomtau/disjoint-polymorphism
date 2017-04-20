@@ -1,5 +1,9 @@
 \documentclass{beamer}
 
+\usetheme{Warsaw}
+
+
+
 %% Some recommended packages.
 \usepackage{booktabs}   %% For formal tables:
                         %% http://ctan.org/pkg/booktabs
@@ -75,22 +79,450 @@
 \input{sections/miniJS.ott.tex}
 
 
-\usetheme{metropolis}           % Use metropolis theme
 \title{\name: Safe and Expressive Delegation-Based Programming}
+\subtitle{Joint work with Bruno C. d. S. Oliveira}
 \date{\today}
 \author{Xuan Bi}
 \institute{The University of Hong Kong}
 
 
 \begin{document}
-  \maketitle
-  \section{Introduction}
+\maketitle
 
-  \begin{frame}{First Frame}
+\begin{frame}
+  \frametitle{Outline}
+  \tableofcontents
+\end{frame}
 
-    \lstinline{let x : A = b in c}
 
-  \end{frame}
+\section{Introduction}
+
+\begin{frame}{Mainstream OOP languages: the covariant model}
+
+  \begin{itemize}
+  \item<1-> Mainstream statically-typed OO language (such as Java, C++,C\#, or
+    Scala) all use a similar prorgamming model based on classes (we call it
+    the \textit{covariant model}).
+    \begin{itemize}
+    \item Extensions always produce subtypes.
+    \item Inheritance and subtyping go along together.
+    \end{itemize}
+
+  \item It has been successfully used for over 50 years, surely demonstrated
+    its value in practice.
+
+  \item<2-> As pointed by Cook et al. (1989), there are some situations where the
+    covariant model doesn't work quite well, and argued for a more
+    \textit{flexible model}.
+    \begin{itemize}
+    \item Inheritance and subtyping should be decoupled.
+    \item Extensions do not always produce subtypes.
+    \end{itemize}
+
+
+  \end{itemize}
+
+
+\end{frame}
+
+
+
+
+\begin{frame}
+  \frametitle{Problems of the covariant model}
+
+  \begin{itemize}
+  \item Despite being proposed almost 30 years, Cook et al's paper has had not
+    much impact on the design of mainstream OO languages.
+    \begin{itemize}
+    \item It is not as simple as the covariant one.
+    \item Not many compelling applications require such flexible model.
+    \end{itemize}
+
+  \item We argue the covariant model is problematic for \textit{extensible
+      designs} (such as Extensible Visitors or Object Algebras). There are two
+    main issues:
+    \begin{itemize}
+    \item Visitor/Object-Algebra extensions produce supertypes.
+    \item Object Algebra combinators require a very flexible form of dynamic
+      inheritance (instead of using low-level (type-unsafe) reflection
+      techniques).
+    \end{itemize}
+
+
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Limitations of mainstream OOP}
+
+  Following are limitations of mainstream OOP languages that work against
+  modularity and reuse:
+
+  \begin{alertblock}{}
+  \begin{itemize}
+  \item No retroactive super types \& contravariant subtyping refinement
+  \item No inheriting the same class multiple times
+  \item No dynamic inheritance
+  \end{itemize}
+
+
+  \end{alertblock}
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Retroactive super types \& contravariant refinement}
+
+\begin{columns}[t]
+\column{0.5\textwidth}
+
+The covariant model bundles extension with subtypes. There are situations where
+extensions are actually supertypes (or no relation at all).
+
+\begin{exampleblock}{}
+\begin{lstlisting}
+// original class
+class B {}
+// A extends B but is
+// a supertype of B
+class A inherits B super B {}
+\end{lstlisting}
+
+\end{exampleblock}
+
+
+\pause
+
+\column{0.5\textwidth}
+
+Most Java-like OOP languages support covariant return type refinement, but no
+refinement on method types.
+
+\begin{exampleblock}{}
+\begin{lstlisting}[language=java]
+interface A {Int m(String s);}
+// Invalid: B extends and
+// refines the argument type
+interface B  extends A {
+  Int m(Object s);
+}
+\end{lstlisting}
+\end{exampleblock}
+
+
+
+\end{columns}
+
+\pause
+
+\vskip10pt
+
+
+Combining retroactive super types and contravariant refinement of argument types
+proves to be useful in extensible designs.
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{No inheriting the same class multiple times}
+
+  \begin{columns}[t]
+
+    \column{0.5\textwidth}
+
+
+    The code is rejected with the message: ``trait A is inherited twice''. The
+    restriction seems to be reasonable.
+
+    \begin{exampleblock}{}
+\begin{lstlisting}[language=scala]
+trait A {
+  def m(x : A) = x
+}
+trait B extends A with A {}
+\end{lstlisting}
+    \end{exampleblock}
+
+
+    \column{0.5\textwidth}
+
+    \pause
+
+    The intention would be that the resulting class would have two overloaded
+    methods \lstinline{m}.
+
+    \begin{exampleblock}{}
+\begin{lstlisting}[language=scala]
+trait C[A] {
+  def m(x : A) = x
+}
+trait D extends
+  C[Int] with C[Boolean]
+\end{lstlisting}
+
+    \end{exampleblock}
+
+  \end{columns}
+
+  \vskip15pt
+
+  \pause
+
+  In general, for non-parametric classes/traits the restriction makes sense,
+  while for parametric classes there are situations where it would make sense to
+  inherit from the same class/trait twice.
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{No dynamic inheritance}
+
+  In mainstream OOP languages, when both inheritance is used and objects are
+  created, the classes involved must be \textit{statically} known.
+
+  \begin{exampleblock}{Intersection types in Scala}
+\begin{lstlisting}[language=scala]
+trait A
+trait B
+val newAB : A with B = new A with B
+\end{lstlisting}
+  \end{exampleblock}
+
+  However, in Scala it is not possible to dynamically compose two (statically
+  unknown) \emph{objects}.
+
+  \begin{exampleblock}{}
+
+\begin{lstlisting}[language=scala]
+def merge[A,B] (x: A) (y: B) : A with B = ...
+\end{lstlisting}
+
+  \end{exampleblock}
+
+
+
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Our Solution}
+
+  \begin{itemize}
+  \item We separate inheritance from subtyping; these are two different
+    mechanisms.
+  \item We turn to delegation, and have intersection type and disjoint
+    polymorphism. The combination is the so-called \textit{dynamically
+      composable traits}.
+  \item We present \name: a polymorphic, statically-typed and delegation-based
+    OO language.
+  \end{itemize}
+
+
+
+\end{frame}
+
+
+% \begin{frame}{Contributions}
+
+%   \begin{itemize}[<+->]
+
+%   \item \textbf{The design of \name:} A polymorphic, statically-typed and
+%     delegation-based OO language with a powerful form of multiple inheritance
+%     mechanism called \textit{dynamically composable traits}.
+
+
+%   \item \textbf{Improved variants of extensible designs:} We present improved
+%     variants of \emph{Object Algebras} and \emph{Extensible Visitors} in \name.
+
+%   \item \textbf{Elaboration of \name into \bname:} We show that how the high-level
+%     OOP abstractions of \name can be translated into a calculus with disjoint
+%     intersection types and polymorphism.
+
+%   \item \textbf{Implementation and modularization case study:} A case study on
+%     modularizing a small JavaScript-like language.
+
+%   \end{itemize}
+
+% \end{frame}
+
+\section{A Tour of \name}
+
+\begin{frame}[fragile]
+  \frametitle{Simple traits}
+
+    \begin{exampleblock}{Specifying traits}
+
+\begin{lstlisting}
+type Point = { x : Int, y : Int }
+trait point(x : Int, y: Int) { self =>
+  def x = x
+  def y = y
+}
+\end{lstlisting}
+
+    \end{exampleblock}
+
+    \begin{block}{}
+      \begin{itemize}
+      \item Traits as templates for creating objects.
+      \item The type of \lstinline{self} denotes trait requirements.
+      \item Creating object like \lstinline{new[Point] point(3,4)}
+      \end{itemize}
+    \end{block}
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Inheriting traits}
+
+  A trait can be extended by inheriting all members of other traits.
+
+  \begin{exampleblock}{}
+\begin{lstlisting}
+type Point3D = Point & { z : Int }
+trait point3D(x : Int, y: Int) inherits point(x,y)
+  { self : Point3D => def z = self.x }
+\end{lstlisting}
+
+  \end{exampleblock}
+
+
+  \begin{block}{}
+    \begin{itemize}
+    \item Intersection types model subtyping; inheritance and subtyping are
+      separated.
+    \item \lstinline{self} acts like an \textit{abstract method}; type
+      annotation for \lstinline{self} can be any type.
+    \end{itemize}
+  \end{block}
+ 
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Detecting and resolving conflicts}
+
+  In case of conflicting methods, traits require conflicts to be resolved at the
+  level of the composition by the programmer.
+
+  \begin{alertblock}{Bad trait}
+\begin{lstlisting}
+trait point2(x : Int, y: Int) inherits
+  point(x,y) & point3D(x,y)
+\end{lstlisting}
+
+  \end{alertblock}
+
+  \begin{block}{Good trait}
+\begin{lstlisting}
+trait point2(x : Int, y: Int) inherits
+  point(x,y) \ {x : Int } & point3D(x,y) \ {y : Int }
+\end{lstlisting}
+
+  \end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Dynamic instantiation}
+
+  \begin{columns}[t]
+
+\column{0.5\textwidth}
+
+\begin{exampleblock}{Euclidean norm}
+
+\begin{lstlisting}
+trait eNorm { self : Point =>
+ def norm (x : Int) (y : Int)
+... }
+\end{lstlisting}
+
+
+\end{exampleblock}
+
+\column{0.5\textwidth}
+
+\begin{exampleblock}{Manhattan norm}
+
+\begin{lstlisting}
+trait mNorm { self : Point =>
+ def norm (x : Int) (y : Int)
+...}
+\end{lstlisting}
+
+\end{exampleblock}
+
+  \end{columns}
+
+\vskip10pt
+
+
+The following function takes a trait, \lstinline{norm}, with unknown
+implementation, compose it with the statically known \lstinline{point} trait,
+and then instantiate it.
+
+  \begin{block}{}
+\begin{lstlisting}
+def makePoint (norm: Trait[Point,Norm]) =
+  new[Point & Norm] point(3,4) & norm
+\end{lstlisting}
+  \end{block}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Parametric polymorphism and disjointness constraints}
+
+  The \lstinline{merge} operation can be written as
+
+  \begin{exampleblock}{}
+\begin{lstlisting}
+def merge A [B * A] (x : A) (y : B) : A & B = x ,, y
+\end{lstlisting}
+
+  \end{exampleblock}
+
+
+  \begin{block}{}
+    \begin{itemize}
+    \item \name supports parametric polymorphism: \lstinline{A} is a type variable.
+    \item The notation \lstinline{B * A} is a disjointness constraints:
+      \lstinline{B} can only be instantiated with types that are disjoint with
+      \lstinline{A}.
+      \item Values of intersection types are directly built using the merge
+        construct (denoted as \lstinline{,,}).
+    \end{itemize}
+  \end{block}
+
+\end{frame}
+
+
+\section{Extensible Designs in \name}
+
+\section{Case Study}
+
+
+\section{Elaboration of \name into \bname}
+
+
+\section{Implementation and Discussion}
+
+\section{Future Work}
+
+
+
 
 
 
