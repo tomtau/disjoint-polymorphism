@@ -1,6 +1,6 @@
 \documentclass{beamer}
 
-\usetheme{Warsaw}
+\usetheme[numbering=fraction]{metropolis}
 
 
 
@@ -220,7 +220,7 @@ interface B  extends A {
 
 \pause
 
-\vskip10pt
+% \vskip10pt
 
 
 Combining retroactive super types and contravariant refinement of argument types
@@ -270,7 +270,7 @@ trait D extends
 
   \end{columns}
 
-  \vskip15pt
+  % \vskip15pt
 
   \pause
 
@@ -294,6 +294,9 @@ trait B
 val newAB : A with B = new A with B
 \end{lstlisting}
   \end{exampleblock}
+
+
+  \pause
 
   However, in Scala it is not possible to dynamically compose two (statically
   unknown) \emph{objects}.
@@ -370,13 +373,11 @@ trait point(x : Int, y: Int) { self =>
 
     \end{exampleblock}
 
-    \begin{block}{}
       \begin{itemize}
       \item Traits as templates for creating objects.
       \item The type of \lstinline{self} denotes trait requirements.
       \item Creating object like \lstinline{new[Point] point(3,4)}
       \end{itemize}
-    \end{block}
 
 
 \end{frame}
@@ -397,15 +398,13 @@ trait point3D(x : Int, y: Int) inherits point(x,y)
   \end{exampleblock}
 
 
-  \begin{block}{}
     \begin{itemize}
     \item Intersection types model subtyping; inheritance and subtyping are
       separated.
     \item \lstinline{self} acts like an \textit{abstract method}; type
       annotation for \lstinline{self} can be any type.
     \end{itemize}
-  \end{block}
- 
+
 \end{frame}
 
 
@@ -423,13 +422,13 @@ trait point2(x : Int, y: Int) inherits
 
   \end{alertblock}
 
-  \begin{block}{Good trait}
+  \begin{exampleblock}{Good trait}
 \begin{lstlisting}
 trait point2(x : Int, y: Int) inherits
   point(x,y) \ {x : Int } & point3D(x,y) \ {y : Int }
 \end{lstlisting}
 
-  \end{block}
+  \end{exampleblock}
 
 \end{frame}
 
@@ -465,7 +464,7 @@ trait mNorm { self : Point =>
 
   \end{columns}
 
-\vskip10pt
+% \vskip10pt
 
 
 The following function takes a trait, \lstinline{norm}, with unknown
@@ -498,8 +497,8 @@ def merge A [B * A] (x : A) (y : B) : A & B = x ,, y
   \begin{block}{}
     \begin{itemize}
     \item \name supports parametric polymorphism: \lstinline{A} is a type variable.
-    \item The notation \lstinline{B * A} is a disjointness constraints:
-      \lstinline{B} can only be instantiated with types that are disjoint with
+    \item The notation \lstinline{B * A} is a disjointness constraint:
+      \lstinline{B} can only be instantiated to types that are disjoint with
       \lstinline{A}.
       \item Values of intersection types are directly built using the merge
         construct (denoted as \lstinline{,,}).
@@ -522,6 +521,10 @@ def merge A [B * A] (x : A) (y : B) : A & B = x ,, y
 \section{Future Work}
 
 
+\begin{frame}[standout]
+  Thank you!
+
+\end{frame}
 
 
 

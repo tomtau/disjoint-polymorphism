@@ -28,3 +28,4 @@ doc/upload/*
 /doc/sections/applications.tex
 /doc/sections/desugar.tex
 /doc/dependency.graffle
+*.vrb
