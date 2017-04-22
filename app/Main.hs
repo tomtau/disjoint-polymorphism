@@ -12,7 +12,7 @@ import           SEDEL.Environment
 import           SEDEL.Parser.Parser2 (parseExpr)
 import           SEDEL.PrettyPrint
 import           SEDEL.Source.Typing
-import qualified SEDEL.Target.CBN as CBN
+import qualified SEDEL.Target.CallByNeed as C
 
 newtype ReplState = ReplState
   { replCtx :: Ctx
@@ -50,10 +50,10 @@ exec source =
       env <- getCtx
       let res = runTcMonad (replCtx env) (tcModule abt)
       case res of
-        Right (typ, tar, tEnv) -> do
+        Right (typ, tar) -> do
           putMsg "Typing result"
           ppMsg $ colon <+> blue (pprint typ)
-          let r = CBN.evaluate tEnv tar
+          r <- liftIO $ C.evaluate tar
           putMsg "\nEvaluation result"
           ppMsg $ text "=>" <+> blue (text (show r))
         Left err -> ppMsg err

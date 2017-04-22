@@ -18,29 +18,26 @@ import           SEDEL.PrettyPrint
 import           SEDEL.Source.Desugar
 import           SEDEL.Source.Subtyping
 import           SEDEL.Source.Syntax
-import qualified SEDEL.Target.CBN as TC
 import qualified SEDEL.Target.Syntax as T
 
 
+
 -- Type check a module
-tcModule :: Module -> TcMonad (Type, T.UExpr, TC.Env)
+tcModule :: Module -> TcMonad (Type, T.UExpr)
 tcModule m = do
   let decls = moduleEntries m
   let mainE = mainExpr m
   -- Step 1: Desugar traits
   let sdecls = desugar (decls ++ [mainE])
   -- Step 2: Check module
-  targetDecls <- foldr tcM (return []) sdecls
-  -- Step 3: Generate initial environment for execution
-  let (mainType, mainTarget) =
-        maybe (TopT, (s2n "main", T.UUnit)) identity (lastMay targetDecls)
-  let declsTarget = fmap (map snd) (initMay targetDecls)
-  let initEnv =
-        maybe
-          TC.emptyEnv
-          (foldl' (\env (n, e) -> TC.extendCtx (n, e, env) env) TC.emptyEnv)
-          declsTarget
-  return (mainType, snd mainTarget, initEnv)
+  transDecls <- foldr tcM (return []) (sdecls ++ [mainE])
+  -- Step 3: Generate target expression for execution
+  let target =
+        foldr1May
+          (\(n, e) (n', t) -> (n', T.ULet (bind n (e, t))))
+          (map snd transDecls)
+  let mainType = lastMay (map fst transDecls)
+  return (maybe TopT identity mainType, maybe T.UUnit snd target)
   where
     tcM ::
          SDecl

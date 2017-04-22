@@ -42,6 +42,7 @@ library:
     - SEDEL.Source.SrcLoc
     - SEDEL.Target.Syntax
     - SEDEL.Target.Dynamics
+    - SEDEL.Target.CallByNeed
     - SEDEL.Target.CBN
     - SEDEL
   dependencies:
