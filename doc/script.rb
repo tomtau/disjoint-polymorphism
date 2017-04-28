@@ -39,7 +39,7 @@ fileloc = {}
 beginpos = {}
 endpos = {}
 
-Dir['../examples/*.txt'].each do |file|
+Dir['../examples/*.sl'].each do |file|
   scan(file, beginpos, endpos, fileloc)
 end
 

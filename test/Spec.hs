@@ -22,7 +22,7 @@ testPath = "examples"
 
 discoverTestCases :: FilePath -> IO [(String, FilePath)]
 discoverTestCases directory =
-  do fileNames <- filter (isSuffixOf ".txt") <$>
+  do fileNames <- filter (isSuffixOf ".sl") <$>
                   getDirectoryContents directory
      return (map (\f -> (dropExtension f, f)) fileNames)
 

@@ -34,7 +34,6 @@ trait evalAlg2 : ExpAlg[IEval] { self =>
   def add x y = { eval = x.eval + y.eval }
 }
 
-
 def o = new[ExpAlg[IEval & IPrint]] evalAlg & printAlg3
 
 main = (e1.accept (IEval & IPrint) o).print
