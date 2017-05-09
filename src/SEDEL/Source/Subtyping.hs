@@ -142,7 +142,7 @@ subtype ctx st tt = runExcept $ runFreshMT go
     Intersections distribute over records
 
        A <: {l : forall D1 ... Dm . A1 -> .. C -> .. An -> A'} & {l : forall D1 ... Dm . B1 -> ... -> C -> Bn -> B'} ~> f
-      ----------------------------------------------------------------
+      ---------------------------------------------------------------------------------------------------------------------
         A <: {l : forall D1 ... Dm . A1 & B1 -> ... -> C -> ... -> An & Bn -> A' & B'} ~>
 
         \s . \x1 ... y .. xn . ((proj1 (f s)) (proj1 x1) ... y ... (proj1 xn), (proj2 (f s)) (proj2 x1) ... y ... (proj2 xn))
