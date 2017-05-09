@@ -132,7 +132,7 @@
   \frametitle{Problems of the covariant model}
 
   \begin{itemize}
-  \item Despite being proposed almost 30 years, Cook et al.'s paper has had not
+  \item Despite being proposed almost 30 years ago, Cook et al.'s paper has had not
     much impact on the design of mainstream OO languages.
     \begin{itemize}
     \item It is not as simple as the covariant one.
@@ -158,8 +158,8 @@
 \begin{frame}[fragile]
   \frametitle{Limitations of mainstream OOP}
 
-  Following are limitations of mainstream OOP languages that work against
-  modularity and reuse:
+  Following are several limitations of most mainstream OOP languages that work
+  against modularity and reuse:
 
   \begin{alertblock}{}
   \begin{itemize}
@@ -205,23 +205,19 @@ refinement on method types.
 
 \begin{exampleblock}{}
 \begin{lstlisting}[language=java]
-interface A {Int m(String s);}
-// Invalid: B extends and
-// refines the argument type
+interface A { Int m(String s); }
+// Invalid: B extends and refines
+// the argument type of m
 interface B  extends A {
   Int m(Object s);
 }
 \end{lstlisting}
 \end{exampleblock}
-
-
-
 \end{columns}
 
 \pause
 
 \vskip10pt
-
 
 Combining retroactive super types and contravariant refinement of argument types
 proves to be useful in extensible designs.
@@ -361,23 +357,35 @@ def merge[A,B] (x: A) (y: B) : A with B
 \begin{frame}[fragile]
   \frametitle{Simple traits}
 
-    \begin{exampleblock}{Specifying traits}
+
+\begin{columns}[t]
+\column{0.47\textwidth}
+
+\begin{exampleblock}{Specifying traits}
 
 \begin{lstlisting}
 type Point = { x : Int, y : Int }
+
 trait point(x : Int, y: Int) { self =>
   def x = x
   def y = y
 }
 \end{lstlisting}
 
-    \end{exampleblock}
+\end{exampleblock}
 
-      \begin{itemize}
-      \item Traits as templates for creating objects.
-      \item The type of \lstinline{self} denotes trait requirements.
-      \item Creating object like \lstinline{new[Point] point(3,4)}
-      \end{itemize}
+
+\column{0.47\textwidth}
+
+
+\begin{itemize}
+\item Traits as templates for creating objects.
+\item The type of \lstinline{self} denotes trait requirements.
+\item Creating an object: \lstinline{new[Point] point(3,4)}
+\end{itemize}
+
+
+\end{columns}
 
 
 \end{frame}
@@ -386,23 +394,35 @@ trait point(x : Int, y: Int) { self =>
 \begin{frame}[fragile]
   \frametitle{Inheriting traits}
 
-  A trait can be extended by inheriting all members of other traits.
+\begin{columns}[t]
+\column{0.47\textwidth}
 
-  \begin{exampleblock}{}
+\begin{exampleblock}{Trait inheritance}
 \begin{lstlisting}
 type Point3D = Point & { z : Int }
-trait point3D(x : Int, y: Int) inherits point(x,y) { self =>
-  def z = x }
+
+trait point3D(x : Int, y: Int)
+  inherits point(x,y) { self =>
+  def z = x
+}
 \end{lstlisting}
 
-  \end{exampleblock}
+\end{exampleblock}
+
+\column{0.48\textwidth}
 
 
-    \begin{itemize}
-    \item Intersection types model subtyping; inheritance and subtyping are
-      separated.
-    \item Inheritance and subtyping are separated.
-    \end{itemize}
+
+\begin{itemize}
+\item A trait can be extended by inheriting all members of other traits.
+\item Intersection types model subtyping; inheritance and subtyping are
+  separated.
+\item Inheritance and subtyping are separated.
+\end{itemize}
+
+
+\end{columns}
+
 
 \end{frame}
 
@@ -497,12 +517,12 @@ trait mNorm { self : Point =>
 The following function produces points with different norms backed in at
 run-time, e.g., \lstinline{makePoint eNorm}.
 
-  \begin{block}{}
+  \begin{exampleblock}{}
 \begin{lstlisting}
 def makePoint (norm: Trait[Point,Norm]) =
   new[Point & Norm] point(3,4) & norm
 \end{lstlisting}
-  \end{block}
+  \end{exampleblock}
 
   \pause
 
@@ -619,9 +639,7 @@ def eval (e : Exp) = (e.accept IEval (new[ExpAlg[IEval]] evalAlg)).eval
 
   \end{itemize}
 
-\pause
-
-  \begin{alertblock}{Question}
+  \begin{alertblock}{Question}<4->
     Why languages like Java do not define the type \lstinline{Exp}?
   \end{alertblock}
 
@@ -631,7 +649,7 @@ def eval (e : Exp) = (e.accept IEval (new[ExpAlg[IEval]] evalAlg)).eval
 \begin{frame}[fragile]
   \frametitle{Adding a subtraction variant}
 
-  Interesting things happen when we add a new data variant, such as subtraction.
+  Interesting things happen when we add a new data variant, such as subtraction:
 
 
 \begin{exampleblock}{Extended Object Algebra}
@@ -732,6 +750,8 @@ def eval (e : ExtExp) =
 With \lstinline{ExtExp} being both an extension and a supertype of
 \lstinline{Exp}, we can:
 
+\pause
+
 \begin{itemize}
 \item Reuse \lstinline{e1} of type \lstinline{Exp} to create a value of type
   \lstinline{ExtExp}
@@ -740,6 +760,9 @@ With \lstinline{ExtExp} being both an extension and a supertype of
 def e2 : ExtExp = { accept = E. \f -> f.sub (f.lit 5) (e1.accept E f) }
 \end{lstlisting}
 \end{exampleblock}
+
+\pause
+
 \item Apply operations to both new and old values, e.g., \lstinline{eval e1 + eval e2},
   even though \lstinline{e1} and \lstinline{e2} have \textit{different types}.
 
