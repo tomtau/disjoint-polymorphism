@@ -1,6 +1,6 @@
 \documentclass{beamer}
 
-\usetheme[numbering=fraction]{metropolis}
+\usetheme{Madrid}
 
 
 
@@ -42,7 +42,7 @@
 % Code highlighting
 \usepackage{listings}
 \lstset{%
-  basicstyle=\ttfamily\small, % the size of the fonts that are used for the code
+  basicstyle=\ttfamily\scriptsize, % the size of the fonts that are used for the code
   keywordstyle=\sffamily\bfseries,
   captionpos=none,
   columns=flexible,
@@ -79,7 +79,7 @@
 \input{sections/miniJS.ott.tex}
 
 
-\title{\name: Safe and Expressive Delegation-Based Programming}
+\title[\name]{\name: Safe and Expressive Delegation-Based Programming}
 \subtitle{Joint work with Bruno C. d. S. Oliveira}
 \date{\today}
 \author{Xuan Bi}
@@ -108,11 +108,11 @@
     \item Inheritance and subtyping go along together.
     \end{itemize}
 
-  \item It has been successfully used for over 50 years, surely demonstrated
+  \item<2-> It has been successfully used for over 50 years, surely demonstrated
     its value in practice.
 
-  \item<2-> As pointed by Cook et al. (1989), there are some situations where the
-    covariant model doesn't work quite well, and argued for a more
+  \item<3-> As pointed by Cook et al., there are some situations where the
+    covariant model doesn't work quite well, and they argued for a
     \textit{flexible model}.
     \begin{itemize}
     \item Inheritance and subtyping should be decoupled.
@@ -132,7 +132,7 @@
   \frametitle{Problems of the covariant model}
 
   \begin{itemize}
-  \item Despite being proposed almost 30 years, Cook et al's paper has had not
+  \item Despite being proposed almost 30 years, Cook et al.'s paper has had not
     much impact on the design of mainstream OO languages.
     \begin{itemize}
     \item It is not as simple as the covariant one.
@@ -179,10 +179,10 @@
   \frametitle{Retroactive super types \& contravariant refinement}
 
 \begin{columns}[t]
-\column{0.5\textwidth}
+\column{0.45\textwidth}
 
-The covariant model bundles extension with subtypes. There are situations where
-extensions are actually supertypes (or no relation at all).
+The covariant model bundles extension with subtypes. Using imaginary Java-like
+syntax, what we would like to express:
 
 \begin{exampleblock}{}
 \begin{lstlisting}
@@ -198,7 +198,7 @@ class A inherits B super B {}
 
 \pause
 
-\column{0.5\textwidth}
+\column{0.45\textwidth}
 
 Most Java-like OOP languages support covariant return type refinement, but no
 refinement on method types.
@@ -220,7 +220,7 @@ interface B  extends A {
 
 \pause
 
-% \vskip10pt
+\vskip10pt
 
 
 Combining retroactive super types and contravariant refinement of argument types
@@ -234,11 +234,10 @@ proves to be useful in extensible designs.
 
   \begin{columns}[t]
 
-    \column{0.5\textwidth}
+    \column{0.45\textwidth}
 
 
-    The code is rejected with the message: ``trait A is inherited twice''. The
-    restriction seems to be reasonable.
+    The code is rejected with the message: ``trait A is inherited twice''.
 
     \begin{exampleblock}{}
 \begin{lstlisting}[language=scala]
@@ -250,7 +249,7 @@ trait B extends A with A {}
     \end{exampleblock}
 
 
-    \column{0.5\textwidth}
+    \column{0.45\textwidth}
 
     \pause
 
@@ -270,7 +269,7 @@ trait D extends
 
   \end{columns}
 
-  % \vskip15pt
+  \vskip15pt
 
   \pause
 
@@ -298,13 +297,14 @@ val newAB : A with B = new A with B
 
   \pause
 
-  However, in Scala it is not possible to dynamically compose two (statically
+  However, in Scala it is \textit{hard} to dynamically compose two (statically
   unknown) \emph{objects}.
 
-  \begin{exampleblock}{}
+  \begin{exampleblock}{Problematic \lstinline{merge} in Scala}
 
 \begin{lstlisting}[language=scala]
-def merge[A,B] (x: A) (y: B) : A with B = ...
+def merge[A,B] (x: A) (y: B) : A with B
+  = ... // need low-level (unsafe) tricks
 \end{lstlisting}
 
   \end{exampleblock}
@@ -325,7 +325,7 @@ def merge[A,B] (x: A) (y: B) : A with B = ...
     polymorphism. The combination is the so-called \textit{dynamically
       composable traits}.
   \item We present \name: a polymorphic, statically-typed and delegation-based
-    OO language.
+    OO language, implemented in Haskell.
   \end{itemize}
 
 
@@ -391,8 +391,8 @@ trait point(x : Int, y: Int) { self =>
   \begin{exampleblock}{}
 \begin{lstlisting}
 type Point3D = Point & { z : Int }
-trait point3D(x : Int, y: Int) inherits point(x,y)
-  { self : Point3D => def z = self.x }
+trait point3D(x : Int, y: Int) inherits point(x,y) { self =>
+  def z = x }
 \end{lstlisting}
 
   \end{exampleblock}
@@ -401,9 +401,35 @@ trait point3D(x : Int, y: Int) inherits point(x,y)
     \begin{itemize}
     \item Intersection types model subtyping; inheritance and subtyping are
       separated.
-    \item \lstinline{self} acts like an \textit{abstract method}; type
-      annotation for \lstinline{self} can be any type.
+    \item Inheritance and subtyping are separated.
     \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Traits with requirements}
+
+  Very often it is necessary to call methods using the self-reference.
+
+
+  \begin{exampleblock}{Another way to express 3D points}
+\begin{lstlisting}
+trait point3D { self : Point =>
+  def z = self.x }
+\end{lstlisting}
+
+  \end{exampleblock}
+
+  \begin{itemize}
+  \item \lstinline{point3D} has requirements on \lstinline{Point} to provide its
+    \lstinline$x$ and \lstinline$y$ coordinates.
+  \item \lstinline{self} acts like an \textit{abstract method}; type annotation
+    for \lstinline{self} can be any type.
+  \item Requirements are satisfied at object creation point, e.g., \lstinline$new[Point & {z : Int}] point(3,4) & point3D$.
+
+  \end{itemize}
+
 
 \end{frame}
 
@@ -422,6 +448,8 @@ trait point2(x : Int, y: Int) inherits
 
   \end{alertblock}
 
+  \pause
+
   \begin{exampleblock}{Good trait}
 \begin{lstlisting}
 trait point2(x : Int, y: Int) inherits
@@ -437,39 +465,37 @@ trait point2(x : Int, y: Int) inherits
 
   \begin{columns}[t]
 
-\column{0.5\textwidth}
+\column{0.45\textwidth}
 
 \begin{exampleblock}{Euclidean norm}
 
 \begin{lstlisting}
 trait eNorm { self : Point =>
- def norm (x : Int) (y : Int)
-... }
+ def norm (x : Int) (y : Int) }
 \end{lstlisting}
 
 
 \end{exampleblock}
 
-\column{0.5\textwidth}
+\column{0.45\textwidth}
 
 \begin{exampleblock}{Manhattan norm}
 
 \begin{lstlisting}
 trait mNorm { self : Point =>
- def norm (x : Int) (y : Int)
-...}
+ def norm (x : Int) (y : Int) }
 \end{lstlisting}
 
 \end{exampleblock}
 
   \end{columns}
 
-% \vskip10pt
+\vskip10pt
 
+\pause
 
-The following function takes a trait, \lstinline{norm}, with unknown
-implementation, compose it with the statically known \lstinline{point} trait,
-and then instantiate it.
+The following function produces points with different norms backed in at
+run-time, e.g., \lstinline{makePoint eNorm}.
 
   \begin{block}{}
 \begin{lstlisting}
@@ -478,15 +504,19 @@ def makePoint (norm: Trait[Point,Norm]) =
 \end{lstlisting}
   \end{block}
 
+  \pause
+
+  Here \lstinline{norm} is parameterized; \lstinline{Trait[Point, Norm]} denotes
+  the type of traits that are of type \lstinline{Norm} with dependency on
+  \lstinline{Point}.
+
 \end{frame}
 
 
 \begin{frame}[fragile]
   \frametitle{Parametric polymorphism and disjointness constraints}
 
-  The \lstinline{merge} operation can be written as
-
-  \begin{exampleblock}{}
+  \begin{exampleblock}{\lstinline{Merge} in \name}
 \begin{lstlisting}
 def merge A [B * A] (x : A) (y : B) : A & B = x ,, y
 \end{lstlisting}
@@ -496,7 +526,8 @@ def merge A [B * A] (x : A) (y : B) : A & B = x ,, y
 
   \begin{block}{}
     \begin{itemize}
-    \item \name supports parametric polymorphism: \lstinline{A} is a type variable.
+    \item \name supports parametric polymorphism: \lstinline{A} and
+      \lstinline{B} are type variables.
     \item The notation \lstinline{B * A} is a disjointness constraint:
       \lstinline{B} can only be instantiated to types that are disjoint with
       \lstinline{A}.
@@ -510,21 +541,305 @@ def merge A [B * A] (x : A) (y : B) : A & B = x ,, y
 
 \section{Extensible Designs in \name}
 
+\begin{frame}[fragile]
+  \frametitle{Object Algebras and Extensible Visitors}
+
+\name's features are enough for encoding extensible designs for Object Algebras
+and Extensible Visitors. Moreover \name addresses limitations of mainstream OO
+languages, making those designs significantly simpler.
+
+\pause
+
+\begin{exampleblock}{Object Algebra interface}
+\begin{lstlisting}
+type ExpAlg[E] = { lit : Int -> E, add : E -> E -> E }
+\end{lstlisting}
+\end{exampleblock}
+
+\pause
+
+\begin{exampleblock}{Evaluation operation}
+\begin{lstlisting}
+type IEval = { eval : Int }
+trait evalAlg { self =>
+  def lit (x : Int)               = { eval = x }
+  def add (x : IEval) (y : IEval) = { eval = x.eval + y.eval }
+}
+\end{lstlisting}
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Second-class Object Algebra Values}
+
+In the original pattern proposed by Oliveira and Cook, concrete values are built
+with functions that abstract over concrete Object Algebras.
+
+
+\begin{exampleblock}{}
+\begin{lstlisting}
+def mkExp E (f : ExpAlg[E]) : E = f.add (f.lit 2) (f.lit 3)
+\end{lstlisting}
+\end{exampleblock}
+
+The above builds an expression that adds 2 and 3. \pause Suppose we wanted to
+express something like:
+
+\begin{exampleblock}{}
+\begin{lstlisting}
+def eval (e : Exp) : Int = ...
+\end{lstlisting}
+\end{exampleblock}
+
+
+Here \lstinline{Exp} is supposed to represent a concrete type for values built using
+Object Algebras. \pause In languages like Java, it is hard to express this without
+giving up extensibility.
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{First-class Object Algebra values}
+
+  \begin{itemize}[<+->]
+  \item  In \name, the type \lstinline{Exp} is naturally expressed as follows:
+\begin{lstlisting}
+type Exp = { accept : forall E . ExpAlg[E] -> E }
+\end{lstlisting}
+  \item With \lstinline{Exp} the expression $2 + 3$ is built as:
+\begin{lstlisting}
+def e1 : Exp = { accept = /\E . \f -> f.add (f.lit 2) (f.lit 3) }
+\end{lstlisting}
+  \item Values of \lstinline{Exp} can be passed around:
+\begin{lstlisting}
+def eval (e : Exp) = (e.accept IEval (new[ExpAlg[IEval]] evalAlg)).eval
+\end{lstlisting}
+
+  \end{itemize}
+
+\pause
+
+  \begin{alertblock}{Question}
+    Why languages like Java do not define the type \lstinline{Exp}?
+  \end{alertblock}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Adding a subtraction variant}
+
+  Interesting things happen when we add a new data variant, such as subtraction.
+
+
+\begin{exampleblock}{Extended Object Algebra}
+\begin{lstlisting}
+type SubExpAlg[E] = ExpAlg[E] & { sub : E -> E -> E }
+trait subEvalAlg inherits evalAlg { self =>
+  def sub (x : IEval) (y : IEval) = { eval = x.eval - y.eval }
+}
+type ExtExp = { accept: forall E. SubExpAlg[E] -> E }
+\end{lstlisting}
+\end{exampleblock}
+
+\pause
+
+\begin{alertblock}{Question}
+  What is the subtyping relation between \lstinline{Exp} and \lstinline{ExtExp}?
+\end{alertblock}
+
+
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Inheritance is not subtyping}
+
+\begin{columns}[t]
+\column{0.45\textwidth}
+
+
+
+\begin{exampleblock}{Original type}
+\begin{lstlisting}
+type Exp = { accept: forall E.
+  ExpAlg[E] -> E
+}
+\end{lstlisting}
+\end{exampleblock}
+
+\column{0.47\textwidth}
+
+
+\begin{exampleblock}{Extended type}
+\begin{lstlisting}
+type ExtExp = { accept: forall E.
+  SubExpAlg[E] -> E
+}
+\end{lstlisting}
+\end{exampleblock}
+
+\end{columns}
+
+\vskip10pt
+
+We have the following observations:
+
+\pause
+
+\begin{block}{}
+  \begin{itemize}
+  \item \lstinline{ExtExp} is a supertype \lstinline{Exp} (contravariance of
+    function arguments).
+  \item \lstinline{ExpExp} is an extension of \lstinline{Exp} (the former has
+    subtraction feature).
+  \item In languages like Java, we cannot have \lstinline{ExtExp} both an
+    extension and a supertype of \lstinline{Exp} (extension and subtype go along
+    together).
+  \end{itemize}
+\end{block}
+
+\end{frame}
+
+\begin{frame}
+
+\begin{alertblock}{Question}
+  Why \lstinline{ExtExp} being both an extension and a supertype of
+  \lstinline{Exp} is useful?
+\end{alertblock}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Code reuse}
+
+We define the evaluation operation for expressions with subtraction:
+
+\begin{exampleblock}{}
+\begin{lstlisting}
+def eval (e : ExtExp) =
+  (e.accept IEval (new[SubExpAlg[IEval]] subEvalAlg)).eval
+\end{lstlisting}
+\end{exampleblock}
+
+\pause
+
+With \lstinline{ExtExp} being both an extension and a supertype of
+\lstinline{Exp}, we can:
+
+\begin{itemize}
+\item Reuse \lstinline{e1} of type \lstinline{Exp} to create a value of type
+  \lstinline{ExtExp}
+  \begin{exampleblock}{The expression $5 - (2 + 3)$}
+\begin{lstlisting}
+def e2 : ExtExp = { accept = E. \f -> f.sub (f.lit 5) (e1.accept E f) }
+\end{lstlisting}
+\end{exampleblock}
+\item Apply operations to both new and old values, e.g., \lstinline{eval e1 + eval e2},
+  even though \lstinline{e1} and \lstinline{e2} have \textit{different types}.
+
+\end{itemize}
+
+ 
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Object Algebra composition}
+
+  \begin{itemize}[<+->]
+  \item As noted by Oliveira and Cook, sometimes it is necessary to pact multiple
+  operations in the same object. For example, we can create an object that
+  contains both printing and evaluation.
+  \item They also pointed out that such composition, written in Java, requires
+    significant amounts of boilerplate.
+  \item Improved version, written in Scala, involves low-level and type-unsafe
+    programming features, such as dynamic proxies, reflection or other
+    meta-programming techniques.
+  \item \name offers type-safe, coherent and boilerplate-free composition of
+    Object Algebras.
+
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Dynamic Object Algebra composition in \name}
+
+  It is trivial to compose two Object Algebras in \name:
+
+  \begin{exampleblock}{Boilerplate-free composition of Object Algebras}
+\begin{lstlisting}
+trait combine A [B * A] (f : Trait[SubExpAlg[A]], g : Trait[SubExpAlg[B]])
+  inherits f & g
+\end{lstlisting}
+  \end{exampleblock}
+
+  \pause
+
+  The trait \lstinline{combine} makes good use of several novel features of \name:
+
+  \begin{block}{}
+    \begin{itemize}
+    \item It relies on dynamic inheritance.
+    \item \name supports multiple inheritance of traits with the same type.
+    \item The disjoint constraint (\lstinline{B * A}) is crucial.
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Example of using \lstinline{combine}}
+
+  \begin{itemize}[<+->]
+  \item   We define a new algebra that combines the evaluation and printing operations:
+\begin{lstlisting}
+def newAlg = combine IEval IPrint subEvalAlg printAlg
+\end{lstlisting}
+  \item We create an object that is able to print and evaluate at the same time:
+\begin{lstlisting}
+def o = e2.accept (IEval & IPrint) (new[SubExpAlg[IEval & IPrint]] newAlg)
+\end{lstlisting}
+  \item Example use:
+\begin{lstlisting}
+main = o.print ++ " = " ++ o.eval.toString
+-- Output: "(5.0 - (2.0 + 3.0)) = 0.0"
+\end{lstlisting}
+
+
+  \end{itemize}
+
+
+
+\end{frame}
+
+
 \section{Case Study}
 
+blabla
 
 \section{Elaboration of \name into \bname}
 
+bla bla
 
 \section{Implementation and Discussion}
 
+blabla
+
 \section{Future Work}
 
+blabla
 
-\begin{frame}[standout]
-  Thank you!
+% \begin{frame}[standout]
+%   Thank you!
 
-\end{frame}
+% \end{frame}
 
 
 
