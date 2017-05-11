@@ -972,6 +972,127 @@ $\mathit{miniJS}$  &  \cmark &  \cmark  &  \cmark  & \cmark & \cmark & \cmark & 
 
 \section{Elaboration of \name into \bname}
 
+\begin{frame}
+  \frametitle{The \bname calculus}
+
+  \begin{itemize}
+  \item \name is built upon a thin-layer of sugar on top of \bname.
+  \item \bname is equipped with disjoint intersection types, disjoint
+    polymorphism, the merge construct. It was designed to serve as a core
+    language for OO languages.
+  \item The theoretic aspects of \bname were already studied in previous work,
+    including type safety, coherence, etc.
+
+  \end{itemize}
+
+\pause
+
+\begin{figure}
+\centering
+\begin{scriptsize}
+\begin{tabular}{lrclr}
+  Types  & $\ottnt{A}, \ottnt{B}$ & ::= & $\top \mid \mathsf{Int} \mid \ottnt{A}  \rightarrow  \ottnt{B} \mid \ottnt{A}  \,\&\,  \ottnt{B} \mid  \ottsym{\{}  \ottmv{l}  \ottsym{:}  \ottnt{A}  \ottsym{\}} \mid \alpha \mid \forall \, \ottsym{(}  \alpha  *  \ottnt{A}  \ottsym{)}  \ottsym{.}  \ottnt{B} \mid \ottmv{T}  \, \ottsym{[}  \ottnt{B_{{\mathrm{1}}}}  \ottsym{,} \, .. \, \ottsym{,}  \ottnt{B_{\ottmv{n}}}  \ottsym{]} \,$ \\
+  Expressions & $e$ & ::= & $\ottsym{()} \mid  \mathbb{N}  \mid \ottmv{x} \mid \lambda  \ottmv{x}  \ottsym{.}  e \mid e_{{\mathrm{1}}} \, e_{{\mathrm{2}}} \mid \,  \Lambda \, \ottsym{(}  \alpha  *  \ottnt{A}  \ottsym{)}  \ottsym{.}  e \mid e \, \ottnt{A} \mid e_{{\mathrm{1}}}  \,,,\,  e_{{\mathrm{2}}} $ \\
+         & & $\mid$ & $\ottkw{let} \, \ottmv{x}  \ottsym{:}  \ottnt{A}  \ottsym{=}  e_{{\mathrm{1}}} \, \ottkw{in} \, e_{{\mathrm{2}}} \mid \ottsym{\{}  \ottmv{l}  \ottsym{=}  e  \ottsym{\}} \mid e  \ottsym{.}  \ottmv{l} \mid e  \,\backslash\,  \ottsym{\{}  \ottmv{l}  \ottsym{:}  \ottnt{A}  \ottsym{\}} $ \\
+  Programs & $\ottnt{pgm}$ & ::= & $\ottnt{decl_{{\mathrm{1}}}} \, .. \, \ottnt{decl_{\ottmv{n}}} \, e$ \\
+  Declarations & $\ottnt{decl}$ & ::= & $\ottkw{def} \, \ottmv{f}  \ottsym{(}  \ottmv{x_{{\mathrm{1}}}}  \ottsym{:}  \ottnt{A_{{\mathrm{1}}}}  \ottsym{)} \, .. \, \ottsym{(}  \ottmv{x_{\ottmv{n}}}  \ottsym{:}  \ottnt{A_{\ottmv{n}}}  \ottsym{)}  \ottsym{:}  \ottnt{B}  \ottsym{=}  e \mid \ottkw{type} \, \ottmv{T}  \, \ottsym{[}  \alpha_{{\mathrm{1}}}  \ottsym{,} \, .. \, \ottsym{,}  \alpha_{\ottmv{n}}  \ottsym{]} \,  \ottsym{=}  \ottnt{A}$ \\ \\
+\end{tabular}
+\end{scriptsize}
+\caption{\bname syntax with declarations}
+\label{fig:synax-fi}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Desugaring trait declarations}
+
+  \begin{exampleblock}{Before}
+\begin{lstlisting}
+trait point3D(x: Int, y : Int) inherits point(x,y) { self : Point3D =>
+  def z = self.x
+}
+\end{lstlisting}
+  \end{exampleblock}
+
+  \begin{exampleblock}{After}
+\begin{lstlisting}
+def point3D (x : Int) (y : Int) (self : Point3D) =
+  point x y self ,, { z = self.x }
+\end{lstlisting}
+  \end{exampleblock}
+
+  \begin{itemize}
+  \item Traits are translated into term declarations.
+  \item Methods become record fields.
+  \item Self-reference is adjusted to be the last parameter (\lstinline{self} is
+    not a special keyword, can be any name).
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Desugaring trait instantiation}
+
+  \begin{itemize}
+  \item \lstinline{new} instantiate a trait by taking the lazy fixpoint of an open term.
+
+  \begin{columns}[t]
+
+\column{0.45\textwidth}
+
+  \begin{exampleblock}{Before}
+\begin{lstlisting}
+new[Point3D] point3D(3,4)
+\end{lstlisting}
+  \end{exampleblock}
+
+\column{0.47\textwidth}
+
+  \begin{exampleblock}{After}
+\begin{lstlisting}
+let self : Point3D = point3D 3 4 self
+in self
+\end{lstlisting}
+  \end{exampleblock}
+
+  \end{columns}
+
+  \pause
+
+\vskip10pt
+
+ \item The type of traits is just a function type.
+
+  \begin{columns}[t]
+
+\column{0.45\textwidth}
+
+  \begin{exampleblock}{Before}
+\begin{lstlisting}
+Trait[T1, T2]
+\end{lstlisting}
+  \end{exampleblock}
+
+\column{0.45\textwidth}
+
+  \begin{exampleblock}{After}
+\begin{lstlisting}
+T1 -> T2
+\end{lstlisting}
+  \end{exampleblock}
+
+  \end{columns}
+
+  \end{itemize}
+ 
+
+
+
+\end{frame}
+
+
 \section{Implementation and Discussion}
 
 \section{Future Work}
