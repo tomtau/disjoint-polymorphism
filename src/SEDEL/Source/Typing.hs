@@ -587,8 +587,8 @@ wf' (Arr a b) = wf' a >> wf' b
 wf' (And a b) = do
   wf' a
   wf' b
-  ctx <- askCtx
-  disjoint ctx a b
+  -- ctx <- askCtx
+  -- disjoint ctx a b
 wf' (TVar x) = lookupTVarConstraint x >> return ()
 wf' (DForall t) = do
   ((x, Embed a), b) <- unbind t
