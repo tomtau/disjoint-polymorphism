@@ -35,11 +35,11 @@ trait merge A [B * A] (a : Trait[ExpAlg[A]], b : Trait[GExpAlg[A & B, B]]) : Exp
 
 {-
 
-{lit : Int -> E} & {add : E -> E -> E} & {lit : Int -> P} & {add : E & P -> E & P -> P}
+{add : E -> E -> E} & {add : E & P -> E & P -> P}
 
 <:
 
-{lit : Int -> E & P} & {add : E & P -> E & P -> E & P}
+{add : E & P -> E & P -> E & P}
 
 
 -}
