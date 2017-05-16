@@ -81,7 +81,7 @@
 
 \title[\name]{\name: Safe and Expressive Delegation-Based Programming}
 \subtitle{Joint work with Bruno C. d. S. Oliveira}
-\date{\today}
+\date{May 17, 2017}
 \author{Xuan Bi}
 \institute{The University of Hong Kong}
 
@@ -146,6 +146,7 @@
     \item It is not as simple as the covariant one.
     \item Not many compelling applications require such flexible model.
     \end{itemize}
+\pause
 
   \item We argue the covariant model is problematic for \textit{extensible
       designs} (such as Extensible Visitors or Object Algebras). There are two
@@ -589,6 +590,7 @@ type ExpAlg[E] = { lit : Int -> E, add : E -> E -> E }
 \begin{exampleblock}{Evaluation operation}
 \begin{lstlisting}
 type IEval = { eval : Int }
+
 trait evalAlg { self =>
   def lit (x : Int)               = { eval = x }
   def add (x : IEval) (y : IEval) = { eval = x.eval + y.eval }
@@ -776,7 +778,7 @@ def e2 : ExtExp = { accept = E. \f -> f.sub (f.lit 5) (e1.accept E f) }
 
 \end{itemize}
 
- 
+
 \end{frame}
 
 
@@ -966,7 +968,7 @@ $\mathit{miniJS}$  &  \cmark &  \cmark  &  \cmark  & \cmark & \cmark & \cmark & 
   \label{fig:sloc}
 \end{figure}
 
- 
+
 \end{frame}
 
 
@@ -1086,7 +1088,7 @@ T1 -> T2
   \end{columns}
 
   \end{itemize}
- 
+
 
 
 
@@ -1095,7 +1097,77 @@ T1 -> T2
 
 \section{Implementation and Discussion}
 
+\begin{frame}
+  \frametitle{Implementation}
+
+  \begin{itemize}
+  \item \name is implemented in Haskell, around 1400 LOC.
+  \item The implementation consists of 3 phases:
+    \begin{itemize}
+    \item The desugaring phase
+    \item The type checking phase
+    \item The interpretation phase
+    \end{itemize}
+  \end{itemize}
+
+  \begin{figure}
+    \centering
+\includegraphics[scale=0.7]{pipeline.eps}
+\caption{The pipeline of the implementation.}
+  \end{figure}
+
+
+
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Compared to the original \bname calculus, we have an additional rule,
+    which is helpful for the composition of Object Algebras.     \ottusedrule{\ottdruleSubXXR{}}
+  \item By this rule, one can derive for example
+    $$
+    \ottsym{\{} \ottmv{l} \ottsym{:} \mathsf{A} \rightarrow \mathsf{B}
+    \ottsym{\}} \,\&\, \ottsym{\{} \ottmv{l} \ottsym{:} \mathsf{C} \rightarrow
+    \mathsf{C} \ottsym{\}} <: \ottsym{\{} \ottmv{l} \ottsym{:} \mathsf{A} \,\&\,
+    \mathsf{C} \rightarrow \mathsf{B} \,\&\, \mathsf{C} \ottsym{\}}
+    $$
+  \item Our preliminary meta-theoretic study shows that this rule would not
+    endanger the type system.
+  \end{itemize}
+
+\end{frame}
+
+
+
 \section{Future Work}
+
+\begin{frame}
+  \frametitle{Future Work}
+  \begin{itemize}
+  \item \name is still very simple in term of language features, adding state
+    variables, recursive types, etc.
+  \item Meta-theory of a relaxed version of \bname: drop disjointness condition in the
+    well-formedness of intersection types.
+    \begin{itemize}
+    \item The relaxed system would allow types such as $\mathsf{Int} \,\&\, \mathsf{Int}$ to exist. Also it would enable the following subtyping rule
+      when $A$ and $C$ are not necessarily disjoint:
+      \[
+        (A \rightarrow B) \,\&\, (C \rightarrow D) <: A \,\&\, C \rightarrow B \,\&\, D
+      \]
+    \item The introduction rule of merges still require the disjointness
+      condition, the values of $\mathsf{Int} \,\&\, \mathsf{Int}$ are those like
+      $(3,3)$.
+    \item The proof of coherence becomes much challenging, may need contextual
+      equivalence and logical relations.
+    \end{itemize}
+
+
+
+  \end{itemize}
+\end{frame}
 
 
 
