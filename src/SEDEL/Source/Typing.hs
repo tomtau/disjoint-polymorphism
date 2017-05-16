@@ -28,9 +28,9 @@ tcModule m = do
   let decls = moduleEntries m
   let mainE = mainExpr m
   -- Step 1: Desugar traits
-  let sdecls = desugar decls
+  let sdecls = desugar (decls ++ [mainE])
   -- Step 2: Check module
-  targetDecls <- foldr tcM (return ([])) (sdecls ++ [mainE])
+  targetDecls <- foldr tcM (return ([])) sdecls
   -- Step 3: Generate initial environment for execution
   let (mainType, mainTarget) =
         maybe (TopT, (s2n "main", T.UUnit)) identity (lastMay targetDecls)
@@ -43,7 +43,7 @@ tcModule m = do
   return (mainType, snd mainTarget, initEnv)
   where
     tcM ::
-         SimpleDecl
+         SDecl
       -> TcMonad [(Type, (T.UName, T.UExpr))]
       -> TcMonad [(Type, (T.UName, T.UExpr))]
     tcM (DefDecl decl) ms = do

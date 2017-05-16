@@ -102,13 +102,16 @@ prog :: { Module }
   -- Only for REPL
   | expr                     { Module [] (DefDecl (TmBind "main" [] [] $1 Nothing)) }
 
-traitdecl :: { Trait }
+traitdecl :: { SDecl }
   : trait LOWER_IDENT ctyparam_list trait_params_list inherit ret_type
-  { TraitDef $2 ("self", TopT) $5 $6 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) [] }
+  { DefDecl $ TmBind $2 [] []
+      (AnonyTrait (TraitDef ("self", TopT) $5 $6 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) [])) Nothing }
   | trait LOWER_IDENT ctyparam_list trait_params_list inherit ret_type '{' traitbody '}'
-  { TraitDef $2 (fst $8, fst (snd $8)) $5 $6 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) (snd (snd $8)) }
+  { DefDecl $ TmBind $2 [] []
+      (AnonyTrait (TraitDef (fst $8, fst (snd $8)) $5 $6 (map (\(n, b) -> (s2n n, b)) $3) (map (\(n, b) -> (s2n n, b)) $4) (snd (snd $8))))
+        Nothing }
 
-traitbody :: { (String, (Type, [SimpleDecl])) }
+traitbody :: { (String, (Type, [SDecl])) }
   : LOWER_IDENT ':' type '=>' sdecllist     { ($1, ($3, $5)) }
   | LOWER_IDENT '=>' sdecllist              { ($1, (TopT, $3)) }
 
@@ -120,28 +123,28 @@ inherit :: { [Expr] }
   : {- empty -}            { [] }
   | inherits traitConstrs  { $2 }
 
-decllist :: { [Decl] }
+decllist :: { [SDecl] }
   : {- empty -}       { [] }
   | decl decllist     { $1 : $2}
 
-decl :: { Decl }
-  : sdecl     { SDecl $1 }
-  | traitdecl { TraitDecl $1 }
+decl :: { SDecl }
+  : sdecl     { $1 }
+  | traitdecl { $1 }
 
-main_or_unit :: { SimpleDecl }
+main_or_unit :: { SDecl }
   : {- empty -}              { DefDecl (TmBind "main" [] [] Top Nothing) }
   | main '=' expr            { DefDecl (TmBind "main" [] [] $3 Nothing) }
 
 
-sdecllist :: { [SimpleDecl] }
+sdecllist :: { [SDecl] }
   : {- empty -}         { [] }
   | sdecllist1          { $1 }
 
-sdecllist1 :: { [SimpleDecl] }
+sdecllist1 :: { [SDecl] }
   : sdecl         { [$1] }
   | sdecl  sdecllist1 { $1 : $2 }
 
-sdecl :: { SimpleDecl }
+sdecl :: { SDecl }
   : def bind                  { DefDecl $2 }
   | val bind                  { DefDecl $2 }
   | typ typebind              { TypeDecl $2 }
@@ -328,6 +331,8 @@ expr :: { Expr }
      | let LOWER_IDENT ':' type '=' expr in expr             { elet $2 $4 $6 $8 }
      | if expr then expr else expr                           { If $2 $4 $6 }
      | new '[' type ']' traitConstrs                         { transNew $3 $5 }
+     | trait ctyparam_list trait_params_list inherit ret_type '{' traitbody '}'
+     { AnonyTrait $ TraitDef (fst $7, fst (snd $7)) $4 $5 (map (\(n, b) -> (s2n n, b)) $2) (map (\(n, b) -> (s2n n, b)) $3) (snd (snd $7)) }
      | infixexpr                                             { $1 }
 
 infixexpr :: { Expr }

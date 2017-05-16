@@ -158,6 +158,7 @@ instance Pretty S.Expr where
         text (name2String x) <+>
         colon <+> t' <+> text "=" <+> e' <+> text "in" <+> b'
   ppr (S.Bot) = return $ text "undefined"
+  ppr (S.AnonyTrait t) = return $ text "trait definition"
 
 instance Pretty T.UExpr where
   ppr (T.UVar x) = return . text . name2String $ x

@@ -13,17 +13,12 @@ import Unbound.LocallyNameless
 
 -- | Modules
 data Module = Module
-  { moduleEntries :: [Decl]
-  , mainExpr      :: SimpleDecl
+  { moduleEntries :: [SDecl]
+  , mainExpr      :: SDecl
   } deriving (Show)
 
--- | Declarations are the components of modules
-data Decl = SDecl SimpleDecl
-          | TraitDecl Trait
-          deriving Show
-
 -- | Declarations other than traits
-data SimpleDecl
+data SDecl
   = DefDecl TmBind
   | TypeDecl TypeBind
   deriving (Show)
@@ -31,15 +26,13 @@ data SimpleDecl
 type BindName = String
 
 data Trait = TraitDef
-  { traitName     :: BindName
-    -- ^ Trait name
-  , selfType      :: (BindName, Type)
+  { selfType      :: (BindName, Type)
     -- ^ Self type
   , traitSuper    :: [Expr]
   , retType       :: Maybe Type
   , traitTyParams :: [(TyName, Type)]
   , traitParams   :: [(TmName, Type)]
-  , traitBody     :: [SimpleDecl]
+  , traitBody     :: [SDecl]
   } deriving (Show)
 
 
@@ -82,6 +75,8 @@ data Expr = Anno Expr Type
           | PrimOp Operation Expr Expr
           | If Expr Expr Expr
           | Top
+          | AnonyTrait Trait
+          -- ^ Disappear after desugaring
           | LamA (Bind (TmName, Embed Type) Expr)
           -- ^ Not exposed to users, for internal use
           | Bot
@@ -110,11 +105,12 @@ data Kind = Star | KArrow Kind Kind deriving (Eq, Show)
 
 
 -- Unbound library instances
-$(derive [''Expr, ''Type, ''SimpleDecl, ''TmBind, ''TypeBind, ''Kind])
+$(derive [''Expr, ''Type, ''SDecl, ''TmBind, ''TypeBind, ''Kind, ''Trait])
 
 instance Alpha Type
 instance Alpha Expr
-instance Alpha SimpleDecl
+instance Alpha Trait
+instance Alpha SDecl
 instance Alpha TmBind
 instance Alpha TypeBind
 instance Alpha Kind
@@ -125,17 +121,22 @@ instance Subst Expr ArithOp
 instance Subst Expr LogicalOp
 instance Subst Expr Operation
 instance Subst Expr CompOp
+instance Subst Expr Trait
+instance Subst Expr SDecl
+instance Subst Expr TmBind
+instance Subst Expr TypeBind
 
 instance Subst Expr Expr where
   isvar (Var v) = Just (SubstName v)
   isvar _ = Nothing
 
 instance Subst Type Expr
+instance Subst Type Trait
 instance Subst Type Operation
 instance Subst Type LogicalOp
 instance Subst Type CompOp
 instance Subst Type ArithOp
-instance Subst Type SimpleDecl
+instance Subst Type SDecl
 instance Subst Type TmBind
 instance Subst Type TypeBind
 instance Subst Type Kind
