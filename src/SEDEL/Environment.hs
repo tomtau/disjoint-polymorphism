@@ -25,7 +25,7 @@ module SEDEL.Environment
 
 import qualified Data.Map.Strict as M
 import           Protolude hiding (Type)
-import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
+import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty, (<$>))
 import           Unbound.LocallyNameless
 
 import           SEDEL.Source.Syntax
@@ -115,15 +115,15 @@ lookupTVarConstraint v = do
     Just (_, c, _) -> return c
 
 lookupTVarKindMaybe :: Ctx -> TyName -> Maybe Kind
-lookupTVarKindMaybe ctx v =  fmap (\(k, _, _) -> k) $ M.lookup v (tyCtx ctx)
+lookupTVarKindMaybe ctx v =  (\(k, _, _) -> k) <$> M.lookup v (tyCtx ctx)
 
 lookupTVarConstraintMaybe :: Ctx -> TyName -> Maybe Type
 lookupTVarConstraintMaybe ctx v =
-  fmap (\(_, t, _) -> t) $ M.lookup v (tyCtx ctx)
+  (\(_, t, _) -> t) <$> M.lookup v (tyCtx ctx)
 
 lookupTVarSynMaybe :: Ctx -> TyName -> Maybe Type
 lookupTVarSynMaybe ctx v =
-  case fmap (\(_, _, t) -> t) $ M.lookup v (tyCtx ctx) of
+  case (\(_, _, t) -> t) <$> M.lookup v (tyCtx ctx) of
     Nothing -> Nothing
     Just TerminalType -> Nothing
     Just (NonTerminalType t) -> Just t

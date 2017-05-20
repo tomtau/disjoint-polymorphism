@@ -30,7 +30,7 @@ tcModule m = do
   -- Step 1: Desugar traits
   let sdecls = desugar (decls ++ [mainE])
   -- Step 2: Check module
-  targetDecls <- foldr tcM (return ([])) sdecls
+  targetDecls <- foldr tcM (return []) sdecls
   -- Step 3: Generate initial environment for execution
   let (mainType, mainTarget) =
         maybe (TopT, (s2n "main", T.UUnit)) identity (lastMay targetDecls)
@@ -48,8 +48,8 @@ tcModule m = do
       -> TcMonad [(Type, (T.UName, T.UExpr))]
     tcM (DefDecl decl) ms = do
       (dbind, transD) <- tcTmDecl decl
-      fmap (((snd dbind, transD) :)) $
-        localCtx ((uncurry extendVarCtx) dbind) ms
+      fmap ((snd dbind, transD) :) $
+        localCtx (uncurry extendVarCtx dbind) ms
     tcM (TypeDecl tdecl) ms = do
       (n, tdef, k) <- tcTyDecl tdecl
       localCtx (addTypeSynonym n tdef k) ms
@@ -218,9 +218,7 @@ infer inp@(TApp e a) = do
   case expandType ctx t of
     DForall t' -> do
       ((x, Embed b), c) <- unbind t'
-      let a' = expandType ctx a
-      let b' = expandType ctx b
-      disjoint ctx a' b'
+      disjoint ctx (expandType ctx a) (expandType ctx b)
       return (subst x a c, e')
     _ ->
       throwError
@@ -242,9 +240,7 @@ infer (Merge e1 e2) = do
   (a, e1') <- infer e1
   (b, e2') <- infer e2
   ctx <- askCtx
-  let a' = expandType ctx a
-  let b' = expandType ctx b
-  disjoint ctx a' b'
+  disjoint ctx (expandType ctx a) (expandType ctx b)
   return (And a b, T.UPair e1' e2')
 
 {-
@@ -286,8 +282,7 @@ infer (Acc e "sqrt") = do
 infer (Acc e l) = do
   (t, e') <- infer e
   ctx <- askCtx
-  let t' = expandType ctx t
-  case select t' l of
+  case select (expandType ctx t) l of
     [(a, c)] -> return (a, T.UApp c e')
     _ ->
       throwError
@@ -383,7 +378,7 @@ infer inp@(If e1 e2 e3) = do
   let t3' = expandType ctx t3
   if aeq t2' t3'
     then return (t2, T.UIf e1' e2' e3')
-    else throwError $
+    else throwError
          (hang 2 $
           text "if branches type mismatch in" <+>
           squotes (pprint inp) PP.<> colon PP.<$> squotes (pprint e2) <+>
@@ -454,7 +449,7 @@ tcheck (Lam l) (Arr a b) = do
 
 
 -}
-tcheck (DLam l) (DForall b) = do
+tcheck (DLam l) (DForall b) =
   unbind2 l b >>= \case
     Just ((x, Embed a), e, _, t') -> do
       wf a
@@ -516,8 +511,7 @@ tcheck (Acc e "sqrt") NumT = do
 tcheck (Acc e l) a = do
   (t, e') <- infer e
   ctx <- askCtx
-  let t' = expandType ctx t
-  let ls = select t' l
+  let ls = select (expandType ctx t) l
   case length ls of
     0 ->
       throwError
@@ -540,7 +534,7 @@ tcheck (Acc e l) a = do
                 text "for label" <+>
                 text l PP.<$> text "in" <+> squotes (pprint e))
 
-tcheck Bot a = return T.Bot
+tcheck Bot _ = return T.Bot
 
 {-
 
@@ -558,9 +552,8 @@ tcheck e b = do
   ctx <- askCtx
   let res = subtype ctx a b
   case res of
-    Right c -> do
-      return (T.UApp c e')
-    Left err ->
+    Right c -> return (T.UApp c e')
+    Left _ ->
       throwError
         (hang 2 $
          text "subtyping failed" PP.<> colon PP.<$> squotes (pprint e) <+>
@@ -628,7 +621,7 @@ disjoint _ (TVar x) (TVar y) =
   text (name2String x) <+>
   text "and" <+> text (name2String y) <+> text "are not disjoint"
 
-disjoint ctx (DForall t) (DForall t') = do
+disjoint ctx (DForall t) (DForall t') =
   unbind2 t t' >>= \case
     Just ((x, Embed a1), b, (_, Embed a2), c) ->
       disjoint (extendConstrainedTVarCtx x (And a1 a2) ctx) b c
@@ -646,7 +639,7 @@ disjoint ctx (And a1 a2) b = do
 disjoint ctx a (And b1 b2) = do
   disjoint ctx a b1
   disjoint ctx a b2
-disjoint ctx a b =
+disjoint _ a b =
   if disjointAx a b
     then return ()
     else throwError $ pprint a <+> text "is not disjoint with" <+> pprint b
@@ -660,15 +653,15 @@ disjointAx t1 t2 =
     type2num NumT = 0
     type2num BoolT = 1
     type2num StringT = 2
-    type2num (Arr {}) = 3
-    type2num (DForall {}) = 4
-    type2num (SRecT {}) = 5
+    type2num Arr {} = 3
+    type2num DForall {} = 4
+    type2num SRecT {} = 5
     -- The above are basic type
-    type2num (TopT {}) = 6
-    type2num (And {}) = 7
-    type2num (TVar {}) = 8
-    type2num (OpAbs {}) = 9
-    type2num (OpApp {}) = 10
+    type2num TopT {} = 6
+    type2num And {} = 7
+    type2num TVar {} = 8
+    type2num OpAbs {} = 9
+    type2num OpApp {} = 10
 
 
 
@@ -682,9 +675,7 @@ disjointAx t1 t2 =
 -- Return a list of possible types with their projections
 select :: Type -> Label -> [(Type, T.UExpr)]
 select t l =
-  case M.lookup l m of
-    Nothing -> []
-    Just s -> s
+  fromMaybe [] (M.lookup l m)
   where
     m = recordFields t
 

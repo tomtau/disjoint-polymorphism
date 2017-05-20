@@ -1,4 +1,3 @@
-{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE LambdaCase #-}
 
@@ -86,7 +85,7 @@ desugarTrait :: Trait -> Expr
 desugarTrait trait =
   normalize
     typarams
-    ((map (second Just) params) ++ [(s2n self, Just st)])
+    (map (second Just) params ++ [(s2n self, Just st)])
     -- if no supers, return body otherwise merge them to body
     (maybe body (flip Merge body) (foldl1May Merge supers))
     (retType trait)
@@ -108,11 +107,11 @@ resolveDecls decls = map (substs substPairs) [decl | (DefDecl decl) <- decls]
   where
     tydecls =
       foldl
-        (\ds t -> (substs (toSubst ds) t) : ds)
+        (\ds t -> substs (toSubst ds) t : ds)
         []
-        ([decl | decl@(TypeDecl {}) <- decls])
+        [decl | decl@TypeDecl {} <- decls]
     substPairs = toSubst tydecls
-    toSubst ds = [((s2n n), t) | TypeDecl (TypeBind n _ t) <- ds]
+    toSubst ds = [(s2n n, t) | TypeDecl (TypeBind n _ t) <- ds]
 
 {-
 
@@ -158,7 +157,7 @@ expandType ctx ty = runFreshM (go ctx ty)
   where
     go :: Ctx -> Type -> FreshM Type
     -- Interesting cases:
-    go d (TVar a) = do
+    go d (TVar a) =
       case lookupTVarSynMaybe d a of
         Nothing -> return $ TVar a
         Just t -> go d t
@@ -170,7 +169,7 @@ expandType ctx ty = runFreshM (go ctx ty)
       go d t1 >>= \case
         OpAbs b -> do
           t2' <- go d t2
-          ((x, Embed k), t) <- unbind b
+          ((x, Embed _), t) <- unbind b
           go d (subst x t2' t)
         _ -> return typ
     go _ NumT = return NumT

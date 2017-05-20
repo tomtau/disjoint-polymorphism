@@ -14,8 +14,8 @@ import           SEDEL.PrettyPrint
 import           SEDEL.Source.Typing
 import qualified SEDEL.Target.CBN as CBN
 
-data ReplState = ReplState {
-  replCtx   :: Ctx
+newtype ReplState = ReplState
+  { replCtx :: Ctx
   }
 
 initState :: ReplState
@@ -71,7 +71,7 @@ load args = do
 
 -- :quit command
 quit :: a -> Repl ()
-quit _ = liftIO $ exitSuccess
+quit _ = liftIO exitSuccess
 
 
 resetCtx :: Repl ()

@@ -96,7 +96,7 @@ subtype ctx st tt = runExcept $ runFreshMT go
     -}
     subtypeS (SRecT l1 a) (SRecT l2 b) = do
       e <- subtypeS a b
-      if (l1 /= l2)
+      if l1 /= l2
         then throwError $
              text "labels not equal:" <+> text l1 <+> text "and" <+> text l2
         else return e
@@ -105,7 +105,7 @@ subtype ctx st tt = runExcept $ runFreshMT go
     a <: a ~> λx.x
 
     -}
-    subtypeS (TVar a) (TVar b) = do
+    subtypeS (TVar a) (TVar b) =
       if a /= b
         then throwError $
              text "variables not equal:" <+>
@@ -132,9 +132,7 @@ subtype ctx st tt = runExcept $ runFreshMT go
     -}
     subtypeS (DForall t1) (DForall t2) =
       unbind2 t1 t2 >>= \case
-        Just ((_, Embed a1), b1, (_, Embed a2), b2) -> do
-          subtypeS a2 a1
-          subtypeS b1 b2
+        Just ((_, Embed a1), b1, (_, Embed a2), b2) -> subtypeS a2 a1 >> subtypeS b1 b2
         Nothing ->
           throwError . text $ "Patterns have different binding variables"
     {-
@@ -151,12 +149,12 @@ subtype ctx st tt = runExcept $ runFreshMT go
      The view pattern below ensures that we match exactly the form: a -> ... -> a' & b'
 
     -}
-    subtypeS a (SRecT l (lastForall -> (tyBinds, lastArr -> (t@(_:_), (And a' b'))))) = do
+    subtypeS a (SRecT l (lastForall -> (tyBinds, lastArr -> (t@(_:_), And a' b')))) = do
       f <- subtypeS a (And (SRecT l left) (SRecT l right))
       -- generate n fresh names [x1, ..., xn]
-      let x = (s2n "x") :: T.UName
+      let x = s2n "x" :: T.UName
       xs <- sequenceA (replicate n (fresh x))
-      let s = (s2n "s") :: T.UName
+      let s = s2n "s" :: T.UName
       -- first and second components in a pair
       let pair1 =
             foldl
@@ -181,7 +179,7 @@ subtype ctx st tt = runExcept $ runFreshMT go
     subtypeS a b =
       throwError $
       text "Invalid subtyping:" <+>
-      squotes (pprint a) <+> (text "and") <+> squotes (pprint b)
+      squotes (pprint a) <+> text "and" <+> squotes (pprint b)
 
 
 
@@ -230,7 +228,7 @@ with projections
 
 splitMerge2Arrow :: [Type] -> ([(Type, T.UExpr -> T.UExpr)], [(Type, T.UExpr -> T.UExpr)])
 splitMerge2Arrow [] = ([], [])
-splitMerge2Arrow ((And a b):rest) =
+splitMerge2Arrow (And a b:rest) =
   let (as, bs) = splitMerge2Arrow rest
   in ((a, T.UP1) : as, (b, T.UP2) : bs)
 splitMerge2Arrow (a:rest) =

@@ -9,6 +9,8 @@
 module SEDEL.Source.Syntax where
 
 import SEDEL.Common
+
+import Data.Maybe (fromMaybe)
 import Unbound.LocallyNameless
 
 -- | Modules
@@ -218,8 +220,8 @@ teleToTmBind ::
 -- Ideally for defrec, users should annotate all arguments, but here we assume T
 -- if not annotated
 teleToTmBind tys tms res e =
-  let arr = foldr (\(_, t) tt -> Arr (maybe TopT id t) tt) res tms
-      tbind = foldr (\t tt -> tforall t tt) arr tys
+  let arr = foldr (\(_, t) tt -> Arr (fromMaybe TopT t) tt) res tms
+      tbind = foldr tforall arr tys
       fun = foldr (\(n, _) tm -> elam n tm) e tms
-      bfun = foldr (\t tm -> dlam t tm) fun tys
+      bfun = foldr dlam fun tys
   in (tbind, bfun)

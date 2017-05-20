@@ -71,7 +71,7 @@ instance Pretty S.Type where
          text "∀" <> parens (text (name2String x) <> text "*" <> a') <+> dot <+> t')
   ppr (S.SRecT l t) = do
     t' <- ppr t
-    return (braces $ (text l) <+> colon <+> t')
+    return (braces $ text l <+> colon <+> t')
   ppr S.TopT = return $ text "T"
   ppr (S.OpAbs b) =
     lunbind b $ \((x, k), t) -> do
@@ -148,17 +148,17 @@ instance Pretty S.Expr where
     t' <- ppr t
     return $ e' <+> char '\\' <+> braces (text l <+> colon <+> t')
   ppr S.Top = return $ text "T"
-  ppr (S.Let b) = do
+  ppr (S.Let b) =
     lunbind b $ \((x, Embed t), (e, body)) -> do
-      e' <- ppr e
-      t' <- ppr t
-      b' <- ppr body
-      return $
-        text "let" <+>
-        text (name2String x) <+>
-        colon <+> t' <+> text "=" <+> e' <+> text "in" <+> b'
-  ppr (S.Bot) = return $ text "undefined"
-  ppr (S.AnonyTrait t) = return $ text "trait definition"
+    e' <- ppr e
+    t' <- ppr t
+    b' <- ppr body
+    return $
+      text "let" <+>
+      text (name2String x) <+>
+      colon <+> t' <+> text "=" <+> e' <+> text "in" <+> b'
+  ppr S.Bot = return $ text "undefined"
+  ppr (S.AnonyTrait _) = return $ text "trait definition"
 
 instance Pretty T.UExpr where
   ppr (T.UVar x) = return . text . name2String $ x
@@ -195,7 +195,7 @@ instance Pretty T.UExpr where
     e1' <- ppr e1
     e2' <- ppr e2
     return $ text "if" <+> p' <+> text "then" <+> e1' <+> text "else" <+> e2'
-  ppr (T.ULet b) = do
+  ppr (T.ULet b) =
     lunbind b $ \(x, (e, body)) -> do
       e' <- ppr e
       b' <- ppr body
@@ -206,8 +206,7 @@ instance Pretty T.UExpr where
   ppr (T.USqrt e) = do
     e' <- ppr e
     return $ e' <> dot <> text "sqrt"
-  ppr (T.Bot) = do
-    return $ text "undefined"
+  ppr T.Bot = return $ text "undefined"
 
 
 pprint :: Pretty a => a -> Doc

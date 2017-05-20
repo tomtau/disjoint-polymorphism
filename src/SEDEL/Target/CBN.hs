@@ -22,7 +22,7 @@ emptyEnv :: Env
 emptyEnv = M.empty
 
 extendCtx :: (UName, UExpr, Env) -> Env -> Env
-extendCtx (n, e, env) env' = M.insert n (CExp e env) env'
+extendCtx (n, e, env) = M.insert n (CExp e env)
 
 data Value = VLit Double
            | VBool Bool
@@ -38,7 +38,7 @@ instance Show Value where
   show (VPair (CExp e1 _) (CExp e2 _)) = "(" ++ show (pprint e1) ++ ", " ++ show (pprint e2) ++ ")"
   show VUnit = "()"
   show (VStr s) = show s
-  show (VClosure{}) = "<<closure>>"
+  show VClosure{} = "<<closure>>"
 
 type M = FreshMT (Reader Env)
 
@@ -55,7 +55,7 @@ eval (UApp e1 e2) = do
   VClosure b env' <- eval e1
   (x, body) <- unbind b
   env <- ask
-  local (const $ M.insert x (CExp e2 env) env') $ (eval body)
+  local (const $ M.insert x (CExp e2 env) env') (eval body)
 eval (ULam b) = do
   env <- ask
   return $ VClosure b env
@@ -69,12 +69,10 @@ eval (UPair e1 e2) = do
   return $ VPair (CExp e1 env) (CExp e2 env)
 eval (UP1 e) = do
   VPair (CExp e1 env') _ <- eval e
-  v1 <- local (const env') $ eval e1
-  return v1
+  local (const env') $ eval e1
 eval (UP2 e) = do
   VPair _ (CExp e2 env') <- eval e
-  v2 <- local (const env') $ eval e2
-  return v2
+  local (const env') $ eval e2
 eval (ULitV n) = return $ VLit n
 eval (UBoolV n) = return $ VBool n
 eval (UStrV n) = return $ VStr n
@@ -110,4 +108,4 @@ evalOp (Comp Neq) (VBool x) (VBool y) = VBool $ x /= y
 evalOp (Logical LAnd) (VBool x) (VBool y) = VBool $ x && y
 evalOp (Logical LOr) (VBool x) (VBool y) = VBool $ x || y
 evalOp Append (VStr x) (VStr y) = VStr $ x ++ y
-evalOp _ _ _ = error $ "Impossible happened in evalOp"
+evalOp _ _ _ = error "Impossible happened in evalOp"
