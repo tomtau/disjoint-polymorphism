@@ -11,9 +11,8 @@ module SEDEL.Source.Subtyping
 
 
 import           Panic
-import           Prelude (unzip)
 import           Protolude hiding (Type)
-import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
+import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty, (<$>))
 import           Unbound.LocallyNameless
 
 import           SEDEL.Environment
@@ -132,50 +131,65 @@ subtype ctx st tt = runExcept $ runFreshMT go
     -}
     subtypeS (DForall t1) (DForall t2) =
       unbind2 t1 t2 >>= \case
-        Just ((_, Embed a1), b1, (_, Embed a2), b2) -> subtypeS a2 a1 >> subtypeS b1 b2
+        Just ((_, Embed a1), b1, (_, Embed a2), b2) ->
+          subtypeS a2 a1 >> subtypeS b1 b2
         Nothing ->
           throwError . text $ "Patterns have different binding variables"
     {-
 
-    Intersections distribute over records
 
-       A <: {l : forall D1 ... Dm . A1 -> .. C -> .. An -> A'} & {l : forall D1 ... Dm . B1 -> ... -> C -> Bn -> B'} ~> f
+       A <: forall D1 ... Dm . C -> ... -> A ~> f1     A <: forall D1 ... Dm . C -> ... -> B ~> f2
       ---------------------------------------------------------------------------------------------------------------------
-        A <: {l : forall D1 ... Dm . A1 & B1 -> ... -> C -> ... -> An & Bn -> A' & B'} ~>
+       A <: forall D1 ... Dm . C -> ... -> A & B ~> \s -> \xs -> f1 s xs ,, f2 s xs
 
-        \s . \x1 ... y .. xn . ((proj1 (f s)) (proj1 x1) ... y ... (proj1 xn), (proj2 (f s)) (proj2 x1) ... y ... (proj2 xn))
+     The view pattern ensures that we match exactly the form: C -> ... -> A & B
 
-
-     The view pattern below ensures that we match exactly the form: a -> ... -> a' & b'
+     TODO: Any way to combine with the next rule?
 
     -}
-    subtypeS a (SRecT l (lastForall -> (tyBinds, lastArr -> (t@(_:_), And a' b')))) = do
-      f <- subtypeS a (And (SRecT l left) (SRecT l right))
+    subtypeS a (lastForall -> (tyBinds, lastArr -> (t@(_:_), And a' b'))) = do
+      f1 <- subtypeS a left
+      f2 <- subtypeS a right
       -- generate n fresh names [x1, ..., xn]
       let x = s2n "x" :: T.UName
       xs <- sequenceA (replicate n (fresh x))
       let s = s2n "s" :: T.UName
       -- first and second components in a pair
-      let pair1 =
-            foldl
-              T.UApp
-              (T.UP1 (T.UApp f (T.UVar s)))
-              (zipWith ($) aprojs (map T.UVar xs))
-      let pair2 =
-            foldl
-              T.UApp
-              (T.UP2 (T.UApp f (T.UVar s)))
-              (zipWith ($) bprojs (map T.UVar xs))
+      let pair1 = foldl T.UApp (T.UApp f1 (T.UVar s)) (map T.UVar xs)
+      let pair2 = foldl T.UApp (T.UApp f2 (T.UVar s)) (map T.UVar xs)
       -- Final expression
       let ebody = foldr (\xi e -> T.ULam (bind xi e)) (T.UPair pair1 pair2) xs
       return (T.ULam (bind s ebody))
       where
-        (as, bs) = splitMerge2Arrow t
-        (atyps, aprojs) = unzip as
-        (btyps, bprojs) = unzip bs
-        left = mkForall (mkArr a' atyps) tyBinds
-        right = mkForall (mkArr b' btyps) tyBinds
-        n = length as
+        left = mkForall (mkArr a' t) tyBinds
+        right = mkForall (mkArr b' t) tyBinds
+        n = length t
+    {-
+
+    Intersections distribute over records
+
+       A <: {l : forall D1 ... Dm . C -> ... -> A} ~> f1     A <: {l : forall D1 ... Dm . C -> ... -> B} ~> f2
+      ---------------------------------------------------------------------------------------------------------------------
+        A <: {l : forall D1 ... Dm . C -> ... -> A & B} ~> \s -> \xs -> f1 s xs ,, f2 s xs
+
+    -}
+    subtypeS a (SRecT l (lastForall -> (tyBinds, lastArr -> (t@(_:_), And a' b')))) = do
+      f1 <- subtypeS a (SRecT l left)
+      f2 <- subtypeS a (SRecT l right)
+      -- generate n fresh names [x1, ..., xn]
+      let x = s2n "x" :: T.UName
+      xs <- sequenceA (replicate n (fresh x))
+      let s = s2n "s" :: T.UName
+      -- first and second components in a pair
+      let pair1 = foldl T.UApp (T.UApp f1 (T.UVar s)) (map T.UVar xs)
+      let pair2 = foldl T.UApp (T.UApp f2 (T.UVar s)) (map T.UVar xs)
+      -- Final expression
+      let ebody = foldr (\xi e -> T.ULam (bind xi e)) (T.UPair pair1 pair2) xs
+      return (T.ULam (bind s ebody))
+      where
+        left = mkForall (mkArr a' t) tyBinds
+        right = mkForall (mkArr b' t) tyBinds
+        n = length t
     subtypeS a b =
       throwError $
       text "Invalid subtyping:" <+>
@@ -204,7 +218,7 @@ lastForall = runFreshM . go
     go :: Fresh m => Type -> m ([(TyName, Embed Type)], Type)
     go (DForall b) = do
       (x, t) <- unbind b
-      fmap (first (x :)) $ go t
+      first (x :) <$> go t
     go a = return ([], a)
 
 
