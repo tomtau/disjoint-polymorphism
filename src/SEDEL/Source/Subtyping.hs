@@ -69,10 +69,8 @@ subtype ctx st tt = runExcept $ runFreshMT go
     -}
     subtypeS (And a1 _) a3
       | ordinary a3
-      , Right e <- subtype ctx a1 a3 = do
-        let c = T.eapp e (T.UP1 (T.evar "x"))
-        b <- coerce a3 c
-        return (T.elam "x" b)
+      , Right e <- subtype ctx a1 a3 =
+        return (T.elam "x" (T.eapp e (T.UP1 (T.evar "x"))))
     {-
 
     A2 <: A3 ~> E      A3 ordinary
@@ -82,10 +80,8 @@ subtype ctx st tt = runExcept $ runFreshMT go
     -}
     subtypeS (And _ a2) a3
       | ordinary a3
-      , Right e <- subtype ctx a2 a3 = do
-        let c = T.eapp e (T.UP2 (T.evar "x"))
-        b <- coerce a3 c
-        return (T.elam "x" b)
+      , Right e <- subtype ctx a2 a3 =
+        return (T.elam "x" (T.eapp e (T.UP2 (T.evar "x"))))
     {-
 
     A <: B ~> E
