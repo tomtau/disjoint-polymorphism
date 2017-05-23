@@ -1,3 +1,3 @@
 --> true
 
-({l = 3} ,, 5 ,, {l = true}).l : Bool
+main = ({l = 3} ,, 5 ,, {l = true}).l : Bool

@@ -11,7 +11,7 @@ import qualified Data.Text as T
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 
 import           SEDEL.Environment
-import           SEDEL.Parser.Parser (parseExpr)
+import           SEDEL.Parser.Parser2 (parseExpr)
 import           SEDEL.PrettyPrint
 import           SEDEL.Source.Typing
 import qualified SEDEL.Target.CBN as C
@@ -19,7 +19,7 @@ import qualified SEDEL.Target.CBN as C
 type Result = Either Doc String
 
 ret :: Doc -> Result
-ret d = Left d
+ret = Left
 
 parseExpectedOutput :: Text -> Maybe Text
 parseExpectedOutput source =

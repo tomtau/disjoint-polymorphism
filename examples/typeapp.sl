@@ -1,7 +1,7 @@
 --> 3.0
 
-type IdType [B] = B -> B
+type IdType [B] = B -> B;
 
-def id : IdType [Double] = \x -> x
+id : IdType [Double] = \x -> x;
 
 main = id 3

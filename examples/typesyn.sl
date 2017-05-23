@@ -1,7 +1,7 @@
 --> 3.0
 
-type AType = forall A . A -> A
+type AType = forall A . A -> A;
 
-def aid : AType = /\ A . (\x -> x) : A -> A
+aid : AType = /\ A . (\x -> x) : A -> A;
 
 main = aid Double 3

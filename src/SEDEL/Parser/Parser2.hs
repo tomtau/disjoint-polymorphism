@@ -1,15 +1,84 @@
-module SEDEL.Parser.Parser2 where
+module SEDEL.Parser.Parser2 (parseExpr) where
 
-import Control.Monad (void)
-import Text.Megaparsec
-import Text.Megaparsec.Expr
-import Text.Megaparsec.String -- input stream is of type ‘String’
+import           Control.Arrow (first)
+import           Control.Monad (void)
+import           Data.Maybe (fromMaybe)
+import           Text.Megaparsec
+import           Text.Megaparsec.Expr
 import qualified Text.Megaparsec.Lexer as L
+import           Text.Megaparsec.String
+import           Unbound.LocallyNameless
 
-import SEDEL.Source.Syntax
-import SEDEL.Common
+import           SEDEL.Common
+import           SEDEL.Source.Syntax
+
+parseExpr :: String -> Either String Module
+parseExpr s =
+  case runParser (sc *> prog) "" s of
+    Left err -> Left $ parseErrorPretty err
+    Right e -> Right e
+
+------------------------------------------------------------------------
+-- Programs
+------------------------------------------------------------------------
+
+prog :: Parser Module
+prog =
+   -- hack for repl
+  try (expr >>= \e -> return $ Module [] (DefDecl (TmBind "main" [] [] e Nothing))) <|> prog'
+
+prog' :: Parser Module
+prog' = do
+  decls <- sepEndBy sedel (symbol ";")
+  m <- optional mainDecl
+  let decl = fromMaybe (DefDecl (TmBind "main" [] [] Top Nothing)) m
+  return $ Module decls decl
+
+mainDecl :: Parser SDecl
+mainDecl = do
+  rword "main"
+  symbol "="
+  e <- expr
+  return $ DefDecl (TmBind "main" [] [] e Nothing)
+
+sedel :: Parser SDecl
+sedel = DefDecl <$> tmBind <|> TypeDecl <$> tyBind
+
+tmBind :: Parser TmBind
+tmBind = do
+  n <- lidentifier
+  ts <- many ctyparam
+  xs <- many param
+  ret <- optional (symbol ":" *> pType)
+  symbol "="
+  e <- expr
+  return $ TmBind n (map (first s2n) ts) (map (first s2n) xs) e ret
 
 
+tyBind :: Parser TypeBind
+tyBind = do
+  rword "type"
+  n <- uidentifier
+  ts <- optional typaramList
+  symbol "="
+  t <- pType
+  return $ TypeBind n (fromMaybe [] ts) t
+
+typaramList :: Parser [(TyName, Kind)]
+typaramList =
+  brackets $
+  sepBy1 (uidentifier >>= \n -> return (s2n n, Star)) (symbol ",") <|> return []
+
+param :: Parser (String, Maybe Type)
+param =
+  choice
+    [ lidentifier >>= \n -> return (n, Nothing)
+    , parens $ do
+        n <- lidentifier <|> symbol "_"
+        symbol ":"
+        t <- pType
+        return (n, Just t)
+    ]
 
 ------------------------------------------------------------------------
 -- Expressions
@@ -19,7 +88,7 @@ expr :: Parser Expr
 expr = makeExprParser term pOperators
 
 term :: Parser Expr
-term = postfixChain factor (fapp <|> bapp)
+term = postfixChain factor (try fapp <|> bapp)
 
 fapp :: Parser (Expr -> Expr)
 fapp = do
@@ -33,13 +102,20 @@ bapp = do
 
 
 factor :: Parser Expr
-factor = postfixChain atom (rmOperator <|> dotOperator)
+factor = postfixChain atom (rmOperator <|> dotOperator <|> colonOperator)
 
 dotOperator :: Parser (Expr -> Expr)
 dotOperator = do
   symbol "."
   k <- lidentifier
   return (`Acc` k)
+
+colonOperator :: Parser (Expr -> Expr)
+colonOperator = do
+  symbol ":"
+  t <- pType
+  return (`Anno` t)
+
 
 rmOperator :: Parser (Expr -> Expr)
 rmOperator = do
@@ -64,7 +140,7 @@ atom =
     , evar <$> lidentifier
     , record
     , bconst
-    , expAnnoOrParenOrTop
+    , parens expr
     ]
 
 record :: Parser Expr
@@ -96,22 +172,47 @@ pLambda = do
 pBLambda :: Parser Expr
 pBLambda = do
   symbol "/\\"
-  xs <- some ctyparam
+  xs <- some parenCtyparam
   symbol "."
   e <- expr
   return $ foldr dlam (dlam (last xs) e) (init xs)
+
+
+pTrait :: Parser Expr
+pTrait = do
+  rword "trait"
+  ts <- many ctyparam
+  xs <- parens $ sepBy recordFieldType (symbol ",")
+  i <- optional inherits
+  ret <- optional (symbol ":" *> pType)
+  undefined
+
+inherits :: Parser [Expr]
+inherits = undefined
+
+constraitTy :: Parser (String, Type)
+constraitTy = do
+  n <- uidentifier
+  symbol "*"
+  t <- pType
+  return (n, t)
+
+parenCtyparam :: Parser (String, Type)
+parenCtyparam =
+  choice
+    [ do n <- uidentifier
+         return (n, TopT)
+    , parens constraitTy
+    ]
 
 ctyparam :: Parser (String, Type)
 ctyparam =
   choice
     [ do n <- uidentifier
          return (n, TopT)
-    , parens
-        (do n <- uidentifier
-            symbol "*"
-            t <- pType
-            return (n, t))
+    , brackets constraitTy
     ]
+
 
 pLet :: Parser Expr
 pLet = do
@@ -186,31 +287,31 @@ pType = makeExprParser atype tOperators
 tOperators :: [[Operator Parser Type]]
 tOperators =
   [ [ Postfix
-        (bracket $
+        (brackets $
          sepBy1 pType (symbol ",") >>= \xs ->
            return $ \f -> foldl OpApp (OpApp f (head xs)) (tail xs))
     ]
-  , [InfixL (And <$ symbol "&&")]
+  , [InfixL (And <$ symbol "&")]
   , [InfixR (Arr <$ symbol "->")]
   ]
 
 atype :: Parser Type
 atype =
   choice
-    [pForall, pTrait, tvar <$> uidentifier, recordType, tconst, parens pType]
+    [pForall, traitType, tvar <$> uidentifier, recordType, tconst, parens pType]
 
 pForall :: Parser Type
 pForall = do
-  symbol "\\/"
-  xs <- some ctyparam
+  rword "forall"
+  xs <- some parenCtyparam
   symbol "."
   t <- pType
   return $ foldr tforall (tforall (last xs) t) (init xs)
 
-pTrait :: Parser Type
-pTrait = do
+traitType :: Parser Type
+traitType = do
   rword "Trait"
-  ts <- bracket $ sepBy1 pType (symbol ",")
+  ts <- brackets $ sepBy1 pType (symbol ",")
   if length ts == 1
     then return $ Arr TopT (head ts)
     else return $ foldl1 Arr ts
@@ -253,8 +354,8 @@ symbol = L.symbol sc
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 
-bracket :: Parser a -> Parser a
-bracket = between (symbol "[") (symbol "]")
+brackets :: Parser a -> Parser a
+brackets = between (symbol "[") (symbol "]")
 
 braces :: Parser a -> Parser a
 braces = between (symbol "{") (symbol "}")
@@ -288,7 +389,6 @@ rws =
   , "else"
   , "let"
   , "in"
-  , "def"
   , "type"
   , "defrec"
   , "forall"

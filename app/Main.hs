@@ -9,7 +9,7 @@ import           System.Exit
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
 
 import           SEDEL.Environment
-import           SEDEL.Parser.Parser (parseExpr)
+import           SEDEL.Parser.Parser2 (parseExpr)
 import           SEDEL.PrettyPrint
 import           SEDEL.Source.Typing
 import qualified SEDEL.Target.CBN as CBN
