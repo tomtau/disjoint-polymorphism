@@ -22,13 +22,13 @@ parseExpr s =
 -- Programs
 ------------------------------------------------------------------------
 
-prog :: Parser Module
-prog =
-   -- hack for repl
-  try (expr >>= \e -> return $ Module [] (DefDecl (TmBind "main" [] [] e Nothing))) <|> prog'
+-- prog :: Parser Module
+-- prog =
+--    -- hack for repl
+--   try (expr >>= \e -> return $ Module [] (DefDecl (TmBind "main" [] [] e Nothing))) <|> prog'
 
-prog' :: Parser Module
-prog' = do
+prog :: Parser Module
+prog = do
   decls <- sepEndBy sedel (symbol ";")
   m <- optional mainDecl
   let decl = fromMaybe (DefDecl (TmBind "main" [] [] Top Nothing)) m
