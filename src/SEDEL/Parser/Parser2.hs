@@ -9,99 +9,73 @@ import qualified Text.Megaparsec.Lexer as L
 import SEDEL.Source.Syntax
 import SEDEL.Common
 
-sc :: Parser ()
-sc = L.space (void spaceChar) lineCmnt blockCmnt
-  where lineCmnt  = L.skipLineComment "--"
-        blockCmnt = L.skipBlockComment "{-" "-}"
 
-lexeme :: Parser a -> Parser a
-lexeme = L.lexeme sc
 
-symbol :: String -> Parser String
-symbol = L.symbol sc
+------------------------------------------------------------------------
+-- Expressions
+------------------------------------------------------------------------
 
-parens :: Parser a -> Parser a
-parens = between (symbol "(") (symbol ")")
-
-integer :: Parser Integer
-integer = lexeme L.integer
-
-stringLiteral :: Parser String
-stringLiteral = char '"' >> manyTill L.charLiteral (char '"')
-
-semi :: Parser String
-semi = symbol ";"
-
-top :: Parser ()
-top = symbol "(" *> symbol ")" *> return ()
-
-rword :: String -> Parser ()
-rword w = string w *> notFollowedBy alphaNumChar *> sc
-
-rws :: [String] -- list of reserved words
-rws =
-  [ "if"
-  , "then"
-  , "else"
-  , "let"
-  , "in"
-  , "def"
-  , "type"
-  , "defrec"
-  , "forall"
-  , "trait"
-  , "new"
-  , "Trait"
-  , "main"
-  , "inherits"
-  , "undefined"
-  , "Double"
-  , "String"
-  , "Bool"
-  , "true"
-  , "false"
-  ]
-
-lidentifier :: Parser String
-lidentifier = (lexeme . try) (p >>= check)
-  where
-    p = (:) <$> lowerChar <*> many alphaNumChar
-    check x =
-      if x `elem` rws
-        then fail $ "keyword " ++ show x ++ " cannot be an lidentifier"
-        else return x
-
-uidentifier :: Parser String
-uidentifier = (lexeme . try) (p >>= check)
-  where
-    p = (:) <$> upperChar <*> many alphaNumChar
-    check x =
-      if x `elem` rws
-        then fail $ "keyword " ++ show x ++ " cannot be an lidentifier"
-        else return x
-
-expr, term, factor :: Parser Expr
-
+expr :: Parser Expr
 expr = makeExprParser term pOperators
 
-term = funapp
+term :: Parser Expr
+term = postfixChain factor (fapp <|> bapp)
 
-funapp :: Parser Expr
-funapp = foldl1 App <$> some factor
+fapp :: Parser (Expr -> Expr)
+fapp = do
+  e <- factor
+  return (`App` e)
 
-factor =
+bapp :: Parser (Expr -> Expr)
+bapp = do
+  e <- pType
+  return (`TApp` e)
+
+
+factor :: Parser Expr
+factor = postfixChain atom (rmOperator <|> dotOperator)
+
+dotOperator :: Parser (Expr -> Expr)
+dotOperator = do
+  symbol "."
+  k <- lidentifier
+  return (`Acc` k)
+
+rmOperator :: Parser (Expr -> Expr)
+rmOperator = do
+  symbol "\\"
+  (l, t) <-
+    braces
+      (do l <- lidentifier
+          symbol ":"
+          t <- pType
+          return (l, t))
+  return (\e -> Remove e l t)
+
+atom :: Parser Expr
+atom =
   choice
     [ pLambda
     , pBLambda
     , pLet
     , pIf
-    , parens pAnno
     , (LitV . fromInteger) <$> integer
     , StrV <$> stringLiteral
     , evar <$> lidentifier
+    , record
     , bconst
-    , parens expr
+    , expAnnoOrParenOrTop
     ]
+
+record :: Parser Expr
+record = braces (mkRecds <$> sepBy1 recordField (symbol ","))
+
+recordField :: Parser (Label, Expr)
+recordField = do
+  l <- lidentifier
+  symbol "="
+  e <- expr
+  return (l,e)
 
 bconst :: Parser Expr
 bconst =
@@ -109,7 +83,6 @@ bconst =
     [ rword "true" *> pure (BoolV True)
     , rword "false" *> pure (BoolV False)
     , rword "undefined" *> pure Bot
-    , top *> pure Top
     ]
 
 pLambda :: Parser Expr
@@ -162,20 +135,25 @@ pIf = do
   c <- expr
   return $ If a b c
 
-pAnno :: Parser Expr
-pAnno = do
-  e <- expr
-  symbol ":"
-  t <- pType
-  return $ Anno e t
 
-pAcc :: Parser Expr
-pAcc = do
-  e <- expr
-  symbol "."
-  n <- lidentifier
-  return $ Acc e n
+data InParens = Colon Expr Type | Nope Expr
 
+
+-- (x : A) or (e)
+expAnnoOrParenOrTop :: Parser Expr
+expAnnoOrParenOrTop =
+  let tryParens =
+        parens $
+        choice
+          [ do e1 <- try (expr >>= (\e1 -> symbol ":" >> return e1))
+               e2 <- pType
+               return $ Colon e1 e2
+          , Nope <$> expr
+          ]
+  in do bd <- tryParens
+        case bd of
+          Colon a b -> return $ Anno a b
+          Nope e -> return e
 
 pOperators :: [[Operator Parser Expr]]
 pOperators =
@@ -197,5 +175,151 @@ pOperators =
   , [InfixL (Merge <$ symbol ",,")]
   ]
 
+
+------------------------------------------------------------------------
+-- Types
+------------------------------------------------------------------------
+
 pType :: Parser Type
-pType = rword "Double" *> pure NumT
+pType = makeExprParser atype tOperators
+
+tOperators :: [[Operator Parser Type]]
+tOperators =
+  [ [ Postfix
+        (bracket $
+         sepBy1 pType (symbol ",") >>= \xs ->
+           return $ \f -> foldl OpApp (OpApp f (head xs)) (tail xs))
+    ]
+  , [InfixL (And <$ symbol "&&")]
+  , [InfixR (Arr <$ symbol "->")]
+  ]
+
+atype :: Parser Type
+atype =
+  choice
+    [pForall, pTrait, tvar <$> uidentifier, recordType, tconst, parens pType]
+
+pForall :: Parser Type
+pForall = do
+  symbol "\\/"
+  xs <- some ctyparam
+  symbol "."
+  t <- pType
+  return $ foldr tforall (tforall (last xs) t) (init xs)
+
+pTrait :: Parser Type
+pTrait = do
+  rword "Trait"
+  ts <- bracket $ sepBy1 pType (symbol ",")
+  if length ts == 1
+    then return $ Arr TopT (head ts)
+    else return $ foldl1 Arr ts
+
+recordType :: Parser Type
+recordType = braces (mkRecdsT <$> sepBy1 recordFieldType (symbol ","))
+
+recordFieldType :: Parser (Label, Type)
+recordFieldType = do
+  l <- lidentifier
+  symbol ":"
+  e <- pType
+  return (l, e)
+
+
+tconst :: Parser Type
+tconst =
+  choice
+    [ rword "Double" *> pure NumT
+    , rword "String" *> pure StringT
+    , rword "Bool" *> pure BoolT
+    , rword "T" *> pure TopT
+    ]
+
+------------------------------------------------------------------------
+-- Misc
+------------------------------------------------------------------------
+
+sc :: Parser ()
+sc = L.space (void spaceChar) lineCmnt blockCmnt
+  where lineCmnt  = L.skipLineComment "--"
+        blockCmnt = L.skipBlockComment "{-" "-}"
+
+lexeme :: Parser a -> Parser a
+lexeme = L.lexeme sc
+
+symbol :: String -> Parser String
+symbol = L.symbol sc
+
+parens :: Parser a -> Parser a
+parens = between (symbol "(") (symbol ")")
+
+bracket :: Parser a -> Parser a
+bracket = between (symbol "[") (symbol "]")
+
+braces :: Parser a -> Parser a
+braces = between (symbol "{") (symbol "}")
+
+integer :: Parser Integer
+integer = lexeme L.integer
+
+stringLiteral :: Parser String
+stringLiteral = char '"' >> manyTill L.charLiteral (char '"')
+
+semi :: Parser String
+semi = symbol ";"
+
+rword :: String -> Parser ()
+rword w = string w *> notFollowedBy alphaNumChar *> sc
+
+postfixChain :: Parser a -> Parser (a -> a) -> Parser a
+postfixChain p op = do
+  x <- p
+  rest x
+  where
+    rest x =
+      (do f <- op
+          rest $ f x) <|>
+      return x
+
+rws :: [String] -- list of reserved words
+rws =
+  [ "if"
+  , "then"
+  , "else"
+  , "let"
+  , "in"
+  , "def"
+  , "type"
+  , "defrec"
+  , "forall"
+  , "trait"
+  , "new"
+  , "Trait"
+  , "main"
+  , "inherits"
+  , "undefined"
+  , "Double"
+  , "String"
+  , "Bool"
+  , "true"
+  , "false"
+  , "T"
+  ]
+
+lidentifier :: Parser String
+lidentifier = (lexeme . try) (p >>= check)
+  where
+    p = (:) <$> lowerChar <*> many alphaNumChar
+    check x =
+      if x `elem` rws
+        then fail $ "keyword " ++ show x ++ " cannot be an lidentifier"
+        else return x
+
+uidentifier :: Parser String
+uidentifier = (lexeme . try) (p >>= check)
+  where
+    p = (:) <$> upperChar <*> many alphaNumChar
+    check x =
+      if x `elem` rws
+        then fail $ "keyword " ++ show x ++ " cannot be an lidentifier"
+        else return x
