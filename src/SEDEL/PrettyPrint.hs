@@ -6,7 +6,7 @@ module SEDEL.PrettyPrint
   , info
   ) where
 
-import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty)
+import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty, (<$>))
 import           Unbound.LocallyNameless
 
 import           SEDEL.Common
@@ -93,10 +93,7 @@ instance Pretty S.Expr where
     t' <- ppr t
     return $ e' <+> colon <+> t'
   ppr (S.Var x) = return . text . name2String $ x
-  ppr (S.App f a) = do
-    f' <- ppr f
-    a' <- ppr a
-    return $ parens (f' <+> a')
+  ppr (S.App f a) = (<+>) <$> ppr f <*> ppr a
   ppr (S.TApp f a) = do
     f' <- ppr f
     a' <- ppr a
@@ -159,6 +156,7 @@ instance Pretty S.Expr where
       colon <+> t' <+> text "=" <+> e' <+> text "in" <+> b'
   ppr S.Bot = return $ text "undefined"
   ppr (S.AnonyTrait _) = return $ text "trait definition"
+  ppr (S.DRec' _) = return $ text "fancy records"
 
 instance Pretty T.UExpr where
   ppr (T.UVar x) = return . text . name2String $ x

@@ -144,14 +144,7 @@ atom =
     ]
 
 record :: Parser Expr
-record = braces (mkRecds <$> sepBy1 recordField (symbol ","))
-
-recordField :: Parser (Label, Expr)
-recordField = do
-  l <- lidentifier
-  symbol "="
-  e <- expr
-  return (l,e)
+record = braces (mkRecds' <$> sepBy1 tmBind (symbol ","))
 
 bconst :: Parser Expr
 bconst =
@@ -172,7 +165,7 @@ pLambda = do
 pBLambda :: Parser Expr
 pBLambda = do
   symbol "/\\"
-  xs <- some parenCtyparam
+  xs <- some pCtyparam
   symbol "."
   e <- expr
   return $ foldr dlam (dlam (last xs) e) (init xs)
@@ -190,19 +183,19 @@ pTrait = do
 inherits :: Parser [Expr]
 inherits = undefined
 
-constraitTy :: Parser (String, Type)
-constraitTy = do
+constrainTy :: Parser (String, Type)
+constrainTy = do
   n <- uidentifier
   symbol "*"
   t <- pType
   return (n, t)
 
-parenCtyparam :: Parser (String, Type)
-parenCtyparam =
+pCtyparam :: Parser (String, Type)
+pCtyparam =
   choice
     [ do n <- uidentifier
          return (n, TopT)
-    , parens constraitTy
+    , parens constrainTy
     ]
 
 ctyparam :: Parser (String, Type)
@@ -210,7 +203,7 @@ ctyparam =
   choice
     [ do n <- uidentifier
          return (n, TopT)
-    , brackets constraitTy
+    , brackets constrainTy
     ]
 
 
@@ -303,7 +296,7 @@ atype =
 pForall :: Parser Type
 pForall = do
   rword "forall"
-  xs <- some parenCtyparam
+  xs <- some pCtyparam
   symbol "."
   t <- pType
   return $ foldr tforall (tforall (last xs) t) (init xs)

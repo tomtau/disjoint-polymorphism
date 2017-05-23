@@ -79,6 +79,8 @@ data Expr = Anno Expr Type
           | Top
           | AnonyTrait Trait
           -- ^ Disappear after desugaring
+          | DRec' TmBind
+          -- ^ Disappear after desugaring
           | LamA (Bind (TmName, Embed Type) Expr)
           -- ^ Not exposed to users, for internal use
           | Bot
@@ -181,6 +183,9 @@ etapp = TApp
 mkRecds :: [(Label, Expr)] -> Expr
 mkRecds [] = Top
 mkRecds ((l, e):r) = foldl (\t (l', e') -> Merge t (DRec l' e')) (DRec l e) r
+
+mkRecds' :: [TmBind] -> Expr
+mkRecds' = foldl1 Merge . map DRec'
 
 mkRecdsT :: [(Label, Type)] -> Type
 mkRecdsT [] = TopT

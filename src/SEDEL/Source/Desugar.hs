@@ -21,59 +21,65 @@ desugar :: [SDecl] -> [SDecl]
 desugar = map go
   where
     go :: SDecl -> SDecl
-    go (DefDecl decl) = DefDecl $ decl {bindRhs = desugarExpr (bindRhs decl)}
+    go (DefDecl decl) = DefDecl $ desugarTmBind decl
     go ty = ty
 
+desugarTmBind :: TmBind -> TmBind
+desugarTmBind b = b {bindRhs = desugarExpr (bindRhs b)}
 
 desugarExpr :: Expr -> Expr
 desugarExpr = runFreshM . go
-  where go :: Fresh m => Expr -> m Expr
-        go (Anno e t) = do
-          e' <- go e
-          return $ Anno e' t
-        go (App e1 e2) = do
-          e1' <- go e1
-          e2' <- go e2
-          return $ App e1' e2'
-        go (Lam t) = do
-          (n, body) <- unbind t
-          body' <- go body
-          return $ Lam (bind n body')
-        go (DLam b) =  do
-          ((n, t), body) <- unbind b
-          body' <- go body
-          return $ DLam (bind (n, t) body')
-        go (TApp e t) = do
-          e' <- go e
-          return $ TApp e' t
-        go (DRec l e) = do
-          e' <- go e
-          return $ DRec l e'
-        go (Acc e l) = do
-          e' <- go e
-          return $ Acc e' l
-        go (Remove e l t) = do
-          e' <- go e
-          return $ Remove e' l t
-        go (Merge e1 e2) = do
-          e1' <- go e1
-          e2' <- go e2
-          return $ Merge e1' e2'
-        go (PrimOp op e1 e2) = do
-          e1' <- go e1
-          e2' <- go e2
-          return $ PrimOp op e1' e2'
-        go (If e1 e2 e3) = do
-          e1' <- go e1
-          e2' <- go e2
-          e3' <- go e3
-          return $ If e1' e2' e3'
-        go (AnonyTrait t) = return $ desugarTrait t
-        go (LamA b) = do
-          ((n,t), body) <- unbind b
-          body' <- go body
-          return $ LamA (bind (n,t) body')
-        go e = return e
+  where
+    go :: Fresh m => Expr -> m Expr
+    go (Anno e t) = do
+      e' <- go e
+      return $ Anno e' t
+    go (App e1 e2) = do
+      e1' <- go e1
+      e2' <- go e2
+      return $ App e1' e2'
+    go (Lam t) = do
+      (n, body) <- unbind t
+      body' <- go body
+      return $ Lam (bind n body')
+    go (DLam b) = do
+      ((n, t), body) <- unbind b
+      body' <- go body
+      return $ DLam (bind (n, t) body')
+    go (TApp e t) = do
+      e' <- go e
+      return $ TApp e' t
+    go (DRec l e) = do
+      e' <- go e
+      return $ DRec l e'
+    go (Acc e l) = do
+      e' <- go e
+      return $ Acc e' l
+    go (Remove e l t) = do
+      e' <- go e
+      return $ Remove e' l t
+    go (Merge e1 e2) = do
+      e1' <- go e1
+      e2' <- go e2
+      return $ Merge e1' e2'
+    go (PrimOp op e1 e2) = do
+      e1' <- go e1
+      e2' <- go e2
+      return $ PrimOp op e1' e2'
+    go (If e1 e2 e3) = do
+      e1' <- go e1
+      e2' <- go e2
+      e3' <- go e3
+      return $ If e1' e2' e3'
+    go (LamA b) = do
+      ((n, t), body) <- unbind b
+      body' <- go body
+      return $ LamA (bind (n, t) body')
+    go (AnonyTrait t) = return $ desugarTrait t
+    go (DRec' b) =
+      let (l, e) = normalizeTmDecl (desugarTmBind b)
+      in return $ DRec l e
+    go e = return e
 
 
 
