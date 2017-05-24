@@ -2,7 +2,7 @@ module SEDEL.Parser.Parser2 (parseExpr) where
 
 import           Control.Arrow (first, second)
 import           Control.Monad (void)
-import           Data.List (foldl')
+import           Data.List (foldl', foldl1')
 import           Data.Maybe (fromMaybe)
 import           Data.Scientific (toRealFloat)
 import           Text.Megaparsec
@@ -304,7 +304,7 @@ traitType = do
   ts <- tyList
   if length ts == 1
     then return $ Arr TopT (head ts)
-    else return $ foldl1 Arr ts
+    else return $ foldl1' Arr ts
 
 recordType :: Parser Type
 recordType = braces (mkRecdsT <$> sepBy1 tparam (symbol ","))

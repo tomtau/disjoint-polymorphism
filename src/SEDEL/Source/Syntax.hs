@@ -10,7 +10,7 @@ module SEDEL.Source.Syntax where
 
 import SEDEL.Common
 
-import Data.List (foldl')
+import Data.List (foldl', foldl1')
 import Data.Maybe (fromMaybe)
 import Unbound.LocallyNameless
 
@@ -186,7 +186,7 @@ mkRecds [] = Top
 mkRecds ((l, e):r) = foldl' (\t (l', e') -> Merge t (DRec l' e')) (DRec l e) r
 
 mkRecds' :: [TmBind] -> Expr
-mkRecds' = foldl1 Merge . map DRec'
+mkRecds' = foldl1' Merge . map DRec'
 
 mkRecdsT :: [(Label, Type)] -> Type
 mkRecdsT [] = TopT
@@ -202,7 +202,7 @@ elet :: String -> Type -> Expr -> Expr -> Expr
 elet s t e b = Let (bind (s2n s, embed t) (e, b))
 
 transNew :: Type -> [Expr] -> Expr
-transNew t es = elet "self" t (foldl1 Merge es) (evar "self")
+transNew t es = elet "self" t (foldl1' Merge es) (evar "self")
 
 
 {-
