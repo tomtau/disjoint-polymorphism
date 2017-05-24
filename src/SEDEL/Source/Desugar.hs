@@ -98,11 +98,10 @@ desugarTrait trait =
   where
     typarams = traitTyParams trait
     params = traitParams trait
-    tb = desugar (traitBody trait)
+    tb = map desugarTmBind (traitBody trait)
     (self, st) = selfType trait
     supers = traitSuper trait
-    tb' = resolveDecls tb -- We substitute away all type declarations in traits
-    body = mkRecds (map normalizeTmDecl tb')
+    body = mkRecds (map normalizeTmDecl tb)
 
 
 
@@ -112,7 +111,7 @@ resolveDecls :: [SDecl] -> [TmBind]
 resolveDecls decls = map (substs substPairs) [decl | (DefDecl decl) <- decls]
   where
     tydecls =
-      foldl
+      foldl'
         (\ds t -> substs (toSubst ds) t : ds)
         []
         [decl | decl@TypeDecl {} <- decls]
@@ -156,8 +155,6 @@ normalize tyParams params e ret = body
 
 
 -- | Recursively expand all type synonyms. The given type must be well-kinded.
-
-
 expandType :: Ctx -> Type -> Type
 expandType ctx ty = runFreshM (go ctx ty)
   where

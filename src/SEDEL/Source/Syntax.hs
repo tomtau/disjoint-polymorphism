@@ -10,6 +10,7 @@ module SEDEL.Source.Syntax where
 
 import SEDEL.Common
 
+import Data.List (foldl')
 import Data.Maybe (fromMaybe)
 import Unbound.LocallyNameless
 
@@ -34,7 +35,7 @@ data Trait = TraitDef
   , retType       :: Maybe Type
   , traitTyParams :: [(TyName, Type)]
   , traitParams   :: [(TmName, Type)]
-  , traitBody     :: [SDecl]
+  , traitBody     :: [TmBind]
   } deriving (Show)
 
 
@@ -182,7 +183,7 @@ etapp = TApp
 
 mkRecds :: [(Label, Expr)] -> Expr
 mkRecds [] = Top
-mkRecds ((l, e):r) = foldl (\t (l', e') -> Merge t (DRec l' e')) (DRec l e) r
+mkRecds ((l, e):r) = foldl' (\t (l', e') -> Merge t (DRec l' e')) (DRec l e) r
 
 mkRecds' :: [TmBind] -> Expr
 mkRecds' = foldl1 Merge . map DRec'

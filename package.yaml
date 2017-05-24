@@ -19,6 +19,7 @@ dependencies:
   - filepath
   - directory
   - megaparsec
+  - scientific
 
 ghc-options:
   - -fwarn-tabs
@@ -29,12 +30,7 @@ ghc-options:
 
 library:
   source-dirs: src
-  build-tools:
-  - alex
-  - happy
   exposed-modules:
-    - SEDEL.Parser.Lexer
-    - SEDEL.Parser.Parser
     - SEDEL.Parser.Parser2
     - SEDEL.Environment
     - SEDEL.Common

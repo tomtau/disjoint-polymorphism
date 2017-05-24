@@ -151,8 +151,8 @@ subtype ctx st tt = runExcept $ runFreshMT go
       xs <- sequenceA (replicate n (fresh x))
       let s = s2n "s" :: T.UName
       -- first and second components in a pair
-      let pair1 = foldl T.UApp (T.UApp f1 (T.UVar s)) (map T.UVar xs)
-      let pair2 = foldl T.UApp (T.UApp f2 (T.UVar s)) (map T.UVar xs)
+      let pair1 = foldl' T.UApp (T.UApp f1 (T.UVar s)) (map T.UVar xs)
+      let pair2 = foldl' T.UApp (T.UApp f2 (T.UVar s)) (map T.UVar xs)
       -- Final expression
       let ebody = foldr (\xi e -> T.ULam (bind xi e)) (T.UPair pair1 pair2) xs
       return (T.ULam (bind s ebody))
@@ -177,8 +177,8 @@ subtype ctx st tt = runExcept $ runFreshMT go
       xs <- sequenceA (replicate n (fresh x))
       let s = s2n "s" :: T.UName
       -- first and second components in a pair
-      let pair1 = foldl T.UApp (T.UApp f1 (T.UVar s)) (map T.UVar xs)
-      let pair2 = foldl T.UApp (T.UApp f2 (T.UVar s)) (map T.UVar xs)
+      let pair1 = foldl' T.UApp (T.UApp f1 (T.UVar s)) (map T.UVar xs)
+      let pair2 = foldl' T.UApp (T.UApp f2 (T.UVar s)) (map T.UVar xs)
       -- Final expression
       let ebody = foldr (\xi e -> T.ULam (bind xi e)) (T.UPair pair1 pair2) xs
       return (T.ULam (bind s ebody))

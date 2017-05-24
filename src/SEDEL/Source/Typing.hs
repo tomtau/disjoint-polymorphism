@@ -38,7 +38,7 @@ tcModule m = do
   let initEnv =
         maybe
           TC.emptyEnv
-          (foldl (\env (n, e) -> TC.extendCtx (n, e, env) env) TC.emptyEnv)
+          (foldl' (\env (n, e) -> TC.extendCtx (n, e, env) env) TC.emptyEnv)
           declsTarget
   return (mainType, snd mainTarget, initEnv)
   where

@@ -1,15 +1,15 @@
 --> "Have fun!4.0"
 
-type Comment = { content : T -> String }
+type Comment = { content : String };
 trait comment(content : String) { self : Comment =>
-  def content() = content
-}
+  content = content
+};
 
 
-type Up = { upvotes : T -> Double }
+type Up = { upvotes : Double };
 trait up(upvotes : Double) { self : Up =>
-  def upvotes() = upvotes
-}
+  upvotes = upvotes
+};
 
-val test = new[Comment & Up] comment("Have fun!") & up(4)
-main = test.content() ++ (test.upvotes()).toString
+test = new[Comment & Up] comment("Have fun!") & up(4);
+main = test.content ++ (test.upvotes).toString

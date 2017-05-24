@@ -19,8 +19,6 @@ library
   hs-source-dirs:
       src
   exposed-modules:
-      SEDEL.Parser.Lexer
-      SEDEL.Parser.Parser
       SEDEL.Parser.Parser2
       SEDEL.Environment
       SEDEL.Common
@@ -48,12 +46,10 @@ library
     , filepath
     , directory
     , megaparsec
+    , scientific
     , unbound
   default-language: Haskell2010
   ghc-options: -fwarn-tabs -fwarn-unused-imports -fwarn-missing-signatures -fwarn-name-shadowing -fwarn-incomplete-patterns
-  build-tools:
-      alex
-    , happy
 
 executable SEDEL-exe
   main-is: Main.hs
@@ -72,6 +68,7 @@ executable SEDEL-exe
     , filepath
     , directory
     , megaparsec
+    , scientific
     , SEDEL
   default-language: Haskell2010
 
@@ -93,6 +90,7 @@ test-suite SEDEL-test
     , filepath
     , directory
     , megaparsec
+    , scientific
     , tasty >=0.11.1
     , tasty-hspec >=1.1.3.1
     , SEDEL
