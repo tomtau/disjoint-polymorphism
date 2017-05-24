@@ -72,9 +72,18 @@ tmBind2 = do
   m <- lidentifier
   symbol "@"
   (n, ts, xs) <- parens $ liftM3 (,,) lidentifier (many ctyparam) (many param)
+  tts <- many ctyparam
+  xxs <- many param
+  ret <- optional (symbol ":" *> pType)
   symbol "="
   e <- expr
-  return $ TmBind n (map (first s2n) ts) (map (first s2n) xs) (DRec m e) Nothing
+  return $
+    TmBind
+      n
+      (map (first s2n) ts)
+      (map (first s2n) xs)
+      (DRec' (TmBind m (map (first s2n) tts) (map (first s2n) xxs) e ret))
+      Nothing
 
 
 tyBind :: Parser TypeBind
