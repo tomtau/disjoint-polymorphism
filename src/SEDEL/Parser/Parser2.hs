@@ -1,7 +1,7 @@
 module SEDEL.Parser.Parser2 (parseExpr) where
 
 import           Control.Arrow (first, second)
-import           Control.Monad (void)
+import           Control.Monad (void, liftM3)
 import           Data.List (foldl', foldl1')
 import           Data.Maybe (fromMaybe)
 import           Data.Scientific (toRealFloat)
@@ -66,6 +66,15 @@ tmBind = do
   symbol "="
   e <- expr
   return $ TmBind n (map (first s2n) ts) (map (first s2n) xs) e ret
+
+tmBind2 :: Parser TmBind
+tmBind2 = do
+  m <- lidentifier
+  symbol "@"
+  (n, ts, xs) <- parens $ liftM3 (,,) lidentifier (many ctyparam) (many param)
+  symbol "="
+  e <- expr
+  return $ TmBind n (map (first s2n) ts) (map (first s2n) xs) (DRec m e) Nothing
 
 
 tyBind :: Parser TypeBind
@@ -195,7 +204,7 @@ pTraitBody = do
   n <- lidentifier
   ret <- optional (symbol ":" *> pType)
   symbol "=>"
-  decls <- sepBy1 tmBind (symbol ";")
+  decls <- sepBy1 (try tmBind <|> tmBind2) (symbol ";")
   return (n, fromMaybe TopT ret, decls)
 
 pNew :: Parser Expr
