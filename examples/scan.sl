@@ -66,4 +66,4 @@ alg = merge Width WellSized widthCircuit sizedCircuit;
 
 o = new[CircuitAlg[Width & WellSized]] alg;
 
-main = (e1.accept (Width & WellSized) o).wellSized;
+main = (e1.accept (Width & WellSized) o).wellSized

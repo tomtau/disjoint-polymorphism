@@ -16,9 +16,13 @@ import           SEDEL.Source.Syntax
 
 parseExpr :: String -> Either String Module
 parseExpr s =
-  case runParser (sc *> prog) "" s of
+  case runParser (whole prog) "" s of
     Left err -> Left $ parseErrorPretty err
     Right e -> Right e
+
+-- | Top-level parsers (should consume all input)
+whole :: Parser a -> Parser a
+whole p = sc *> p <* eof
 
 ------------------------------------------------------------------------
 -- Programs
@@ -31,7 +35,7 @@ parseExpr s =
 
 prog :: Parser Module
 prog = do
-  decls <- sepEndBy decl (symbol ";")
+  decls <- sepEndBy decl semi
   m <- optional mainDecl
   let d = fromMaybe (DefDecl (TmBind "main" [] [] Top Nothing)) m
   return $ Module decls d
@@ -62,7 +66,7 @@ tmBind = do
   n <- lidentifier
   ts <- many ctyparam
   xs <- many param
-  ret <- optional (symbol ":" *> pType)
+  ret <- optional (colon *> pType)
   symbol "="
   e <- expr
   return $ TmBind n (map (first s2n) ts) (map (first s2n) xs) e ret
@@ -74,7 +78,7 @@ tmBind2 = do
   (n, ts, xs) <- parens $ liftM3 (,,) lidentifier (many ctyparam) (many param)
   tts <- many ctyparam
   xxs <- many param
-  ret <- optional (symbol ":" *> pType)
+  ret <- optional (colon *> pType)
   symbol "="
   e <- expr
   return $
@@ -127,7 +131,7 @@ dotOperator = do
 
 colonOperator :: Parser (Expr -> Expr)
 colonOperator = do
-  symbol ":"
+  colon
   t <- pType
   return (`Anno` t)
 
@@ -138,7 +142,7 @@ rmOperator = do
   (l, t) <-
     braces
       (do l <- lidentifier
-          symbol ":"
+          colon
           t <- pType
           return (l, t))
   return (\e -> Remove e l t)
@@ -161,7 +165,7 @@ atom =
     ]
 
 record :: Parser Expr
-record = braces (mkRecds' <$> sepBy1 tmBind (symbol ","))
+record = braces (mkRecds' <$> sepBy1 tmBind comma)
 
 bconst :: Parser Expr
 bconst =
@@ -193,8 +197,8 @@ pTrait = do
   rword "trait"
   n <- optional lidentifier
   ts <- many ctyparam
-  xs <- fromMaybe [] <$> optional (parens (sepBy1 tparam (symbol ",")))
-  ret <- optional (symbol ":" *> pType)
+  xs <- fromMaybe [] <$> optional (parens (sepBy1 tparam comma))
+  ret <- optional (colon *> pType)
   i <- optional inherits
   (self, sty, body) <- braces (pTraitBody <|> return ("self", TopT, []))
   return
@@ -211,9 +215,9 @@ pTrait = do
 pTraitBody :: Parser (String, Type, [TmBind])
 pTraitBody = do
   n <- lidentifier
-  ret <- optional (symbol ":" *> pType)
+  ret <- optional (colon *> pType)
   symbol "=>"
-  decls <- sepBy1 (try tmBind <|> tmBind2) (symbol ";")
+  decls <- sepBy1 (try tmBind <|> tmBind2) semi
   return (n, fromMaybe TopT ret, decls)
 
 pNew :: Parser Expr
@@ -246,7 +250,7 @@ pLet :: Parser Expr
 pLet = do
   rword "let"
   n <- lidentifier
-  symbol ":"
+  colon
   t <- pType
   symbol "="
   e1 <- expr
@@ -325,7 +329,7 @@ traitType = do
     else return $ foldl1' Arr ts
 
 recordType :: Parser Type
-recordType = braces (mkRecdsT <$> sepBy1 tparam (symbol ","))
+recordType = braces (mkRecdsT <$> sepBy1 tparam comma)
 
 tconst :: Parser Type
 tconst =
@@ -344,23 +348,23 @@ tconst =
 
 -- [A,B,C]
 tyList :: Parser [Type]
-tyList = brackets $ sepBy1 pType (symbol ",")
+tyList = brackets $ sepBy1 pType comma
 
 -- [X, Y, Z]
 typaramList :: Parser [(TyName, Kind)]
 typaramList =
-  brackets $ sepBy1 (uidentifier >>= \n -> return (s2n n, Star)) (symbol ",")
+  brackets $ sepBy1 (uidentifier >>= \n -> return (s2n n, Star)) comma
 
 
 -- (a, b, c)
 pArgs :: Parser [Expr]
-pArgs = parens $ sepBy1 expr (symbol ",")
+pArgs = parens $ sepBy1 expr comma
 
 -- x : A
 tparam :: Parser (Label, Type)
 tparam = do
   l <- lidentifier <|> symbol "_"
-  symbol ":"
+  colon
   e <- pType
   return (l, e)
 
@@ -435,6 +439,12 @@ stringLiteral = lexeme $ char '"' >> manyTill L.charLiteral (char '"')
 semi :: Parser String
 semi = symbol ";"
 
+colon :: Parser String
+colon = symbol ":"
+
+comma :: Parser String
+comma = symbol ","
+
 rword :: String -> Parser ()
 rword w = string w *> notFollowedBy alphaNumChar *> sc
 
@@ -476,12 +486,14 @@ rws =
 identifier :: Parser Char -> Parser String
 identifier s = (lexeme . try) (p >>= check)
   where
-    p = (:) <$> s <*> many alphaNumChar
+    p = (:) <$> s <*> many identChar
     check x =
       if x `elem` rws
         then fail $ "keyword " ++ show x ++ " cannot be an identifier"
         else return x
 
+identChar :: Parser Char
+identChar = alphaNumChar <|> oneOf "_#'"
 
 lidentifier :: Parser String
 lidentifier = identifier lowerChar
