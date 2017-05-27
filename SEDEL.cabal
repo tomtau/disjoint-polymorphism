@@ -33,6 +33,7 @@ library
       SEDEL.Target.CBN
       SEDEL
   other-modules:
+      SEDEL.Util
       Paths_SEDEL
   build-depends:
       ansi-wl-pprint
@@ -47,7 +48,7 @@ library
     , directory
     , megaparsec
     , scientific
-    , unbound
+    , unbound-generics
   default-language: Haskell2010
   ghc-options: -fwarn-tabs -fwarn-unused-imports -fwarn-missing-signatures -fwarn-name-shadowing -fwarn-incomplete-patterns
 

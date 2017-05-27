@@ -1,33 +1,23 @@
-{-# LANGUAGE MultiParamTypeClasses
-            , TemplateHaskell
-            , ScopedTypeVariables
-            , FlexibleInstances
-            , FlexibleContexts
-            , UndecidableInstances
-#-}
+{-# LANGUAGE DeriveGeneric, MultiParamTypeClasses, NoImplicitPrelude #-}
 
 module SEDEL.Common where
 
-import           Unbound.LocallyNameless
+import Unbound.Generics.LocallyNameless
+import Protolude
 
 
 data Operation = Arith ArithOp
                | Comp CompOp
                | Logical LogicalOp
                | Append
-               deriving (Eq, Show)
+               deriving (Eq, Show, Generic)
 
 
-data ArithOp = Add | Sub | Mul | Div deriving (Eq, Show)
+data ArithOp = Add | Sub | Mul | Div deriving (Eq, Show, Generic)
 
-data CompOp = Lt | Gt | Equ | Neq deriving (Eq, Show)
+data CompOp = Lt | Gt | Equ | Neq deriving (Eq, Show, Generic)
 
-data LogicalOp =  LAnd | LOr deriving (Eq, Show)
-
-$(derive [''Operation])
-$(derive [''ArithOp])
-$(derive [''CompOp])
-$(derive [''LogicalOp])
+data LogicalOp =  LAnd | LOr deriving (Eq, Show, Generic)
 
 instance Alpha ArithOp
 instance Alpha LogicalOp

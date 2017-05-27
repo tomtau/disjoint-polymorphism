@@ -5,11 +5,10 @@ module SEDEL.Source.Typing
   ) where
 
 import qualified Data.Map as M
-import           Prelude (unzip)
 import           Protolude hiding (Type)
 import qualified Text.PrettyPrint.ANSI.Leijen as PP
 import           Text.PrettyPrint.ANSI.Leijen hiding ((<>), (<$>), Pretty)
-import           Unbound.LocallyNameless hiding (restrict)
+import           Unbound.Generics.LocallyNameless hiding (restrict)
 
 
 import           SEDEL.Common
@@ -20,6 +19,7 @@ import           SEDEL.Source.Subtyping
 import           SEDEL.Source.Syntax
 import qualified SEDEL.Target.CBN as TC
 import qualified SEDEL.Target.Syntax as T
+import           SEDEL.Util
 
 
 -- Type check a module
@@ -48,7 +48,7 @@ tcModule m = do
       -> TcMonad [(Type, (T.UName, T.UExpr))]
     tcM (DefDecl decl) ms = do
       (dbind, transD) <- tcTmDecl decl
-      fmap ((snd dbind, transD) :) $
+      ((snd dbind, transD) :) <$>
         localCtx (uncurry extendVarCtx dbind) ms
     tcM (TypeDecl tdecl) ms = do
       (n, tdef, k) <- tcTyDecl tdecl
@@ -165,7 +165,7 @@ infer (StrV b) = return (StringT, T.UStrV b)
 -}
 infer (Var x) = do
   t <- lookupVarTy x
-  return (t, T.UVar (translate x))  -- Change the sort of a name
+  return (t, T.UVar (translate x)) -- Change the sort of a name
 
 {-
 
@@ -589,7 +589,7 @@ wf' (And a b) = do
   wf' b
   -- ctx <- askCtx
   -- disjoint ctx a b
-wf' (TVar x) = lookupTVarConstraint x >> return ()
+wf' (TVar x) = void $ lookupTVarConstraint x
 wf' (DForall t) = do
   ((x, Embed a), b) <- unbind t
   wf' a
@@ -628,9 +628,7 @@ disjoint ctx (DForall t) (DForall t') =
     _ -> throwError $ text "Patterns have different binding variables"
 
 disjoint ctx (SRecT l a) (SRecT l' b) =
-  if l == l'
-    then disjoint ctx a b
-    else return ()
+  when (l == l') $ disjoint ctx a b
 
 disjoint ctx (Arr _ a2) (Arr _ b2) = disjoint ctx a2 b2
 disjoint ctx (And a1 a2) b = do
@@ -640,9 +638,8 @@ disjoint ctx a (And b1 b2) = do
   disjoint ctx a b1
   disjoint ctx a b2
 disjoint _ a b =
-  if disjointAx a b
-    then return ()
-    else throwError $ pprint a <+> text "is not disjoint with" <+> pprint b
+  unless (disjointAx a b) $
+  throwError $ pprint a <+> text "is not disjoint with" <+> pprint b
 
 
 disjointAx :: Type -> Type -> Bool

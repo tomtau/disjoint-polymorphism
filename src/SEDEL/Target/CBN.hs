@@ -8,7 +8,7 @@ module SEDEL.Target.CBN
 
 import           Control.Monad.Reader
 import qualified Data.Map.Strict as M
-import           Unbound.LocallyNameless
+import           Unbound.Generics.LocallyNameless
 
 import           SEDEL.Common
 import           SEDEL.PrettyPrint

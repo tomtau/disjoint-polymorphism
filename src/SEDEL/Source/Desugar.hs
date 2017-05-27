@@ -11,7 +11,7 @@ module SEDEL.Source.Desugar
   ) where
 
 import Protolude hiding (Type)
-import Unbound.LocallyNameless
+import Unbound.Generics.LocallyNameless
 
 import SEDEL.Environment
 import SEDEL.Source.Syntax

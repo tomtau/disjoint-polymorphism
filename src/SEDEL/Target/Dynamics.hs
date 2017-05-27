@@ -4,7 +4,7 @@
 module SEDEL.Target.Dynamics where
 
 import Control.Monad.Reader
-import Unbound.LocallyNameless
+import Unbound.Generics.LocallyNameless
 import qualified Data.Map as M
 
 import SEDEL.Common

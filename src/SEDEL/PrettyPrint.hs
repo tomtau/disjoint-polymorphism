@@ -7,7 +7,7 @@ module SEDEL.PrettyPrint
   ) where
 
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty, (<$>))
-import           Unbound.LocallyNameless
+import           Unbound.Generics.LocallyNameless
 
 import           SEDEL.Common
 import qualified SEDEL.Source.Syntax as S

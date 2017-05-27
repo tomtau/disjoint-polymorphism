@@ -13,7 +13,7 @@ module SEDEL.Source.Subtyping
 import           Panic
 import           Protolude hiding (Type)
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty, (<$>))
-import           Unbound.LocallyNameless
+import           Unbound.Generics.LocallyNameless
 
 import           SEDEL.Environment
 import           SEDEL.PrettyPrint

@@ -26,7 +26,7 @@ module SEDEL.Environment
 import qualified Data.Map.Strict as M
 import           Protolude hiding (Type)
 import           Text.PrettyPrint.ANSI.Leijen hiding (Pretty, (<$>))
-import           Unbound.LocallyNameless
+import Unbound.Generics.LocallyNameless
 
 import           SEDEL.Source.Syntax
 
@@ -48,9 +48,11 @@ data TypeValue
 
 type VarCtx = M.Map TmName Type
 type BndCtx = M.Map TmName Expr
-type TyCtx = M.Map TyName (Kind
-                          , Type -- ^ disjointness Constraint
-                          , TypeValue)
+type TyCtx
+   = M.Map TyName ( Kind
+                  , Type
+                  -- ^ disjointness Constraint
+                  , TypeValue)
 
 -- | Environment manipulation and accessing functions
 data Ctx = Ctx

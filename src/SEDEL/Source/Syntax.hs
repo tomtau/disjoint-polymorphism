@@ -1,10 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses
-           , TemplateHaskell
-           , ScopedTypeVariables
-           , FlexibleInstances
-           , FlexibleContexts
-           , UndecidableInstances
-#-}
+{-# LANGUAGE DeriveGeneric, MultiParamTypeClasses #-}
 
 module SEDEL.Source.Syntax where
 
@@ -12,19 +6,20 @@ import SEDEL.Common
 
 import Data.List (foldl', foldl1')
 import Data.Maybe (fromMaybe)
-import Unbound.LocallyNameless
+import Unbound.Generics.LocallyNameless
+import GHC.Generics (Generic)
 
 -- | Modules
 data Module = Module
   { moduleEntries :: [SDecl]
   , mainExpr      :: SDecl
-  } deriving (Show)
+  } deriving (Show, Generic)
 
 -- | Declarations other than traits
 data SDecl
   = DefDecl TmBind
   | TypeDecl TypeBind
-  deriving (Show)
+  deriving (Show, Generic)
 
 type BindName = String
 
@@ -36,7 +31,7 @@ data Trait = TraitDef
   , traitTyParams :: [(TyName, Type)]
   , traitParams   :: [(TmName, Type)]
   , traitBody     :: [TmBind]
-  } deriving (Show)
+  } deriving (Show, Generic)
 
 
 -- f A1,...,An (x1: t1) ... (xn: tn): t = e
@@ -46,14 +41,14 @@ data TmBind = TmBind
   , bindParams          :: [(TmName, Maybe Type)]    -- x1: t1, ..., xn: tn
   , bindRhs             :: Expr                      -- e
   , bindRhsTyAscription :: Maybe Type                -- t
-  } deriving (Show)
+  } deriving (Show, Generic)
 
 -- type T[A1, ..., An] = t
 data TypeBind = TypeBind
   { typeBindName   :: BindName           -- T
   , typeBindParams :: [(TyName, Kind)]   -- A1, ..., An
   , typeBindRhs    :: Type               -- t
-  } deriving (Show)
+  } deriving (Show, Generic)
 
 -- Unbound library
 type TmName = Name Expr
@@ -85,7 +80,7 @@ data Expr = Anno Expr Type
           | LamA (Bind (TmName, Embed Type) Expr)
           -- ^ Not exposed to users, for internal use
           | Bot
-  deriving Show
+  deriving (Show, Generic)
 
 type Label = String
 data Type = NumT
@@ -103,14 +98,13 @@ data Type = NumT
           | OpApp Type Type
           -- ^ Type-level application: t1 t2
 
-  deriving Show
+  deriving (Show, Generic)
 
 -- Kinds k := * | k -> k
-data Kind = Star | KArrow Kind Kind deriving (Eq, Show)
+data Kind = Star | KArrow Kind Kind deriving (Eq, Show, Generic)
 
 
 -- Unbound library instances
-$(derive [''Expr, ''Type, ''SDecl, ''TmBind, ''TypeBind, ''Kind, ''Trait])
 
 instance Alpha Type
 instance Alpha Expr

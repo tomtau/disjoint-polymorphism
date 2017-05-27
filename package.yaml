@@ -43,9 +43,10 @@ library:
     - SEDEL.Target.Syntax
     - SEDEL.Target.Dynamics
     - SEDEL.Target.CBN
+    - SEDEL.Util
     - SEDEL
   dependencies:
-    - unbound
+    - unbound-generics
 
 executables:
   SEDEL-exe:

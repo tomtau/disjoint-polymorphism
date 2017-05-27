@@ -1,8 +1,9 @@
-{-# LANGUAGE MultiParamTypeClasses, TemplateHaskell, ScopedTypeVariables, FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE DeriveGeneric, MultiParamTypeClasses #-}
 
 module SEDEL.Target.Syntax where
 
-import Unbound.LocallyNameless
+import Unbound.Generics.LocallyNameless
+import GHC.Generics (Generic)
 
 import SEDEL.Common
 
@@ -29,11 +30,10 @@ data UExpr = UVar UName
            | UToString UExpr
            | USqrt UExpr
            | Bot
-           deriving Show
+           deriving (Show, Generic)
 
 instance Alpha UExpr
 
-$(derive [''UExpr])
 
 instance Subst UExpr ArithOp
 instance Subst UExpr LogicalOp

@@ -9,7 +9,7 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Expr
 import qualified Text.Megaparsec.Lexer as L
 import           Text.Megaparsec.String
-import           Unbound.LocallyNameless
+import           Unbound.Generics.LocallyNameless
 
 import           SEDEL.Common
 import           SEDEL.Source.Syntax
