@@ -31,9 +31,9 @@ library
       SEDEL.Target.Syntax
       SEDEL.Target.Dynamics
       SEDEL.Target.CBN
+      SEDEL.Util
       SEDEL
   other-modules:
-      SEDEL.Util
       Paths_SEDEL
   build-depends:
       ansi-wl-pprint

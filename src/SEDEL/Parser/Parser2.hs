@@ -13,6 +13,7 @@ import           Unbound.Generics.LocallyNameless
 
 import           SEDEL.Common
 import           SEDEL.Source.Syntax
+import           SEDEL.Util
 
 parseExpr :: String -> Either String Module
 parseExpr s =

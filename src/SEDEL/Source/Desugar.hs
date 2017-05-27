@@ -15,7 +15,7 @@ import Unbound.Generics.LocallyNameless
 
 import SEDEL.Environment
 import SEDEL.Source.Syntax
-
+import SEDEL.Util
 
 desugar :: [SDecl] -> [SDecl]
 desugar = map go

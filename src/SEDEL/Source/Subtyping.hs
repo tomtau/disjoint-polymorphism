@@ -17,8 +17,9 @@ import           Unbound.Generics.LocallyNameless
 
 import           SEDEL.Environment
 import           SEDEL.PrettyPrint
-import           SEDEL.Source.Desugar
 import           SEDEL.Source.Syntax
+import           SEDEL.Source.Desugar
+import           SEDEL.Util
 import qualified SEDEL.Target.Syntax as T
 
 ----------------------------

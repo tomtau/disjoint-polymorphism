@@ -8,7 +8,7 @@ import qualified Data.Map as M
 import           Protolude hiding (Type)
 import qualified Text.PrettyPrint.ANSI.Leijen as PP
 import           Text.PrettyPrint.ANSI.Leijen hiding ((<>), (<$>), Pretty)
-import           Unbound.Generics.LocallyNameless hiding (restrict)
+import           Unbound.Generics.LocallyNameless
 
 
 import           SEDEL.Common
