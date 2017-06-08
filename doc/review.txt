@@ -1,7 +1,14 @@
 
-I feel that reviewers have their own definitions of inheritance, not in the
-sense as in Cook's thesis, i.e., code reuse
++ What is the established notion of inheritance? Is it in the same sense as in
+Cook's thesis?
 
++ Reviewers seem to be unhappy with our little contribution with theoretical
+parts of Fi, which we didn't claim to have. But this is acknowledged, and what
+we focus on the paper is to "put these ideas into practice", notably, the
+extensible designs, which is an important application domain, and not is solved
+by previous papers.
+
++ Reviewers seems to be confused by the type of traits.
 
 
 ===========================================================================
@@ -50,23 +57,23 @@ of the conventional subtyping induced by subclasses.
 We never claim that this paper is *all* about extensions of Fi, but rather
 ``puts these ideas into practice'', and show how disjoint intersection types and
 disjoint polymorphism combined help solve issues arise in extensible designs.
+These are something not achieved by previous papers.
 
 
 > Without presenting the complete subtyping
 > system together with its extensions it is impossible to understand which
 > are the changes and their consequences.
 
-There are almost no changes at all. We uses the same set of typing/subtyping rules in
-Fi, plus an addition rule which is shown in Sec. 7. SEDEL enjoys the same
-properties as found in Fi.
+There are no fundamental changes (syntactic sugar, if any) at all. We use the
+same set of typing/subtyping rules in Fi, plus an addition rule which is shown
+in Sec. 7. SEDEL enjoys the same properties as found in Fi. As we emphasized in
+the paper, the theoretical parts of Fi is not a contribution of this paper, and
+are not necessarily to understand our trait model.
 
 > Sec. 2.1: are retroactive supertypes always sound?
 >
 > Sec. 2.2: overloading is often considered bad design, therefore
 > you might want to avoid it in a new language proposal.
-
-This is opinionated.
-
 
 > Sec. 2.3 (and bottom of page 13): A comparison with:
 
@@ -79,8 +86,6 @@ This is opinionated.
 > }
 
 > would be in order.
-
-Let me get back to this point after looking at this paper
 
 > Page 8, lines 7-8: you say that in that case the type of self is top. Is your self polymorphic?
 
@@ -170,6 +175,13 @@ Evaluation:
 > present some examples that serve to promote the language design, but the fact
 > that the technical details have been presented elsewhere makes it somewhat
 > hard to see (from this paper) how it all works.
+
+This is acknowledged in the paper. In (Alpuim et al. 2017), they laid out the
+theoretical foundation we rely on, but they didn't think about important
+applications. What we present here are such important applications that are
+problematic to do in traditional OO languages, but are elegantly accomplished in
+SEDEL.
+
 >
 > All in all, this is a very interesting and charming paper, but also highly
 > confusing. It is not obvious that it's ready for publication.
@@ -186,30 +198,37 @@ Evaluation:
 > unless you have some extra tricks in this area it would seem reasonable to
 > state up front that a subclass can't be completely type-incompatible with its
 > superclass.
->
+
+See "A Denotational Semantics of Inheritance and its Correctness " paper,
+especially on late binding and self-reference. This is not "some extra tricks",
+but a formal denotational model of inheritance. You can find more on typing for
+inheritance in Cook's thesis.
+
+
 > p2.2, 'inheritance .. a relation on objects': Well, (Cook et al 1989)
 > considers 'inheritance' to be a relationship that creates a derived recursive
 > entity from a given base entity, preserving the internal structure, and that
 > entity may be an object, a class, or a type. The self-referential structure is
 > achieved using explicit recursion (a $\mu$ operator with a named "self" entity
 > of various kinds). This basically means that there is a true 'This' type in
-> every class, and it's even (apparently) expected to be used rather
-> liberally. This of course means that the derived structure (say, a derived
-> type T) doesn't admit substitutability with the base structure (the
-> type S that T was derived from), for instance because the type may have a
-> method foo taking an argument of type S, where the supertype foo takes a T.
-> So unless you've made the reader understand that you are assuming, by
-> default, that inheritance involves mechanisms like a true 'This' type and
-> similar self-referential/recursive mechanisms, you're just going to ask for
-> protest from the readers because they can't see how you can be talking about
-> inheritance when you claim that it has properties which are not present in
-> any well-known kinds of inheritance.
+> every class, and it's even (apparently) expected to be used rather liberally.
+> This of course means that the derived structure (say, a derived type T)
+> doesn't admit substitutability with the base structure (the type S that T was
+> derived from), for instance because the type may have a method foo taking an
+> argument of type S, where the supertype foo takes a T. So unless you've made
+> the reader understand that you are assuming, by default, that inheritance
+> involves mechanisms like a true 'This' type and similar
+> self-referential/recursive mechanisms, you're just going to ask for protest
+> from the readers because they can't see how you can be talking about
+> inheritance when you claim that it has properties which are not present in any
+> well-known kinds of inheritance.
 
-
-We use inheritance in exactly the same sense as Cook’s thesis, it entails that
-we have a mechanism for code reuse. In Sec. 6 we say that the trait translation
-is inspired by functional mixin semantics by open recursion.
-
+We apologize for not using the technical term precisely. What we really mean is
+"object inheritance" in Cook's paper (they also have "class inheritance"), that
+is, to construct objects incrementally. If this is agreed (since SEDEL has no
+classes, and is object-centered), then inheritance is really a relation on
+objects. And the way we encode traits is exactly the way inheritance is
+modelled, that is, by fixed-point semantics.
 
 >
 > p3.19, typo: 'not statically know' -> '.. known'. This typo occurs several
@@ -229,8 +248,8 @@ Let me check
 > because it breaks the underlying execution model or the soundness of the type
 > system.
 
-
-
+No, we didn't say it breaks the soundness of the type system, but certainly a
+missing feature in Java, and is required, as we show, by extensible designs.
 
 
 >
@@ -245,7 +264,9 @@ Let me check
 
 
 Same as "new A with B" would do, creating a new object that combines 'x' and
-'y'.
+'y'. As is shown in the paper, object algebra composition does need this form of
+dynamic composing two statically unknown objects, which is not easily to be done
+in Scala.
 
 
 >
@@ -254,7 +275,8 @@ Same as "new A with B" would do, creating a new object that combines 'x' and
 > objects (whatever that would mean) to have a type which is an intersection of
 > two types that these objects have.
 
-I don't understand the point
+But we are talking about statically typed languages, every object (whatever that
+would mean) in the language does need a type.
 
 >
 > p6.37, 'trait T[A] extends A': Well, (Scala) traits are exactly what you need
@@ -267,7 +289,9 @@ I don't understand the point
 > imprecise relative to the actual (missing) feature that you are referring
 > to. It's simply not very convincing when the arguments are so imprecise.
 
-
+Maybe this is not a good example, but the point is that the inability of
+extending a statically unknown object in languages like Java and Scala does pose
+difficulties in extensible designs.
 
 
 >
@@ -279,11 +303,14 @@ I don't understand the point
 > really have an 'x'?
 
 
-No, top doesn't have any information. As we said in the paper, self in SEDEL is
-very flexible, we can annotate it with any type. It happens to be that in this
-example, we doesn't bother annotating it, so it defaults to top. If the method
-intends to use self, we could annotate it with "Point", so self can refer to the
-method being declared.
+No, top doesn't have any information. Self-reference in SEDEL is very flexible,
+a generalization if you want. We can choose any type for self-reference, not
+necessarily the "This" type as found in traditional languages. In this example,
+we doesn't bother annotating it, so it defaults to top (could be This if we had
+support for it). If the method intends to use the self-reference, we could then
+annotate it with "Point", so the self-reference now does contain an "x" instance
+variable. In principle we can choose "This". It's just a matter of
+implementation.
 
 
 
@@ -297,8 +324,10 @@ method being declared.
 > 'new' expression benefits from its type argument. So is this type argument to
 > 'new' really useful?
 
-"Point" is just an alias for the record type defined before, and it is the type
-of the "new" expression. Yes, it is useful, as this is the *type* of self!
+First of all, there is no truly "typeless" objects. SEDEL is explictly typed,
+every term has a type. "Point" is just an alias for the record type defined
+before, and it is the type of the "new" expression. Yes, it is useful, as this
+is to specify the *intended* type of the object and the self-reference!
 
 
 >
@@ -330,9 +359,9 @@ traits results in a conflict.
 > where 'radius' used to be a 'Double' now work correctly when it's a 'String'?
 
 Then it doesn't have conflict at all, they can coexist nicely. We allow the same
-field names, as along as their types are different. We suggest taking a look at
-(Alpuim et al. 2017) to have a better understanding of what constitutes a
-conflict (or non-disjointness in their jargon).
+field names to coexist, as along as their types are *disjoint*. We suggest
+taking a look at (Alpuim et al. 2017) to have a better understanding of what
+constitutes a conflict (or non-disjointness in their jargon).
 
 
 >
@@ -344,7 +373,9 @@ conflict (or non-disjointness in their jargon).
 
 By "parameterized" we mean that the implementation of trait "norm" is not
 statically known. Still we can combine it with statically known traits such as
-"circleFns2" to form a new trait.
+"circleFns2" to form a new trait. After desugaring, every thing is a first class
+values, but the point is that traditional OO languages wouldn't allow you to do
+this.
 
 
 
@@ -364,7 +395,8 @@ statically known. Still we can combine it with statically known traits such as
 > expressions disjoint..
 
 Again we suggest taking a look at (Alpuim et al. 2017) on how disjoint
-polymorphism works. This is not our contribution.
+polymorphism works. We could have said something more about it if we had more
+space.
 
 
 >
@@ -383,7 +415,9 @@ polymorphism works. This is not our contribution.
 > try to express the same thing using first class functions.
 
 The reason we define ExtExp and Exp is that we want to have *first-class object
-values*.
+values*. To do that in Java for example, you would need to crate a class that
+contains a single method called "accept", then you lose extensibility, see
+p12, last paragraph.
 
 >
 > p18.18: The rule Sub_R would give rise to a loss of information, so you might
@@ -397,10 +431,10 @@ values*.
 >       -----------------------------------
 >       A <: {l: A_1 | A_2 -> B_1 & B_2}
 
-We think you are confused of subtyping of intersection types and subtyping of
+We think the reviewer are confused of subtyping of intersection types and subtyping of
 union types.
 
-The rule you propose is unsound! It allows the following subtyping relation:
+The rule proposed is unsound! It allows the following subtyping judgment:
 
 {l : Int -> String} & {l : Bool -> Char} <: {l : Int | Bool -> String & Char}
 
@@ -413,10 +447,10 @@ Haskell syntax):
 
 \f :: Int | Bool ->
   case f of
-    x :: Int   -> f1 x    -- x is of type Int, but the return type should be (String, Char), but we can only make a value of String
-    y :: Bool  -> f2 y    -- y is of type Bool, but the return type should be (String, Char), but we can only make a value of Char
+    x :: Int   -> f1 x    -- x is of type Int, the return type should be (String, Char), but we can only make a value of String
+    y :: Bool  -> f2 y    -- y is of type Bool, the return type should be (String, Char), but we can only make a value of Char
 
-There is not way to write such coercion!
+There is no way to write such coercion!
 
 For union subtyping, We suggest "Elaborating Intersection and Union Types" by
 Joshua Dunfield.
@@ -434,7 +468,6 @@ Joshua Dunfield.
 > prevent a dynamic trait composition mechanism from encountering a conflict
 > if you are, say, composing two traits with statically known type 'top'?
 
-Then those traits don't contain anything by the subsumption rule!
 
 
 
@@ -451,22 +484,82 @@ Then those traits don't contain anything by the subsumption rule!
 
                          ===== Paper summary =====
 
-This paper puts forward the definition of SEDEL, a new polymorphic, statically-typed and delegation-based OO language.  It supports polymorphism, separates subtyping from inheritance, and something called dynamically composable traits.  The latter is the main new feature of this language.  The design is based on earlier theoretical work on disjoint intersection types and disjoint polymorphism.
+This paper puts forward the definition of SEDEL, a new polymorphic,
+statically-typed and delegation-based OO language. It supports polymorphism,
+separates subtyping from inheritance, and something called dynamically
+composable traits. The latter is the main new feature of this language. The
+design is based on earlier theoretical work on disjoint intersection types and
+disjoint polymorphism.
 
                       ===== Comments for author =====
 
-This is nice work that seems to make an important contribution.  I think you dwell a bit too much on the contravariant subtyping issues in languages at the beginning of the paper.  I suspect your remark about one reason for not allowing contravariant parameter types because they are rarely needed is indeed on the mark and the major reason languages don't both.  I see that you need this later on, but I don't think you need to spend as much time early on with this topic -- a quick remark would be sufficient.  I also agree with you that subtyping ≠ inheritance is also important for OO languages.  However, section 2.2 on restrictions on multiple inheritance is really what you want to focus most on.
+> This is nice work that seems to make an important contribution. I think you
+> dwell a bit too much on the contravariant subtyping issues in languages at the
+> beginning of the paper. I suspect your remark about one reason for not allowing
+> contravariant parameter types because they are rarely needed is indeed on the
+> mark and the major reason languages don't both. I see that you need this later
+> on, but I don't think you need to spend as much time early on with this topic --
+> a quick remark would be sufficient. I also agree with you that subtyping ≠
+> inheritance is also important for OO languages. However, section 2.2 on
+> restrictions on multiple inheritance is really what you want to focus most on.
+>
+> One concern with your example in 2.2 If the method m had type () -> A rather
+> than A -> A, then the merge of C[A] and C[B] would not work as you would have
+> variants of m with types () -> a and () -> B, which will not live happily in the
+> same object
 
-One concern with your example in 2.2  If the method m had type () -> A rather than A -> A, then the merge of C[A] and C[B] would not work as you would have variants of m with types () -> a and () -> B, which will not live happily in the same object
+They do live happily in the same object in SEDEL as long as A and B are
+disjoint. See more on function disjointness in (Alpuim et al. 2017).
 
-The disjoint type and disjoint polymorphism seem to be the key ideas here that lead to a powerful extension over other languages.  The example of modeling Object Algebras is key here, particularly the use of the merge operator for building objects out of traits.  However, you don't mention the equivalent of private/protected methods.  Do those make a difference as they may not be visible to the merge operator?  Having a duplicate method that is protected can disrupt a public method.
 
-The work as presented is quite nice.  However, I do have some concerns as the language becomes more realistic and complete:
+> The disjoint type and disjoint polymorphism seem to be the key ideas here that
+> lead to a powerful extension over other languages. The example of modeling
+> Object Algebras is key here, particularly the use of the merge operator for
+> building objects out of traits. However, you don't mention the equivalent of
+> private/protected methods. Do those make a difference as they may not be visible
+> to the merge operator? Having a duplicate method that is protected can disrupt a
+> public method.
 
-1.  Private/protected as explained above.  Does the disjoint operator A * B only look at public methods?  If so, big problems can arise.  In other context, if you actually want to pass around classes as first class objects, you must know the types of all methods, not just the public ones.  Even without that if the type A promises fewer methods than the trait being merged actually has, how will the disjoint operator really protect you?
+We want to point out that Object Algebra is a general design pattern that can be
+modeled in different languages (the original proposal actually uses Java). What
+makes the merge operator stand out is the ability to compose two (statically
+unknown) object algebras in a simple and type-safe way. None of the previous
+work can do that. In that regard, private/protected methods do not solve the
+problem.
 
-2.  Mutable state.   Order of initialization can be a huge issue.  In what order are you going to run the constructors when you have multiple traits.
 
-3.  You talk about the language as using delegation.  However, what you seem to mean by that is simply that you can inherit from objects.  This starts making a difference once you have state.  At that point, delegation starts running into problems with shared state.  You might want to take a look at the paper Grace's inheritance which will appear in JOT.  You can find it at http://web.cecs.pdx.edu/~black/publications/.  (Grace actually has a lot of similarities with SEDEL, including subtyping separate from inheritance, traits with an exclusion operator, inheriting from (fresh) objects, etc.)
+> The work as presented is quite nice. However, I do have some concerns as the
+> language becomes more realistic and complete:
+>
+> 1. Private/protected as explained above. Does the disjoint operator A * B only
+> look at public methods? If so, big problems can arise. In other context, if you
+> actually want to pass around classes as first class objects, you must know the
+> types of all methods, not just the public ones. Even without that if the type A
+> promises fewer methods than the trait being merged actually has, how will the
+> disjoint operator really protect you?
 
-4.  A major concern here is that this paper is a relatively small change from the theoretical paper on which it is built.  I think it would be much stronger if you added at least mutable state and confronted the design difficulties there.
+We haven't thought carefully on combing disjoint operator with private/public
+methods. As we said, currently SEDEL is still a very simple language, lacking
+many realistic features.. This paper is more of a exportation of the design
+space. We think we found a nice way to deal with the issues arise in extensible
+designs of mainstream OO languages.
+
+
+> 2. Mutable state. Order of initialization can be a huge issue. In what order are
+> you going to run the constructors when you have multiple traits.
+>
+> 3. You talk about the language as using delegation. However, what you seem to
+> mean by that is simply that you can inherit from objects. This starts making a
+> difference once you have state. At that point, delegation starts running into
+> problems with shared state. You might want to take a look at the paper Grace's
+> inheritance which will appear in JOT. You can find it at
+> http://web.cecs.pdx.edu/~black/publications/. (Grace actually has a lot of
+> similarities with SEDEL, including subtyping separate from inheritance, traits
+> with an exclusion operator, inheriting from (fresh) objects, etc.)
+>
+> 4. A major concern here is that this paper is a relatively small change from the
+> theoretical paper on which it is built. I think it would be much stronger if you
+> added at least mutable state and confronted the design difficulties there.
+
+As we acknowledged in Sec. 9. there are all good points for future work.
+Currently SEDEL is just a purely functional OO language.
