@@ -1,4 +1,4 @@
-We thank the reviews for their precious comments!
+We thank the reviewers for their comments.
 
 Most reviewers seem to be confused by the concept of inheritance in our paper.
 We believe there is a established standard of what is inheritance in the
@@ -19,12 +19,11 @@ realize the connections between disjoint intersection types from FP world and
 safe delegation-based programming from OO world.
 
 Third, SEDEL is a purely functional OO language. It certainly lacks realistic
-features such as mutable states, private/public methods. These are all
+features such as mutable state, private/public methods. These are all
 acknowledged in the paper (Sec. 9), and we are interested to investigate in that
 regard. Even that, SEDEL has already shown remarkably expressiveness power that
 solves a number of difficult design problems. We believe the approach described
 here sheds some light in the study of modularity and extensible designs.
-
 
 Forth, SEDEL has a more general notion of the self-reference. In lots of work on
 typing the self-reference, people expect this to be the type of the object
@@ -42,25 +41,32 @@ Reviewer A
 > the desugaring of traits (Sec. 6.2) and some modifications to the subtyping
 > system (Sec. 7).
 
-We never claim that this paper is *all* about extensions of Fi, but rather "puts
-these ideas into practice", and show how disjoint intersection types and
-disjoint polymorphism combined help solve issues arise in extensible designs.
-These are something not achieved by previous papers.
+We never claim that this paper is about extensions of Fi! We *clearly*
+state *5 contributions* at the end of our introduction and none of them
+says anything about extensions to Fi.
+
+With all due respect for the reviewer, this review is non-constructive. It appears to
+expect some extensions to Fi (which he do not claim anywhere), and
+simply ignores the 5 contributions that are stated in the
+introduction. Therefore, we end up not having any useful information
+on how to improve the work from this review.
+
+The reviewer could at least go through the contributions and say
+something (positive or negative) about those!
 
 > Without presenting the complete subtyping system together with its extensions
 > it is impossible to understand which are the changes and their consequences.
 
-There are no fundamental changes (syntactic sugar, if any) at all. We use the
-same set of typing/subtyping rules in Fi, plus an addition rule which is shown
-in Sec. 7. SEDEL enjoys the same properties as found in Fi. As we emphasized in
-the paper, the theoretical parts of Fi is not a contribution of this paper, and
-are not necessarily to understand our trait model.
-
-
-> Sec. 2.3 (and bottom of page 13): A comparison with:
-
-About the merge!
-
+As acknowledged by us, the type system, subtyping as well as the
+complete meta-theory are presented in previous work (Alpuim et
+al. 2017) There are no fundamental changes at all. All we add is some
+syntactic sugar (covered in Section 6) and standard constructs to
+create a larger language, such as declarations, programs, primitive
+types...  All of which quite standard and often ommitted from
+formalizations.  We use the same set of typing/subtyping rules in Fi,
+plus an additional rule which is shown in Sec. 7. SEDEL enjoys the
+same properties as found in Fi. As we emphasized in the paper, the
+theoretical parts of Fi are not a contribution of this paper.
 
 ==================
 Reviewer B
@@ -98,17 +104,17 @@ private inheritance does not suit our purpose.
 > p4.37: It would of course be near-trivial to define the Java override rules
 > such that contravariant method argument types are allowed, but I think ...
 
-No, we didn't say it breaks the soundness of the type system, but certainly a
-missing feature in Java, and is required, as we show, by extensible designs.
-
+We didn't say it breaks the soundness of the type system. What we do
+say is that it is a missing feature in Java, and is required, as we
+show, by extensible designs.
 
 > p6.33: You could give a tiny hint about what you'd like 'new x with y' to do.
 > It doesn't make a lot of sense to say that it isn't supported if it is ...
 
-Same as "new A with B" would do, creating a new object that combines 'x' and
-'y'. As is shown in the paper, object algebra composition does need this form of
-dynamically composing two statically unknown objects, which is not easily to be
-done in Scala.
+Perhaps we shouldn't have written that code. The point is that there's
+no easy way to build a value with type A with B in scala when A or B
+are not statically known. In SEDEL the merge operator allows us to do
+this. 
 
 
 > p8.12: Is the 'Point' type going to be an inherent property of the new 'point'
@@ -164,7 +170,7 @@ last paragraph.
 >       -----------------------------------
 >       A <: {l: A_1 | A_2 -> B_1 & B_2}
 
-We think the reviewer are confused of subtyping of intersection types and
+We think the reviewer is confused with the subtyping of intersection types and
 subtyping of union types.
 
 The rule proposed is unsound! It allows the following subtyping judgment:
@@ -188,8 +194,6 @@ There is no way to write such coercion!
 For union subtyping, We suggest "Elaborating Intersection and Union Types" by
 Joshua Dunfield.
 
-
-
 ==================
 Reviewer C
 ==================
@@ -200,8 +204,9 @@ Reviewer C
 > same object
 
 They do live happily in the same object in SEDEL as long as A and B are
-disjoint. See more on function disjointness in (Alpuim et al. 2017).
-
+disjoint. See more on function disjointness in (Oliveira et al. 2016).
+In fact this feature is essential for composing Object Algebras, and
+is related to the limitation pointed out in Section 2.2.
 
 > The disjoint type and disjoint polymorphism seem to be the key ideas here that
 > lead to a powerful extension over other languages. The example of modeling
@@ -211,9 +216,53 @@ disjoint. See more on function disjointness in (Alpuim et al. 2017).
 > to the merge operator? Having a duplicate method that is protected can disrupt a
 > public method.
 
-We want to point out that Object Algebra is a general design pattern that can be
-modeled in different languages (the original proposal actually uses Java). What
-makes the merge operator stand out is the ability to compose two (statically
-unknown) object algebras in a simple and type-safe way. None of the previous
-work can do that. In that regard, private/protected methods do not solve the
-problem.
+No. "protected" and "private" methods never give rise to conflicts
+(even if they have the same names). So the merge operator only really
+cares about the public interfaces.
+
+Importantly, information hiding is achieved by different means in SEDEL. We do
+not actually use private/protected as other languages, but we can
+simulate those.
+
+For example, for protected methods, in Java you may write:
+
+class A {
+   public Int foo() {return bar();}
+   protected Int bar() {...}
+}
+
+class B extends A {
+   public Int m() {return bar();}
+}
+
+...
+B x = new B();
+...
+
+In SEDEL you accomplish the same by:
+
+// public interfaces
+type A = {foo : () -> Int}       
+type B = A & {m : () -> Int}
+
+trait a() {self : {bar : () -> Int} => // self requires a bar
+   def foo() = self.bar() 
+   def bar() = ...
+}
+
+trait b() inherits a {self :  {bar : () -> Int} =>
+   def m() = self.bar() // bar is inherited and visible here
+}
+
+...
+new[B] b() // no bar is visible here!
+...
+
+For private methods, SEDEL actually supports a syntax (which we did not present in the
+paper) that allows us to completely hide methods:
+
+// the syntax ": A" next specifies the "public" type of the trait
+trait a() : A {self : {bar : () -> Int} => 
+   def foo() = self.bar() 
+   def bar() = ...  // bar is only visible inside trait a, so it is effectively private
+}
