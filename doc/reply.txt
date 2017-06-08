@@ -179,7 +179,7 @@ we make a function of type Int | Bool -> String & Char? Something like (in
 Haskell syntax):
 
 \f :: Int | Bool ->
-
+  case f of
     x :: Int   -> f1 x    -- x is of type Int, the return type should be (String, Char), but we can only make a value of String
     y :: Bool  -> f2 y    -- y is of type Bool, the return type should be (String, Char), but we can only make a value of Char
 
