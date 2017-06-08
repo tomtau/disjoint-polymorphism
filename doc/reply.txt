@@ -1,4 +1,4 @@
-We thank the reviews for their precious comments!
+We thank the reviewers for their comments.
 
 Most reviewers seem to be confused by the concept of inheritance in our paper.
 We believe there is a established standard of what is inheritance in the
@@ -19,7 +19,7 @@ realize the connections between disjoint intersection types from FP world and
 safe delegation-based programming from OO world.
 
 Third, SEDEL is a purely functional OO language. It certainly lacks realistic
-features such as mutable states, private/public methods. These are all
+features such as mutable state, private/public methods. These are all
 acknowledged in the paper (Sec. 9), and we are interested to investigate in that
 regard. Even that, SEDEL has already shown remarkably expressiveness power that
 solves a number of difficult design problems. We believe the approach described
@@ -31,7 +31,6 @@ itself (the so-called "This" type). What we propose here is something different
 where we can choose any type for the self-reference. In principle we could
 choose "This" too.
 
-
 ==================
 Reviewer A
 ==================
@@ -39,35 +38,44 @@ Reviewer A
 > First of all, it seems that there are very few extensions with respect to the
 > typed core language $F_i$ to be a paper on its own.
 
-We never claim that this paper is *all* about extensions of Fi, but rather "puts
-these ideas into practice", and show how disjoint intersection types and
-disjoint polymorphism combined help solve issues arise in extensible designs.
-These are something not achieved by previous papers.
+We never claim that this paper is about extensions of Fi! We *clearly*
+state *5 contributions* at the end of our introduction and none of them
+says anything about extensions to Fi.
+
+With all due respect for the reviewer, this review is non-constructive. It appears to
+expect some extensions to Fi (which we do not claim anywhere), and
+simply ignores the 5 contributions that are stated in the
+introduction. Therefore, we end up not having any useful information
+on how to improve the work from this review.
+
+The reviewer could at least go through the contributions and say
+something (positive or negative) about those!
 
 > Without presenting the complete subtyping system together with its extensions
 > it is impossible to understand which are the changes and their consequences.
 
-There are no fundamental changes (syntactic sugar, if any) at all. We use the
-same set of typing/subtyping rules in Fi, plus an addition rule which is shown
-in Sec. 7. SEDEL enjoys the same properties as found in Fi. As we emphasized in
-the paper, the theoretical parts of Fi is not a contribution of this paper, and
-are not necessarily to understand our trait model.
-
+As acknowledged by us, the type system, subtyping as well as the
+complete meta-theory are presented in previous work (Alpuim et
+al. 2017) There are no fundamental changes at all. All we add is some
+syntactic sugar (covered in Section 6) and standard constructs to
+create a larger language, such as declarations, programs, primitive
+types...  All of which are quite standard and often ommitted from
+formalizations.  We use the same set of typing/subtyping rules in Fi,
+plus an additional rule which is shown in Sec. 7. SEDEL enjoys the
+same properties as found in Fi. As we emphasized in the paper, the
+theoretical parts of Fi are not a contribution of this paper.
 
 > Sec. 2.3 (and bottom of page 13): A comparison with:
 
 MIXGEN is based on Generic Java, the points against covariant model in our paper
-also apply to theirs. In particular, they cannot deal with issue with Extensible
-Visitors. Second, MIXGEN has first-class generic types, meaning they can have
-operations that require generic type information at run-time. SEDEL, like most
-statically typed languages, is based on type erasure (generic types are only
-present during type checking). What is similar to ours is that they have dynamic
-inheritance. A crucial difference is that, their model cannot detect conflicts
-statically, since their motivation is to support mixins, while ours is to
-support traits. Conflict detection is the key feature of traits.
-
-
-
+also apply to theirs. In particular, they cannot deal with issues with
+Extensible Visitors. Second, MIXGEN has first-class generic types, meaning they
+can have operations that require generic type information at run-time. SEDEL,
+like most statically typed languages, is based on type erasure (generic types
+are only present during type checking). What is similar to ours is that they
+have dynamic inheritance. A crucial difference is that, their model cannot
+detect conflicts statically, since their motivation is to support mixins, while
+ours is to support traits. Conflict detection is the key feature of traits.
 
 ==================
 Reviewer B
@@ -78,10 +86,8 @@ Reviewer B
 
 See "A Denotational Semantics of Inheritance and its Correctness" paper,
 especially on late binding and self-reference. This is not "some extra tricks",
-but a formal denotational model of inheritance. The desugaring procedures use
-exactly the same technique.
-
-
+but a formal denotational model of inheritance. You can find more on typing for
+inheritance in Cook's thesis.
 
 > p2.2, 'inheritance .. a relation on objects': Well, (Cook et al 1989)
 > considers 'inheritance' to be a relationship that creates a ...
@@ -105,22 +111,19 @@ inheritance also imply that all public and protected members of the base become
 situations where we still want to be able to access those members. In that
 sense, C++ private inheritance does not suit our purpose.
 
-
-
 > ... But it's certainly not because it breaks the underlying execution model or
 > the soundness of the type system.
 
-No, we didn't say it breaks the soundness of the type system, but certainly a
-missing feature in Java, and is required, as we show, by extensible designs.
-
+We didn't say it breaks the soundness of the type system. What we do
+say is that it is a missing feature in Java, and is required, as we
+show, by extensible designs.
 
 > p6.33: You could give a tiny hint about what you'd like 'new x with y' to do.
 
-Same as "new A with B" would do, creating a new object that combines "x" and
-"y". As is shown in the paper, object algebra composition does need this form of
-dynamically composing two statically unknown objects, which cannot be easily
-done in Scala.
-
+Perhaps we shouldn't have written that code. The point is that there's
+no easy way to build a value with type A with B in scala when A or B
+are not statically known. In SEDEL the merge operator allows us to do
+this.
 
 > p8.12: Is the 'Point' type going to be an inherent property of the new 'point'
 > object, or is it just going to be the type of the 'new' expression? ... So is
@@ -131,7 +134,6 @@ the "new" expression. Yes, it is useful, as this specifies the *intended* type
 of the object and the self-reference! We encourage the reviewer to write down
 the desugared version of the point trait, and see why it needs type argument
 when instantiating it.
-
 
 > p9.37: If trait composition conflicts are checked by the type checker at the
 > expression where the traits are composed, composition of traits cannot take
@@ -146,7 +148,6 @@ then it doesn't have "color" member. You would need to define another type, say
 "ColorPoint" with "color" member, and another type "SportsCar" with "color"
 member, then composing these two traits results in a conflict.
 
-
 > p10.9: It is not obvious how it would have eliminated the conflict if the
 > 'radius' fields in 'circle' and in 'asOval' had had different types.
 
@@ -154,7 +155,6 @@ Then they don't have conflict at all; they can coexist nicely. We allow the same
 field names to coexist, as along as their types are *disjoint*. We suggest
 taking a look at (Alpuim et al. 2017) to have a better understanding of what
 constitutes a conflict (or non-disjointness in their jargon).
-
 
 > It's not obvious, however, what you mean by saying that 'norm' is
 > "parameterized".
@@ -164,7 +164,6 @@ statically known. Still we can combine it with statically known traits such as
 "circleFns2" to form a new trait. After desugaring, every thing is a first class
 values, but the point is that traditional OO languages wouldn't allow you to do
 this (you cannot mix unknown with known).
-
 
 > p12.43, 'ExtExp should be a supertype of Exp': Note that these types are
 > essentially function types ... So maybe this just demonstrates that you'd need
@@ -182,9 +181,10 @@ in the definition of e2.
 >       -----------------------------------
 >       A <: {l: A_1 | A_2 -> B_1 & B_2}
 
-We think the reviewer are confused of subtyping of intersection types and
-subtyping of union types. The rule proposed is unsound! It allows the following
-subtyping judgment:
+We think the reviewer is confused with the subtyping of intersection types and
+subtyping of union types.
+
+The rule proposed is unsound! It allows the following subtyping judgment:
 
 {l : Int -> String} & {l : Bool -> Char} <: {l : Int | Bool -> String & Char}
 
@@ -205,8 +205,6 @@ There is no way to write such coercion!
 For union subtyping, we suggest "Elaborating Intersection and Union Types" by
 Joshua Dunfield.
 
-
-
 ==================
 Reviewer C
 ==================
@@ -217,15 +215,65 @@ Reviewer C
 > the same object
 
 They do live happily in the same object in SEDEL as long as A and B are
-disjoint. See more on function disjointness in (Alpuim et al. 2017).
+disjoint. See more on function disjointness in (Oliveira et al. 2016).
+In fact this feature is essential for composing Object Algebras, and
+is related to the limitation pointed out in Section 2.2.
 
+> The disjoint type and disjoint polymorphism seem to be the key ideas here that
+> lead to a powerful extension over other languages. The example of modeling
+> Object Algebras is key here, particularly the use of the merge operator for
+> building objects out of traits. However, you don't mention the equivalent of
+> private/protected methods. Do those make a difference as they may not be visible
+> to the merge operator? Having a duplicate method that is protected can disrupt a
+> public method.
 
-> However, you don't mention the equivalent of private/protected methods. Do
-> those make a difference as they may not be visible to the merge operator?
+No. "protected" and "private" methods never give rise to conflicts
+(even if they have the same names). So the merge operator only really
+cares about the public interfaces.
 
-We want to point out that Object Algebra is a general design pattern that can be
-modeled in different languages (the original proposal actually uses Java). What
-makes the merge operator stand out is the ability to compose two (statically
-unknown) object algebras in a simple and type-safe way. None of the previous
-work can do that. In that regard, private/protected methods do not solve the
-problem.
+Importantly, information hiding is achieved by different means in SEDEL. We do
+not actually use private/protected as other languages, but we can
+simulate those.
+
+For example, for protected methods, in Java you may write:
+
+class A {
+   public Int foo() {return bar();}
+   protected Int bar() {...}
+}
+
+class B extends A {
+   public Int m() {return bar();}
+}
+
+...
+B x = new B();
+...
+
+In SEDEL you accomplish the same by:
+
+// public interfaces
+type A = {foo : () -> Int}
+type B = A & {m : () -> Int}
+
+trait a() {self : {bar : () -> Int} => // self requires a bar
+   def foo() = self.bar()
+   def bar() = ...
+}
+
+trait b() inherits a {self :  {bar : () -> Int} =>
+   def m() = self.bar() // bar is inherited and visible here
+}
+
+...
+new[B] b() // no bar is visible here!
+...
+
+For private methods, SEDEL actually supports a syntax (which we did not present in the
+paper) that allows us to completely hide methods:
+
+// the syntax ": A" next specifies the "public" type of the trait
+trait a() : A {self : {bar : () -> Int} =>
+   def foo() = self.bar()
+   def bar() = ...  // bar is only visible inside trait a, so it is effectively private
+}
