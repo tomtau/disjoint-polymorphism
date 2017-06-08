@@ -25,7 +25,6 @@ regard. Even that, SEDEL has already shown remarkably expressiveness power that
 solves a number of difficult design problems. We believe the approach described
 here sheds some light in the study of modularity and extensible designs.
 
-
 Forth, SEDEL has a more general notion of the self-reference. In lots of work on
 typing the self-reference, people expect this to be the type of the object
 itself (the so-called "This" type). What we propose here is something different
@@ -38,9 +37,7 @@ Reviewer A
 ==================
 
 > First of all, it seems that there are very few extensions with respect to the
-> typed core language $F_i$ to be a paper on its own. In fact, there are only
-> the desugaring of traits (Sec. 6.2) and some modifications to the subtyping
-> system (Sec. 7).
+> typed core language $F_i$ to be a paper on its own.
 
 We never claim that this paper is *all* about extensions of Fi, but rather "puts
 these ideas into practice", and show how disjoint intersection types and
@@ -59,7 +56,17 @@ are not necessarily to understand our trait model.
 
 > Sec. 2.3 (and bottom of page 13): A comparison with:
 
-About the merge!
+MIXGEN is based on Generic Java, the points against covariant model in our paper
+also apply to theirs. In particular, they cannot deal with issue with Extensible
+Visitors. Second, MIXGEN has first-class generic types, meaning they can have
+operations that require generic type information at run-time. SEDEL, like most
+statically typed languages, is based on type erasure (generic types are only
+present during type checking). What is similar to ours is that they have dynamic
+inheritance. A crucial difference is that, their model cannot detect conflicts
+statically, since their motivation is to support mixins, while ours is to
+support traits. Conflict detection is the key feature of traits.
+
+
 
 
 ==================
@@ -67,107 +74,117 @@ Reviewer B
 ==================
 
 > p1.30-40: When you imply that subclasses do not need to create subtypes, the
-> question immediately arises how a subclass can inherit a method ...
+> question immediately arises how a subclass can inherit a method implementation.
 
-See "A Denotational Semantics of Inheritance and its Correctness " paper,
+See "A Denotational Semantics of Inheritance and its Correctness" paper,
 especially on late binding and self-reference. This is not "some extra tricks",
-but a formal denotational model of inheritance. You can find more on typing for
-inheritance in Cook's thesis.
+but a formal denotational model of inheritance. The desugaring procedures use
+exactly the same technique.
+
 
 
 > p2.2, 'inheritance .. a relation on objects': Well, (Cook et al 1989)
 > considers 'inheritance' to be a relationship that creates a ...
 
-What we mean is "object inheritance" in Cook's paper (they also have "class
-inheritance"), that is, to construct objects incrementally. If this is agreed
-(since SEDEL has no classes, and is object-centered), then inheritance is really
-a relation on objects. And the way we encode traits is exactly the way
+We believe this (Cook et al 1989) is the established standard definition of
+inheritance. Throughout the paper, we use the word "inheritance" in exactly the
+same sense. We could have made it clearer by saying "object inheritance" as
+opposed to "class inheritance" (both are mentioned in Cook's paper with the
+underlying theory), that is, to construct objects incrementally. If this is
+agreed (since SEDEL has no classes, and is object-centered), then inheritance is
+really a relation on objects. And the way we encode traits is exactly the way
 inheritance is modelled, that is, by fixed-point semantics.
 
 > p4.23, 'inherit code without creating any subtype relation': How would C++
-> private inheritance fail to do this? I assume you won't be satisfied ...
+> private inheritance fail to do this?
 
 In C++, a derived class from private inheritance is not a subtype of the base
-class. In that sense, this is like what we wanted here. But private inheritance
-also imply that all public and protected members of the base become *private*
-members of the derived. Now this is not what we wanted. There are situations
-where we still want to be able to access those members. In that sense, C++
-private inheritance does not suit our purpose.
+class. In that sense, this is similar to what we wanted here. But private
+inheritance also imply that all public and protected members of the base become
+*private* members of the derived. Now this is not what we wanted. There are
+situations where we still want to be able to access those members. In that
+sense, C++ private inheritance does not suit our purpose.
 
 
-> p4.37: It would of course be near-trivial to define the Java override rules
-> such that contravariant method argument types are allowed, but I think ...
+
+> ... But it's certainly not because it breaks the underlying execution model or
+> the soundness of the type system.
 
 No, we didn't say it breaks the soundness of the type system, but certainly a
 missing feature in Java, and is required, as we show, by extensible designs.
 
 
 > p6.33: You could give a tiny hint about what you'd like 'new x with y' to do.
-> It doesn't make a lot of sense to say that it isn't supported if it is ...
 
-Same as "new A with B" would do, creating a new object that combines 'x' and
-'y'. As is shown in the paper, object algebra composition does need this form of
-dynamically composing two statically unknown objects, which is not easily to be
+Same as "new A with B" would do, creating a new object that combines "x" and
+"y". As is shown in the paper, object algebra composition does need this form of
+dynamically composing two statically unknown objects, which cannot be easily
 done in Scala.
 
 
 > p8.12: Is the 'Point' type going to be an inherent property of the new 'point'
-> object, or is it just going to be the type of the 'new' expression? ...
+> object, or is it just going to be the type of the 'new' expression? ... So is
+> this type argument to 'new' really useful?
 
-First of all, there is no truly "typeless" objects. SEDEL is explictly typed,
-every trait has a type. "Point" is just an alias for the record type defined
-before, and it is the type of the "new" expression. Yes, it is useful, as this
-is to specify the *intended* type of the object and the self-reference!
+"Point" is just an alias for the record type defined before, and is the type of
+the "new" expression. Yes, it is useful, as this specifies the *intended* type
+of the object and the self-reference! We encourage the reviewer to write down
+the desugared version of the point trait, and see why it needs type argument
+when instantiating it.
+
 
 > p9.37: If trait composition conflicts are checked by the type checker at the
-> expression where the traits are composed, composition of traits cannot ...
+> expression where the traits are composed, composition of traits cannot take
+> place unless the full set of members is known.
 
-SEDEL is explicitly typed, each trait has a precisely known type. If the
-"color_point" trait is typed as "Point", then it doesn't have "color" member.
-You would need to define another type, say "ColorPoint" with a "color" member,
-and another type "SportsCar" with a "color" member, then composing these two
-traits results in a conflict.
+SEDEL is explicitly typed, each trait has a precisely known type at compile
+time. When we assign a less precise type to it, then by the subsumption rule,
+the resulting object has exactly the same members as prescribed by the assigned
+type. In extreme, if you assign type "top", then you basically erase all
+information from that trait. So If the "color_point" trait is typed as "Point",
+then it doesn't have "color" member. You would need to define another type, say
+"ColorPoint" with "color" member, and another type "SportsCar" with "color"
+member, then composing these two traits results in a conflict.
 
 
 > p10.9: It is not obvious how it would have eliminated the conflict if the
-> 'radius' fields in 'circle' and in 'asOval' had had different types ...
+> 'radius' fields in 'circle' and in 'asOval' had had different types.
 
-Then it doesn't have conflict at all, they can coexist nicely. We allow the same
+Then they don't have conflict at all; they can coexist nicely. We allow the same
 field names to coexist, as along as their types are *disjoint*. We suggest
 taking a look at (Alpuim et al. 2017) to have a better understanding of what
 constitutes a conflict (or non-disjointness in their jargon).
 
 
-> p10.31: So you can have first-class traits, nice! It's not obvious, however,
-> what you mean by saying that 'norm' is "parameterized"; isn't it more
-> reasonable to say that it's a first class value, and it happens to be received
-> as an actual argument in this case, and hence it's accessed using the formal
-> parameter 'norm'?
+> It's not obvious, however, what you mean by saying that 'norm' is
+> "parameterized".
 
 By "parameterized" we mean that the implementation of trait "norm" is not
 statically known. Still we can combine it with statically known traits such as
 "circleFns2" to form a new trait. After desugaring, every thing is a first class
 values, but the point is that traditional OO languages wouldn't allow you to do
-this.
+this (you cannot mix unknown with known).
 
 
 > p12.43, 'ExtExp should be a supertype of Exp': Note that these types are
-> essentially function types (they are single-method interfaces ...
+> essentially function types ... So maybe this just demonstrates that you'd need
+> to use a function type in this context.
 
-The reason we define ExtExp and Exp is that we want to have *first-class object
-values*. To do that in Java for example, you would need to crate a class that
-contains a single method called "accept", then you lose extensibility, see p12,
-last paragraph.
+If you use only functions, say in Java, then you lose nice things about
+inheritance. The point is that, even we wrap this simple function inside
+interface/class, there is still a fundamental difficulty in regard to
+extensibility. But this is not a problem in SEDEL, see p13 where we can reuse e1
+in the definition of e2.
 
-
+> So we get this:
+>
 >       A <: {l: A_1->B_1 } & {l: A_2->B_2}
 >       -----------------------------------
 >       A <: {l: A_1 | A_2 -> B_1 & B_2}
 
 We think the reviewer are confused of subtyping of intersection types and
-subtyping of union types.
-
-The rule proposed is unsound! It allows the following subtyping judgment:
+subtyping of union types. The rule proposed is unsound! It allows the following
+subtyping judgment:
 
 {l : Int -> String} & {l : Bool -> Char} <: {l : Int | Bool -> String & Char}
 
@@ -180,12 +197,12 @@ Haskell syntax):
 
 \f :: Int | Bool ->
   case f of
-    x :: Int   -> f1 x    -- x is of type Int, the return type should be (String, Char), but we can only make a value of String
-    y :: Bool  -> f2 y    -- y is of type Bool, the return type should be (String, Char), but we can only make a value of Char
+    x :: Int   -> f1 x    -- the return type should be (String, Char), but we can only make a value of String
+    y :: Bool  -> f2 y    -- the return type should be (String, Char), but we can only make a value of Char
 
 There is no way to write such coercion!
 
-For union subtyping, We suggest "Elaborating Intersection and Union Types" by
+For union subtyping, we suggest "Elaborating Intersection and Union Types" by
 Joshua Dunfield.
 
 
@@ -196,20 +213,15 @@ Reviewer C
 
 > One concern with your example in 2.2 If the method m had type () -> A rather
 > than A -> A, then the merge of C[A] and C[B] would not work as you would have
-> variants of m with types () -> a and () -> B, which will not live happily in the
-> same object
+> variants of m with types () -> a and () -> B, which will not live happily in
+> the same object
 
 They do live happily in the same object in SEDEL as long as A and B are
 disjoint. See more on function disjointness in (Alpuim et al. 2017).
 
 
-> The disjoint type and disjoint polymorphism seem to be the key ideas here that
-> lead to a powerful extension over other languages. The example of modeling
-> Object Algebras is key here, particularly the use of the merge operator for
-> building objects out of traits. However, you don't mention the equivalent of
-> private/protected methods. Do those make a difference as they may not be visible
-> to the merge operator? Having a duplicate method that is protected can disrupt a
-> public method.
+> However, you don't mention the equivalent of private/protected methods. Do
+> those make a difference as they may not be visible to the merge operator?
 
 We want to point out that Object Algebra is a general design pattern that can be
 modeled in different languages (the original proposal actually uses Java). What
