@@ -4,7 +4,8 @@ Most reviewers seem to be confused by the concept of inheritance in our paper.
 We believe there is a established standard of what is inheritance in the
 literature, that is, the denotational model of inheritance proposed by Cook in
 his thesis: "Inheritance is an incremental modification mechanism in the
-presence of late-bound self-reference". We understand the confusion as the word
+presence of late-bound self-reference". Throughout the paper, we use the word
+"inheritance" in exactly the same sense. We understand the confusion as the word
 "inheritance" is overloaded too much. We agree that we should clear the
 confusion up front in the paper.
 
@@ -92,8 +93,7 @@ inheritance in Cook's thesis.
 > considers 'inheritance' to be a relationship that creates a ...
 
 We believe this (Cook et al 1989) is the established standard definition of
-inheritance. Throughout the paper, we use the word "inheritance" in exactly the
-same sense. We could have made it clearer by saying "object inheritance" as
+inheritance. We could have made it clearer by saying "object inheritance" as
 opposed to "class inheritance" (both are mentioned in Cook's paper with the same
 underlying theory), that is, to construct objects incrementally. If this is
 agreed (since SEDEL has no classes, and is object-centered), then inheritance is
