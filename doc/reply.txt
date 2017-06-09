@@ -42,30 +42,29 @@ We never claim that this paper is about extensions of Fi! We *clearly*
 state *5 contributions* at the end of our introduction and none of them
 says anything about extensions to Fi.
 
-With all due respect for the reviewer, this review is non-constructive. It appears to
-expect some extensions to Fi (which we do not claim anywhere), and
-simply ignores the 5 contributions that are stated in the
-introduction. Therefore, we end up not having any useful information
-on how to improve the work from this review.
+With all due respect for the reviewer, this review is non-constructive. It
+appears to expect some extensions to Fi (which we do not claim anywhere), and
+simply ignores the 5 contributions that are stated in the introduction.
+Therefore, we end up not having any useful information on how to improve the
+work from this review.
 
-The reviewer could at least go through the contributions and say
-something (positive or negative) about those!
+The reviewer could at least go through the contributions and say something
+(positive or negative) about those!
 
 > Without presenting the complete subtyping system together with its extensions
 > it is impossible to understand which are the changes and their consequences.
 
-As acknowledged by us, the type system, subtyping as well as the
-complete meta-theory are presented in previous work (Alpuim et
-al. 2017) There are no fundamental changes at all. All we add is some
-syntactic sugar (covered in Section 6) and standard constructs to
-create a larger language, such as declarations, programs, primitive
-types...  All of which are quite standard and often ommitted from
-formalizations.  We use the same set of typing/subtyping rules in Fi,
-plus an additional rule which is shown in Sec. 7. SEDEL enjoys the
-same properties as found in Fi. As we emphasized in the paper, the
-theoretical parts of Fi are not a contribution of this paper.
+As acknowledged by us, the type system, subtyping as well as the complete
+meta-theory are presented in previous work (Alpuim et al. 2017). There are no
+fundamental changes at all. All we add is some syntactic sugar (covered in
+Section 6) and standard constructs to create a larger language, such as
+declarations, programs, primitive types... All of which are quite standard and
+often ommitted from formalizations. We use the same set of typing/subtyping
+rules in Fi, plus an additional rule which is shown in Sec. 7. SEDEL enjoys the
+same properties as found in Fi. As we emphasized in the paper, the theoretical
+parts of Fi are not a contribution of this paper.
 
-> Sec. 2.3 (and bottom of page 13): A comparison with:
+> Sec. 2.3 (and bottom of page 13): A comparison with "A first-class approach to genericity"
 
 MIXGEN is based on Generic Java, the points against covariant model in our paper
 also apply to theirs. In particular, they cannot deal with issues with
@@ -95,20 +94,20 @@ inheritance in Cook's thesis.
 We believe this (Cook et al 1989) is the established standard definition of
 inheritance. Throughout the paper, we use the word "inheritance" in exactly the
 same sense. We could have made it clearer by saying "object inheritance" as
-opposed to "class inheritance" (both are mentioned in Cook's paper with the
+opposed to "class inheritance" (both are mentioned in Cook's paper with the same
 underlying theory), that is, to construct objects incrementally. If this is
 agreed (since SEDEL has no classes, and is object-centered), then inheritance is
 really a relation on objects. And the way we encode traits is exactly the way
-inheritance is modelled, that is, by fixed-point semantics.
+inheritance is modelled, i.e., by fixed-point semantics.
 
 > p4.23, 'inherit code without creating any subtype relation': How would C++
 > private inheritance fail to do this?
 
 In C++, a derived class from private inheritance is not a subtype of the base
 class. In that sense, this is similar to what we wanted here. But private
-inheritance also imply that all public and protected members of the base become
-*private* members of the derived. Now this is not what we wanted. There are
-situations where we still want to be able to access those members. In that
+inheritance also implies that all public and protected members of the base
+become *private* members of the derived. Now this is not what we wanted. There
+are situations where we still want to be able to access those members. In that
 sense, C++ private inheritance does not suit our purpose.
 
 > ... But it's certainly not because it breaks the underlying execution model or
@@ -143,7 +142,7 @@ SEDEL is explicitly typed, each trait has a precisely known type at compile
 time. When we assign a less precise type to it, then by the subsumption rule,
 the resulting object has exactly the same members as prescribed by the assigned
 type. In extreme, if you assign type "top", then you basically erase all
-information from that trait. So If the "color_point" trait is typed as "Point",
+information from that trait. So if the "color_point" trait is typed as "Point",
 then it doesn't have "color" member. You would need to define another type, say
 "ColorPoint" with "color" member, and another type "SportsCar" with "color"
 member, then composing these two traits results in a conflict.
