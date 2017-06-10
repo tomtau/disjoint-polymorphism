@@ -67,12 +67,7 @@ parts of Fi are not a contribution of this paper.
 > Sec. 2.3 (and bottom of page 13): A comparison with "A first-class approach to genericity"
 
 MIXGEN is based on Generic Java, the points against covariant model in our paper
-also apply to theirs. In particular, they cannot deal with issues with
-Extensible Visitors. Second, MIXGEN has first-class generic types, meaning they
-can have operations that require generic type information at run-time. SEDEL,
-like most statically typed languages, is based on type erasure (generic types
-are only present during type checking). What is similar to ours is that they
-have dynamic inheritance. A crucial difference is that, their model cannot
+also apply to theirs. Another crucial difference is that, their model cannot
 detect conflicts statically, since their motivation is to support mixins, while
 ours is to support traits. Conflict detection is the key feature of traits.
 
@@ -82,6 +77,26 @@ Reviewer B
 
 > p1.30-40: When you imply that subclasses do not need to create subtypes, the
 > question immediately arises how a subclass can inherit a method implementation.
+
+As we state in the paper, an important difference between SEDEL and
+other OO models is on how to type the self-reference. One could view
+the standard OO model as a special case of what SEDEL supports (if
+we assume SEDEL has a self type "This"). That is, the conventional
+OO model would correspond to a declaration such as:
+
+// In the traditional model the self-reference has the self-type
+trait t { self : This => ...}
+
+In SEDEL the interpretation of the self reference is the requirements
+of the trait (what are the set of methods required by the self
+reference). This allows us for example to require methods that
+are not defined in a trait (which avoids the need for abstract
+methods). So, in SEDEL, 
+
+
+
+Using SEDEL's syntax to express what OO programmers would normally expect
+
 
 See "A Denotational Semantics of Inheritance and its Correctness" paper,
 especially on late binding and self-reference. This is not "some extra tricks",
