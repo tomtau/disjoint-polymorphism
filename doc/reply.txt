@@ -19,14 +19,7 @@ but they didn't consider applications as thoroughly as we have, neither did they
 realize the connections between disjoint intersection types from FP world and
 safe delegation-based programming from OO world.
 
-Third, SEDEL is a purely functional OO language. It certainly lacks realistic
-features such as mutable state, private/public methods. These are all
-acknowledged in the paper (Sec. 9), and we are interested to investigate in that
-regard. Even that, SEDEL has already shown remarkably expressiveness power that
-solves a number of difficult design problems. We believe the approach described
-here sheds some light in the study of modularity and extensible designs.
-
-Forth, SEDEL has a more general notion of the self-reference. In lots of work on
+Finally, SEDEL has a more general notion of the self-reference. In lots of work on
 typing the self-reference, people expect this to be the type of the object
 itself (the so-called "This" type). What we propose here is something different
 where we can choose any type for the self-reference. In principle we could
@@ -43,11 +36,11 @@ We never claim that this paper is about extensions of Fi! We *clearly*
 state *5 contributions* at the end of our introduction and none of them
 says anything about extensions to Fi.
 
-With all due respect for the reviewer, this review is non-constructive. It
-appears to expect some extensions to Fi (which we do not claim anywhere), and
-simply ignores the 5 contributions that are stated in the introduction.
-Therefore, we end up not having any useful information on how to improve the
-work from this review.
+With all due respect for the reviewer, this review is
+non-constructive. It appears to expect some extensions to Fi (which we
+do not claim anywhere), and simply ignores the 5 contributions that
+are stated in the introduction. Therefore, we end up not having any
+useful information on how to improve the work from this review.
 
 The reviewer could at least go through the contributions and say something
 (positive or negative) about those!
@@ -64,13 +57,6 @@ often ommitted from formalizations. We use the same set of typing/subtyping
 rules in Fi, plus an additional rule which is shown in Sec. 7. SEDEL enjoys the
 same properties as found in Fi. As we emphasized in the paper, the theoretical
 parts of Fi are not a contribution of this paper.
-
-> Sec. 2.3 (and bottom of page 13): A comparison with "A first-class approach to genericity"
-
-MIXGEN is based on Generic Java, the points against covariant model in our paper
-also apply to theirs. Another crucial difference is that, their model cannot
-detect conflicts statically, since their motivation is to support mixins, while
-ours is to support traits. Conflict detection is the key feature of traits.
 
 ==================
 Reviewer B
@@ -92,28 +78,14 @@ In SEDEL the interpretation of the self reference is the requirements
 of the trait (what are the set of methods required by the self
 reference). This allows us for example to require methods that
 are not defined in a trait (which avoids the need for abstract
-methods). So, in SEDEL, 
-
-
-
-Using SEDEL's syntax to express what OO programmers would normally expect
-
-
-See "A Denotational Semantics of Inheritance and its Correctness" paper,
-especially on late binding and self-reference. This is not "some extra tricks",
-but a formal denotational model of inheritance. You can find more on typing for
-inheritance in Cook's thesis.
+methods). So, SEDEL's model can be viewed as a relaxation of the
+standard model. The relaxation being that you can chose any type
+for the self-reference, rather than the fixed "This" type.
 
 > p2.2, 'inheritance .. a relation on objects': Well, (Cook et al 1989)
 > considers 'inheritance' to be a relationship that creates a ...
 
-We believe this (Cook et al 1989) is the established standard definition of
-inheritance. We could have made it clearer by saying "object inheritance" as
-opposed to "class inheritance" (both are mentioned in Cook's paper with the same
-underlying theory), that is, to construct objects incrementally. If this is
-agreed (since SEDEL has no classes, and is object-centered), then inheritance is
-really a relation on objects. And the way we encode traits is exactly the way
-inheritance is modelled, i.e., by fixed-point semantics.
+We should have been more precise here. Thank you.
 
 > p4.23, 'inherit code without creating any subtype relation': How would C++
 > private inheritance fail to do this?
@@ -121,16 +93,7 @@ inheritance is modelled, i.e., by fixed-point semantics.
 In C++, a derived class from private inheritance is not a subtype of the base
 class. In that sense, this is similar to what we wanted here. But private
 inheritance also implies that all public and protected members of the base
-become *private* members of the derived. Now this is not what we wanted. There
-are situations where we still want to be able to access those members. In that
-sense, C++ private inheritance does not suit our purpose.
-
-> ... But it's certainly not because it breaks the underlying execution model or
-> the soundness of the type system.
-
-We didn't say it breaks the soundness of the type system. What we do
-say is that it is a missing feature in Java, and is required, as we
-show, by extensible designs.
+become *private* members of the derived. Now this is not what we wanted.
 
 > p6.33: You could give a tiny hint about what you'd like 'new x with y' to do.
 
@@ -143,24 +106,21 @@ this.
 > object, or is it just going to be the type of the 'new' expression? ... So is
 > this type argument to 'new' really useful?
 
-"Point" is just an alias for the record type defined before, and is the type of
-the "new" expression. Yes, it is useful, as this specifies the *intended* type
-of the object and the self-reference! We encourage the reviewer to write down
-the desugared version of the point trait, and see why it needs type argument
-when instantiating it.
+See the Information Hiding reply at the end for when this type is useful.
 
 > p9.37: If trait composition conflicts are checked by the type checker at the
 > expression where the traits are composed, composition of traits cannot take
 > place unless the full set of members is known.
 
-SEDEL is explicitly typed, each trait has a precisely known type at compile
-time. When we assign a less precise type to it, then by the subsumption rule,
-the resulting object has exactly the same members as prescribed by the assigned
-type. In extreme, if you assign type "top", then you basically erase all
-information from that trait. So if the "color_point" trait is typed as "Point",
-then it doesn't have "color" member. You would need to define another type, say
-"ColorPoint" with "color" member, and another type "SportsCar" with "color"
-member, then composing these two traits results in a conflict.
+Yes it can. It is sufficient to statically know that the types of the two
+traits being composed are disjoint, even if we do not know their full
+static types. So,
+
+def dynamicTraits A (B * A) (t1 : Trait[A], t2 : Trait[B]) = new[A & B] t1 & t2
+
+is a valid program in SEDEL. The details of disjointness checking are
+discussed in great detail in Alpuim et al. 2017. And we emphasize that
+the safety and coherence proofs for Fi have been verified in Coq!
 
 > p10.9: It is not obvious how it would have eliminated the conflict if the
 > 'radius' fields in 'circle' and in 'asOval' had had different types.
@@ -173,21 +133,14 @@ constitutes a conflict (or non-disjointness in their jargon).
 > It's not obvious, however, what you mean by saying that 'norm' is
 > "parameterized".
 
-By "parameterized" we mean that the implementation of trait "norm" is not
-statically known. Still we can combine it with statically known traits such as
-"circleFns2" to form a new trait. After desugaring, every thing is a first class
-values, but the point is that traditional OO languages wouldn't allow you to do
-this (you cannot mix unknown with known).
+You cannot write something like this in Scala, for example:
 
-> p12.43, 'ExtExp should be a supertype of Exp': Note that these types are
-> essentially function types ... So maybe this just demonstrates that you'd need
-> to use a function type in this context.
+class F(norm : Object) extends norm
 
-If you use only functions, say in Java, then you lose nice things about
-inheritance. The point is that, even we wrap this simple function inside
-interface/class, there is still a fundamental difficulty in regard to
-extensibility. But this is not a problem in SEDEL, see p13 where we can reuse e1
-in the definition of e2.
+This is ofcourse invalid syntax in Scala, because extends can only
+take class/trait names. But the intention here would be to
+*parametrize* over some implementation of Object, which we can later
+provide as an argument. That's what we mean by parametrized.
 
 > So we get this:
 >
