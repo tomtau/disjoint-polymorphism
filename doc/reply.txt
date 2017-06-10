@@ -38,15 +38,16 @@ The reviewer could at least go through the contributions and say something
 > Without presenting the complete subtyping system together with its extensions
 > it is impossible to understand which are the changes and their consequences.
 
-As acknowledged by us, the type system, subtyping as well as the complete
-meta-theory are presented in previous work (Alpuim et al. 2017). There are no
-fundamental changes at all. All we add is some syntactic sugar (covered in
-Section 6) and standard constructs to create a larger language, such as
-declarations, programs, primitive types... All of which are quite standard and
-often ommitted from formalizations. We use the same set of typing/subtyping
-rules in Fi, plus an additional rule which is shown in Sec. 7. SEDEL enjoys the
-same properties as found in Fi. As we emphasized in the paper, the theoretical
-parts of Fi are not a contribution of this paper.
+The type system, subtyping, as well as the complete meta-theory
+*formalised in Coq* are presented in previous work (Alpuim et
+al. 2017). There are no fundamental changes at all. All we add is some
+syntactic sugar (covered in Section 6) and standard constructs to
+create a larger language, such as declarations, programs, primitive
+types... All of which are quite standard and often ommitted from
+formalizations. We use the same set of typing/subtyping rules in Fi,
+plus an additional rule which is shown in Sec. 7. SEDEL enjoys the
+same properties as found in Fi. As we emphasized in the paper, the
+theoretical parts of Fi are not a contribution of this paper.
 
 ==================
 Reviewer B
