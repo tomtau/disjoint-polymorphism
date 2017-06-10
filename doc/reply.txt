@@ -9,17 +9,7 @@ presence of late-bound self-reference". Throughout the paper, we use the word
 "inheritance" is overloaded too much. We agree that we should clear the
 confusion up front in the paper.
 
-Second, most reviewers seems to be unhappy with our little contribution to the
-theoretical parts of Fi, which we didn't claim to have. As is stated clearly in
-the paper, what we focus here is to "put these ideas into practice", notably,
-the area of extensible designs, which is an important application domain, and
-which are difficult to solve in mainstream OO languages. We offer a simple and
-elegant language-based solution. Previous works focus on the theoretical parts,
-but they didn't consider applications as thoroughly as we have, neither did they
-realize the connections between disjoint intersection types from FP world and
-safe delegation-based programming from OO world.
-
-Finally, SEDEL has a more general notion of the self-reference. In lots of work on
+SEDEL has a more general notion of the self-reference. In lots of work on
 typing the self-reference, people expect this to be the type of the object
 itself (the so-called "This" type). What we propose here is something different
 where we can choose any type for the self-reference. In principle we could
