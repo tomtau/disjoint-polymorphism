@@ -38,15 +38,12 @@ The reviewer could at least go through the contributions and say something
 > Without presenting the complete subtyping system together with its extensions
 > it is impossible to understand which are the changes and their consequences.
 
-The type system, subtyping, as well as the complete meta-theory
-*formalised in Coq* are presented in previous work (Alpuim et
-al. 2017). There are no fundamental changes at all. All we add is some
-syntactic sugar (covered in Section 6) and standard constructs to
-create a larger language, such as declarations, programs, primitive
-types... All of which are quite standard and often ommitted from
-formalizations. We use the same set of typing/subtyping rules in Fi,
-plus an additional rule which is shown in Sec. 7. SEDEL enjoys the
-same properties as found in Fi. As we emphasized in the paper, the
+The type system, subtyping, as well as the complete meta-theory *formalised in
+Coq* are presented in previous work (Alpuim et al. 2017). There are no
+fundamental changes at all. All we add is some syntactic sugar (covered in
+Section 6) and standard constructs to create a larger language, such as
+declarations, programs, primitive types... All of which are quite standard and
+often omitted from formalizations. As we emphasized in the paper, the
 theoretical parts of Fi are not a contribution of this paper.
 
 ==================
@@ -65,7 +62,7 @@ OO model would correspond to a declaration such as:
 // In the traditional model the self-reference has the self-type
 trait t { self : This => ...}
 
-In SEDEL the interpretation of the self reference is the requirements
+In SEDEL the interpretation of the self-reference is the requirements
 of the trait (what are the set of methods required by the self
 reference). This allows us for example to require methods that
 are not defined in a trait (which avoids the need for abstract
@@ -128,10 +125,10 @@ You cannot write something like this in Scala, for example:
 
 class F(norm : Object) extends norm
 
-This is ofcourse invalid syntax in Scala, because extends can only
+This is of course invalid syntax in Scala, because extends can only
 take class/trait names. But the intention here would be to
 *parametrize* over some implementation of Object, which we can later
-provide as an argument. That's what we mean by parametrized.
+provide as an argument. That's what we mean by parameterized.
 
 > So we get this:
 >
