@@ -26,9 +26,7 @@ itself (the so-called "This" type). What we propose here is something different
 where we can choose any type for the self-reference. In principle we could
 choose "This" too.
 
-==================
-Reviewer A
-==================
+## Reviewer A
 
 > First of all, it seems that there are very few extensions with respect to the
 > typed core language $F_i$ to be a paper on its own.
@@ -46,9 +44,7 @@ work from this review.
 The reviewer could at least go through the contributions and say something
 (positive or negative) about those.
 
-==================
-Reviewer B
-==================
+## Reviewer B
 
 > p1.30-40: When you imply that subclasses do not need to create subtypes, the
 > question immediately arises how a subclass can inherit a method implementation.
@@ -59,8 +55,10 @@ model as a special case of what SEDEL supports (if we assume SEDEL has a self
 type "This"). That is, the conventional OO model would correspond to a
 declaration such as:
 
+```
 // In the traditional model the self-reference has the self-type
 trait t { self : This => ...}
+```
 
 In SEDEL the interpretation of the self-reference is the requirements of the
 trait (what are the set of methods required by the self reference). This allows
@@ -111,7 +109,9 @@ Yes it can. It is sufficient to statically know that the types of the two traits
 being composed are *disjoint*, even if we do not know their full static types.
 So:
 
+```
 def dynamicTraits A [B * A] (t1 : Trait[A], t2 : Trait[B]) = new[A & B] t1 & t2
+```
 
 is a valid program in SEDEL. The details of disjointness checking are discussed
 in great detail in (Alpuim et al. 2017). And we emphasize that the safety and
@@ -130,7 +130,9 @@ constitutes a conflict (or non-disjointness in their jargon).
 
 You cannot write something like this in Scala, for example:
 
+```
 class F(norm : Object) extends norm
+```
 
 This is of course invalid syntax in Scala, because extends can only take
 class/trait names. But the intention here would be to *parametrize* over some
@@ -145,28 +147,30 @@ we mean by parameterized.
 
 The rule proposed is unsound! It allows the following subtyping judgment:
 
+```
 {l : Int -> String} & {l : Bool -> Char} <: {l : Int | Bool -> String & Char}
+```
 
 We can understand the situation better by writing the coercion function from
-{l : Int -> String} & {l : Bool -> Char} to {l : Int | Bool -> String & Char}:
+`{l : Int -> String} & {l : Bool -> Char}` to `{l : Int | Bool -> String & Char}`:
 
-Suppose we have a function f1 :: Int -> String, and f2 :: Bool -> Char, how can
-we make a function of type Int | Bool -> String & Char? Something like (in
+Suppose we have a function `f1 :: Int -> String`, and `f2 :: Bool -> Char`, how
+can we make a function of type `Int | Bool -> String & Char`? Something like (in
 Haskell syntax):
 
+```
 \f :: Int | Bool ->
   case f of
     x :: Int   -> f1 x    -- the return type should be (String, Char), but we can only make a value of String
     y :: Bool  -> f2 y    -- ... but we can only make a value of Char
+```
 
 There is no way to write such coercion!
 
 For union subtyping, we suggest "Elaborating Intersection and Union Types" by
 Joshua Dunfield.
 
-==================
-Reviewer C
-==================
+## Reviewer C
 
 > One concern with your example in 2.2 If the method m had type () -> A rather
 > than A -> A, then the merge of C[A] and C[B] would not work as you would have
@@ -192,6 +196,7 @@ those.
 
 For example, for protected methods, in Java you may write:
 
+```
 class A {
    public Int foo() {return bar();}
    protected Int bar() {...}
@@ -205,8 +210,11 @@ class B extends A {
 B x = new B();
 ...
 
+```
+
 In SEDEL you accomplish the same by:
 
+```
 // public interfaces
 type A = {foo : () -> Int}
 type B = A & {m : () -> Int}
@@ -223,12 +231,15 @@ trait b() inherits a {self :  {bar : () -> Int} =>
 ...
 new[B] b() // no bar is visible here!
 ...
+```
 
 For private methods, SEDEL actually supports a syntax (which we did not present
 in the paper) that allows us to completely hide methods:
 
+```
 // the syntax ": A" next specifies the "public" type of the trait
 trait a() : A {self : {bar : () -> Int} =>
    def foo() = self.bar()
    def bar() = ...  // bar is only visible inside trait a, so it is effectively private
 }
+```
