@@ -45,6 +45,7 @@ library:
     - SEDEL.Target.Syntax
     - SEDEL.Target.Dynamics
     - SEDEL.Target.CBN
+    - SEDEL.Target.Malfunction
     - SEDEL
   dependencies:
     - unbound
@@ -59,6 +60,7 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - SEDEL
+      - process
 
 tests:
   SEDEL-test:

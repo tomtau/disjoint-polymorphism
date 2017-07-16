@@ -4,6 +4,7 @@ module SEDEL.Target.CBN
   , evaluate
   , extendCtx
   , emptyEnv
+  , ClosureExp (CExp)
   ) where
 
 import           Control.Monad.Reader

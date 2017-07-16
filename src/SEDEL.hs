@@ -2,7 +2,8 @@
 
 
 module SEDEL
-  ( evalFile
+  ( evalFile,
+    compileFile
   ) where
 
 import           Control.Exception (SomeException, try)
@@ -15,6 +16,7 @@ import           SEDEL.Parser.Parser (parseExpr)
 import           SEDEL.PrettyPrint
 import           SEDEL.Source.Typing
 import qualified SEDEL.Target.CBN as C
+import qualified SEDEL.Target.Malfunction as MF
 
 type Result = Either Doc String
 
@@ -58,3 +60,20 @@ evalFile path = do
                  if tm == expinp
                    then succed (text tm)
                    else failWith (text tm) (text expinp)
+
+compileFile :: FilePath -> IO ((Doc, Maybe a), Bool)
+compileFile path = do 
+  msg <- readTry $ readFile path
+  let failed d = return ((d, Nothing), False)
+      failWith d d' = return ((d, Just d'), False)
+      succeed d = return ((d, Nothing), True)
+  case msg of
+    Left err -> failed $ warn "Load file error" <+> text (show err)
+    Right contents ->
+      case (parseExpr contents) of
+        Left err -> failed $ warn "Syntax error" <+> text err
+        Right abt ->
+          let res = runTcMonad emptyCtx (tcModule abt)
+          in case res of
+           Left err -> failed err
+           Right (t, tar, tEnv) -> succeed $ text $ show $ MF.generateMalfunction tEnv t tar

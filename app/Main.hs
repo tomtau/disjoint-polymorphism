@@ -13,6 +13,10 @@ import           SEDEL.Parser.Parser (parseExpr)
 import           SEDEL.PrettyPrint
 import           SEDEL.Source.Typing
 import qualified SEDEL.Target.CBN as CBN
+import           SEDEL (compileFile)
+import           System.Process (callCommand)
+import           System.FilePath (takeBaseName)
+import           System.Directory (removeFile)
 
 data ReplState = ReplState {
   replCtx   :: Ctx
@@ -122,5 +126,14 @@ main = do
   args <- getArgs
   case args of
     [] -> shell ini
+    ["compile", fname] ->
+      do compiled <- compileFile fname
+         case compiled of
+           ((d,_), False) -> putStrLn (show d)
+           ((d,_), True) ->
+             do writeFile tmp (show d)
+                callCommand $ "malfunction compile -o '" ++ takeBaseName fname ++ "' '" ++ tmp ++ "'"
+                removeFile tmp
+                  where tmp = "sedel_malfunction_output.mlf"
     [fname] -> shell (load [fname])
     _ -> putStrLn "invalid arguments"

@@ -75,3 +75,20 @@ See the [examples/](./examples/) directory. All examples can be tested:
 ```
 stack test
 ```
+
+## Native Compilation via OCaml's backend (experimental)
+
+Install Malfunction via [OPAM](https://opam.ocaml.org/):
+
+```
+opam switch 4.04.0+flambda
+opam install omd
+opam pin add malfunction git://github.com/stedolan/malfunction.git
+```
+
+Then, you can compile and run programs with:
+
+```
+stack exec SEDEL-exe compile examples/fact.sl
+./fact
+```
